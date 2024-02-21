@@ -1,0 +1,90 @@
+package net.risesoft.controller;
+
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import net.risesoft.entity.FileDownLoadRecord;
+import net.risesoft.entity.FileNode;
+import net.risesoft.id.IdType;
+import net.risesoft.id.Y9IdGenerator;
+import net.risesoft.pojo.Y9Result;
+import net.risesoft.service.FileDownLoadRecordService;
+import net.risesoft.service.FileNodeService;
+import net.risesoft.y9.Y9LoginUserHolder;
+import net.risesoft.y9.util.mime.ContentDispositionUtil;
+import net.risesoft.y9public.service.Y9FileStoreService;
+
+@RestController
+@RequestMapping("/link")
+public class LinkDownLoadController {
+
+    @Autowired
+    private Y9FileStoreService y9FileStoreService;
+
+    @Autowired
+    private FileNodeService fileNodeService;
+
+    @Autowired
+    private FileDownLoadRecordService fileDownLoadRecordService;
+
+    @RequestMapping(value = "/df/{id}/{tenantId}")
+    public void downloadFile(@PathVariable String id, @PathVariable String tenantId, HttpServletResponse response) {
+        ServletOutputStream os = null;
+        try {
+            Y9LoginUserHolder.setTenantId(tenantId);
+            FileNode fileNode = fileNodeService.findById(id);
+            String fileName = fileNode.getName();
+            String y9FileStoreId = fileNode.getFileStoreId();
+            response.setContentType("text/html;charset=UTF-8");
+            response.setContentType("application/octet-stream");
+            response.setHeader("Content-disposition", ContentDispositionUtil.standardizeAttachment(fileName));
+
+            os = response.getOutputStream();
+            y9FileStoreService.downloadFileToOutputStream(y9FileStoreId, os);
+            FileDownLoadRecord fdr = new FileDownLoadRecord();
+            fdr.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
+            fdr.setFileId(id);
+            fdr.setDownLoadTime(new Date());
+            fdr.setDownLoadUserId("直链下载");
+            fdr.setDownLoadUserName("直链下载");
+            fdr.setDownLoadMode("直链");
+            fileDownLoadRecordService.save(fdr);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (os != null) {
+                    os.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @RequestMapping(value = "/checkPwd")
+    public Y9Result<Object> checkPwd(String id, String pwd, String tenantId) {
+        Map<String, Object> map = new HashMap<String, Object>();
+        Y9LoginUserHolder.setTenantId(tenantId);
+        FileNode fileNode = fileNodeService.findById(id);
+        if (null != fileNode) {
+            map.put("success", false);
+            map.put("msg", "密码输入错误，请输入正确的密码");
+            if (fileNode.getLinkPassword().equals(pwd)) {
+                map.put("success", true);
+                map.put("msg", "密码验证成功，正在为您下载");
+            }
+        }
+        return Y9Result.success(map);
+    }
+}
