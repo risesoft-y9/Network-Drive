@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.risesoft.api.org.OrgUnitApi;
+import net.risesoft.api.platform.org.OrgUnitApi;
 import net.risesoft.controller.dto.FileNodeDTO;
 import net.risesoft.controller.dto.FileNodeShareDTO;
 import net.risesoft.entity.FileNode;

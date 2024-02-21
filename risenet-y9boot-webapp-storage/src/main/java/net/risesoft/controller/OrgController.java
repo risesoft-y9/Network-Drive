@@ -1,21 +1,7 @@
 package net.risesoft.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import net.risesoft.api.org.PositionApi;
-import net.risesoft.api.permission.PersonRoleApi;
+import net.risesoft.api.platform.org.PositionApi;
+import net.risesoft.api.platform.permission.PersonRoleApi;
 import net.risesoft.enums.platform.OrgTreeTypeEnum;
 import net.risesoft.model.platform.OrgUnit;
 import net.risesoft.model.platform.Organization;
@@ -24,9 +10,21 @@ import net.risesoft.model.user.UserInfo;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+import y9.client.rest.platform.org.OrgUnitApiClient;
+import y9.client.rest.platform.org.OrganizationApiClient;
 
-import y9.client.platform.org.OrgUnitApiClient;
-import y9.client.platform.org.OrganizationApiClient;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/vue/org")
