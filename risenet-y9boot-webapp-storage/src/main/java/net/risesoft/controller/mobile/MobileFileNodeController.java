@@ -110,7 +110,7 @@ public class MobileFileNodeController {
         try {
             Y9LoginUserHolder.setTenantId(tenantId);
             Y9LoginUserHolder.setPersonId(userId);
-            Person person = personApiClient.getPerson(tenantId, userId).getData();
+            Person person = personApiClient.get(tenantId, userId).getData();
             Y9LoginUserHolder.setUserInfo(person.toUserInfo());
             OrderRequest orderRequest = new OrderRequest(OrderProp.valueOf(orderProp), orderAsc);
             FileNodeType fileType = null;
@@ -168,7 +168,7 @@ public class MobileFileNodeController {
         try {
             Y9LoginUserHolder.setTenantId(tenantId);
             Y9LoginUserHolder.setPersonId(userId);
-            Person person = personApiClient.getPerson(tenantId, userId).getData();
+            Person person = personApiClient.get(tenantId, userId).getData();
             Y9LoginUserHolder.setUserInfo(person.toUserInfo());
             OrderRequest orderRequest = new OrderRequest(OrderProp.valueOf(orderProp), orderAsc);
             FileNodeType fileType = null;
@@ -226,7 +226,7 @@ public class MobileFileNodeController {
         try {
             Y9LoginUserHolder.setTenantId(tenantId);
             Y9LoginUserHolder.setPersonId(userId);
-            Person person = personApiClient.getPerson(tenantId, userId).getData();
+            Person person = personApiClient.get(tenantId, userId).getData();
             Y9LoginUserHolder.setUserInfo(person.toUserInfo());
             OrderRequest orderRequest = new OrderRequest(OrderProp.valueOf(orderProp), orderAsc);
             FileNodeType fileType = null;
@@ -282,7 +282,7 @@ public class MobileFileNodeController {
         try {
             Y9LoginUserHolder.setTenantId(tenantId);
             Y9LoginUserHolder.setPersonId(userId);
-            Person person = personApiClient.getPerson(tenantId, userId).getData();
+            Person person = personApiClient.get(tenantId, userId).getData();
             Y9LoginUserHolder.setUserInfo(person.toUserInfo());
             List<String> listNames = new ArrayList<String>();
             listNames.add(FileListType.MY.getValue());
@@ -455,7 +455,7 @@ public class MobileFileNodeController {
             Y9LoginUserHolder.setTenantId(tenantId);
             Y9LoginUserHolder.setPersonId(userId);
             Y9LoginUserHolder.setPositionId(positionId);
-            Person person = personApiClient.getPerson(tenantId, userId).getData();
+            Person person = personApiClient.get(tenantId, userId).getData();
             Y9LoginUserHolder.setUserInfo(person.toUserInfo());
             map = fileNodeService.saveUploadFile(file, parentId, listType);
         } catch (Exception e) {
@@ -488,7 +488,7 @@ public class MobileFileNodeController {
             Y9LoginUserHolder.setTenantId(tenantId);
             Y9LoginUserHolder.setPersonId(userId);
             Y9LoginUserHolder.setPositionId(positionId);
-            Person person = personApiClient.getPerson(tenantId, userId).getData();
+            Person person = personApiClient.get(tenantId, userId).getData();
             Y9LoginUserHolder.setUserInfo(person.toUserInfo());
             FileNode folder = new FileNode();
             folder.setName(name);
@@ -523,7 +523,7 @@ public class MobileFileNodeController {
         Y9LoginUserHolder.setTenantId(tenantId);
         Y9LoginUserHolder.setPersonId(userId);
         Y9LoginUserHolder.setPositionId(positionId);
-        Person person = personApiClient.getPerson(tenantId, userId).getData();
+        Person person = personApiClient.get(tenantId, userId).getData();
         Y9LoginUserHolder.setUserInfo(person.toUserInfo());
         List<String> idList = Y9Util.stringToList(ids, ",");
         if (idList.size() > 1) {
@@ -730,7 +730,7 @@ public class MobileFileNodeController {
             Y9LoginUserHolder.setTenantId(tenantId);
             Y9LoginUserHolder.setPersonId(userId);
             Y9LoginUserHolder.setPositionId(positionId);
-            Person person = personApiClient.getPerson(tenantId, userId).getData();
+            Person person = personApiClient.get(tenantId, userId).getData();
             Y9LoginUserHolder.setUserInfo(person.toUserInfo());
             FileNode folder = new FileNode();
             folder.setId(id);
@@ -765,7 +765,7 @@ public class MobileFileNodeController {
         @RequestParam Integer rows, HttpServletResponse response) throws Exception {
         Y9LoginUserHolder.setTenantId(tenantId);
         Y9LoginUserHolder.setPersonId(userId);
-        Person person = personApiClient.getPerson(tenantId, userId).getData();
+        Person person = personApiClient.get(tenantId, userId).getData();
         Y9LoginUserHolder.setUserInfo(person.toUserInfo());
         List<Map<String, Object>> items = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

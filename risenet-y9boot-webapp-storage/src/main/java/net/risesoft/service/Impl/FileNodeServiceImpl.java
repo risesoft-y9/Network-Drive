@@ -331,7 +331,7 @@ public class FileNodeServiceImpl implements FileNodeService {
         fold.setName(folder.getName());
         fold.setParentId(guid);
         fold.setUserId(userId);
-        fold.setUserName(personManager.getPerson(tenantId, userId).getData().getName());
+        fold.setUserName(personManager.get(tenantId, userId).getData().getName());
         fileNodeRepository.save(fold);
 
         return guid1;
@@ -392,7 +392,7 @@ public class FileNodeServiceImpl implements FileNodeService {
                 if (listType.equals(FileListType.DEPT.getValue())) {
                     String positionId = Y9LoginUserHolder.getPositionId();
                     OrgUnit orgUnit = orgUnitApiClient.getParent(tenantId, positionId).getData();
-                    Position position = positionApi.getPosition(tenantId, positionId).getData();
+                    Position position = positionApi.get(tenantId, positionId).getData();
                     fileNode.setOrgId(orgUnit.getId());
                     fileNode.setUserId(position.getId());
                     fileNode.setUserName(position.getName());

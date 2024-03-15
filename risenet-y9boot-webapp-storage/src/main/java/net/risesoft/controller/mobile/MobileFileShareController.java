@@ -119,7 +119,7 @@ public class MobileFileShareController {
         throws Exception {
         Y9LoginUserHolder.setTenantId(tenantId);
         Y9LoginUserHolder.setPersonId(userId);
-        Person person = personApiClient.getPerson(tenantId, userId).getData();
+        Person person = personApiClient.get(tenantId, userId).getData();
         Y9LoginUserHolder.setUserInfo(person.toUserInfo());
         List<String> fileNodeIdList = Y9Util.stringToList(fileNodeIds, ",");
         List<String> orgUnitIdList = Y9Util.stringToList(orgUnitIds, ",");
@@ -154,7 +154,7 @@ public class MobileFileShareController {
         throws Exception {
         Y9LoginUserHolder.setTenantId(tenantId);
         Y9LoginUserHolder.setPersonId(userId);
-        Person person = personApiClient.getPerson(tenantId, userId).getData();
+        Person person = personApiClient.get(tenantId, userId).getData();
         Y9LoginUserHolder.setUserInfo(person.toUserInfo());
         List<String> fileNodeIdList = Y9Util.stringToList(fileNodeIds, ",");
         List<String> orgUnitIdList = Y9Util.stringToList(orgUnitIds, ",");
@@ -187,7 +187,7 @@ public class MobileFileShareController {
         throws Exception {
         Y9LoginUserHolder.setTenantId(tenantId);
         Y9LoginUserHolder.setPersonId(userId);
-        Person person = personApiClient.getPerson(tenantId, userId).getData();
+        Person person = personApiClient.get(tenantId, userId).getData();
         Y9LoginUserHolder.setUserInfo(person.toUserInfo());
         List<String> fileNodeIdList = Y9Util.stringToList(fileNodeIds, ",");
         Map<String, Object> map = new HashMap<String, Object>(16);
@@ -221,7 +221,7 @@ public class MobileFileShareController {
         @RequestParam Integer rows, HttpServletResponse response) throws Exception {
         Y9LoginUserHolder.setTenantId(tenantId);
         Y9LoginUserHolder.setPersonId(userId);
-        Person person = personApiClient.getPerson(tenantId, userId).getData();
+        Person person = personApiClient.get(tenantId, userId).getData();
         Y9LoginUserHolder.setUserInfo(person.toUserInfo());
         List<Map<String, Object>> items = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -273,7 +273,7 @@ public class MobileFileShareController {
         throws Exception {
         Y9LoginUserHolder.setTenantId(tenantId);
         Y9LoginUserHolder.setPersonId(userId);
-        Person person = personApiClient.getPerson(tenantId, userId).getData();
+        Person person = personApiClient.get(tenantId, userId).getData();
         Y9LoginUserHolder.setUserInfo(person.toUserInfo());
         List<String> publicRecordIdList = Y9Util.stringToList(publicRecordIds, ",");
         Map<String, Object> map = new HashMap<String, Object>(16);
