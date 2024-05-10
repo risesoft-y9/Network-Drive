@@ -154,6 +154,8 @@ y9:
         orgBaseUrl: http://127.0.0.1:7055/platform
         jodconverterBaseUrl: https://www.youshengyun.com/jodconverter/onlinePreview?url=
         storageBaseUrl: http://localhost:7058/storage
+        logBaseUrl: http://localhost:7056/log
+        userOnlineBaseUrl: http://localhost:7056/userOnline
     feature:
         file:
             base64FileName: false
@@ -202,6 +204,8 @@ y9:
             tenant-enabled: true
         log:
             enabled: true
+            # kafka, api
+            logSaveTarget: kafka
         session:
             redis:
                 enabled: true
