@@ -489,8 +489,7 @@ public class FileNodeServiceImpl implements FileNodeService {
                         new FileNodeSpecification(id, FileNodeType.FOLDER, listType, searchName, false);
                     fileNodeList = fileNodeRepository.findAll(spec);
                 } else {
-                    FileNodeSpecification spec =
-                        new FileNodeSpecification(id, FileNodeType.FOLDER, listType, searchName, false);
+                    FileNodeSpecification spec = new FileNodeSpecification(false,id, listType, searchName);
                     fileNodeList = fileNodeRepository.findAll(spec);
                 }
             } else if (listType.equals(FileListType.REPORTMANAGE.getValue())) {
