@@ -3,14 +3,7 @@ package net.risesoft.entity;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Comment;
@@ -77,8 +70,9 @@ public class FileNode implements Serializable {
     @Comment("文件长度")
     private Long fileSize;
 
+    @Lob
     @Comment("组织id")
-    @Column(name = "ORGID", length = 50)
+    @Column(name = "ORGID")
     private String orgId;
 
     @Comment("创建人id")
