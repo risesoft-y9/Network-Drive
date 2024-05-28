@@ -226,8 +226,10 @@ public class FileNodeServiceImpl implements FileNodeService {
         } else {
             y9FileStoreService.deleteFile(fileNode.getFileStoreId());
             StorageCapacity sc = storageCapacityService.findByCapacityOwnerId(Y9LoginUserHolder.getPersonId());
-            sc.setRemainingLength(sc.getRemainingLength() + fileNode.getFileSize());
-            storageCapacityService.save(sc);
+            if(sc!= null&&StringUtils.isNotBlank(sc.getId())) {
+                sc.setRemainingLength(sc.getRemainingLength() + fileNode.getFileSize());
+                storageCapacityService.save(sc);
+            }
         }
         fileNodeRepository.delete(fileNode);
     }
