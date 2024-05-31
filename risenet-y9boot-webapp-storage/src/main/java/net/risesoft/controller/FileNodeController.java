@@ -80,7 +80,7 @@ public class FileNodeController {
             FileNode node = fileNodeService.findById(folder.getId());
             if (null != node) {
                 if (StringUtils.isNotBlank(node.getFilePassword())) {
-                    String inputPwd = Y9MessageDigest.MD5(folder.getFilePassword());
+                    String inputPwd = Y9MessageDigest.md5(folder.getFilePassword());
                     if (inputPwd.equals(node.getFilePassword())) {
                         node.setFilePassword("");
                         node.setUpdateTime(new Date());
@@ -112,7 +112,7 @@ public class FileNodeController {
             FileNode node = fileNodeService.findById(folder.getId());
             if (null != node) {
                 if (StringUtils.isNotBlank(node.getFilePassword())) {
-                    String inputPwd = Y9MessageDigest.MD5(folder.getFilePassword());
+                    String inputPwd = Y9MessageDigest.md5(folder.getFilePassword());
                     if (inputPwd.equals(node.getFilePassword())) {
                         return Y9Result.success("文件夹密码验证成功！");
                     } else {
@@ -177,7 +177,7 @@ public class FileNodeController {
             FileNode node = fileNodeService.findById(folder.getId());
             if (null != node) {
                 if (StringUtils.isNotBlank(node.getFilePassword())) {
-                    String inputPwd = Y9MessageDigest.MD5(folder.getFilePassword());
+                    String inputPwd = Y9MessageDigest.md5(folder.getFilePassword());
                     if (inputPwd.equals(node.getFilePassword())) {
                         return Y9Result.success("文件夹解密成功！");
                     } else {
@@ -595,7 +595,7 @@ public class FileNodeController {
         try {
             FileNode node = fileNodeService.findById(folder.getId());
             if (null != node) {
-                String newPassword = Y9MessageDigest.MD5(folder.getFilePassword());
+                String newPassword = Y9MessageDigest.md5(folder.getFilePassword());
                 // if(newPassword.equals(node.getFilePassword())){
                 // y9Result.setMsg("新密码与原始密码一致，请重新设置密码！");
                 // y9Result.setSuccess(false);
@@ -666,7 +666,7 @@ public class FileNodeController {
     public Y9Result<Object> setFolderPassword(FileNode folder) {
         try {
             FileNode node = fileNodeService.findById(folder.getId());
-            node.setFilePassword(Y9MessageDigest.MD5(folder.getFilePassword()));
+            node.setFilePassword(Y9MessageDigest.md5(folder.getFilePassword()));
             node.setUpdateTime(new Date());
             fileNodeService.saveNode(node);
             return Y9Result.success("文件夹密码设置成功！");

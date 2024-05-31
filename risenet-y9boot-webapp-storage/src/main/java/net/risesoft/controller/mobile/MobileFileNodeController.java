@@ -817,7 +817,7 @@ public class MobileFileNodeController {
             Y9LoginUserHolder.setTenantId(tenantId);
             Y9LoginUserHolder.setPersonId(userId);
             FileNode node = fileNodeService.findById(folderId);
-            node.setFilePassword(Y9MessageDigest.MD5(password));
+            node.setFilePassword(Y9MessageDigest.md5(password));
             node.setUpdateTime(new Date());
             fileNodeService.saveNode(node);
             map.put(UtilConsts.SUCCESS, true);
@@ -854,7 +854,7 @@ public class MobileFileNodeController {
             FileNode node = fileNodeService.findById(folderId);
             if (null != node) {
                 if (StringUtils.isNotBlank(node.getFilePassword())) {
-                    String inputPwd = Y9MessageDigest.MD5(password);
+                    String inputPwd = Y9MessageDigest.md5(password);
                     if (inputPwd.equals(node.getFilePassword())) {
                         node.setFilePassword("");
                         node.setUpdateTime(new Date());
@@ -904,7 +904,7 @@ public class MobileFileNodeController {
             Y9LoginUserHolder.setPersonId(userId);
             FileNode node = fileNodeService.findById(folderId);
             if (null != node) {
-                String newPassword = Y9MessageDigest.MD5(password);
+                String newPassword = Y9MessageDigest.md5(password);
                 node.setFilePassword(newPassword);
                 node.setUpdateTime(new Date());
                 fileNodeService.saveNode(node);
@@ -946,7 +946,7 @@ public class MobileFileNodeController {
             FileNode node = fileNodeService.findById(folderId);
             if (null != node) {
                 if (StringUtils.isNotBlank(node.getFilePassword())) {
-                    String inputPwd = Y9MessageDigest.MD5(password);
+                    String inputPwd = Y9MessageDigest.md5(password);
                     if (inputPwd.equals(node.getFilePassword())) {
                         map.put(UtilConsts.SUCCESS, true);
                         map.put("msg", "文件夹密码验证成功");
@@ -994,7 +994,7 @@ public class MobileFileNodeController {
             FileNode node = fileNodeService.findById(folderId);
             if (null != node) {
                 if (StringUtils.isNotBlank(node.getFilePassword())) {
-                    String inputPwd = Y9MessageDigest.MD5(password);
+                    String inputPwd = Y9MessageDigest.md5(password);
                     if (inputPwd.equals(node.getFilePassword())) {
                         map.put(UtilConsts.SUCCESS, true);
                         map.put("msg", "文件夹解密成功");
