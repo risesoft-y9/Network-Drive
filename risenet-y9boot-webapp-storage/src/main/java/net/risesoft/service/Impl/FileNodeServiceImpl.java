@@ -226,7 +226,7 @@ public class FileNodeServiceImpl implements FileNodeService {
         } else {
             y9FileStoreService.deleteFile(fileNode.getFileStoreId());
             StorageCapacity sc = storageCapacityService.findByCapacityOwnerId(Y9LoginUserHolder.getPersonId());
-            if(sc!= null&&StringUtils.isNotBlank(sc.getId())) {
+            if (sc != null && StringUtils.isNotBlank(sc.getId())) {
                 sc.setRemainingLength(sc.getRemainingLength() + fileNode.getFileSize());
                 storageCapacityService.save(sc);
             }
@@ -491,7 +491,7 @@ public class FileNodeServiceImpl implements FileNodeService {
                         new FileNodeSpecification(id, FileNodeType.FOLDER, listType, searchName, false);
                     fileNodeList = fileNodeRepository.findAll(spec);
                 } else {
-                    FileNodeSpecification spec = new FileNodeSpecification(false,id, listType, searchName);
+                    FileNodeSpecification spec = new FileNodeSpecification(false, id, listType, searchName);
                     fileNodeList = fileNodeRepository.findAll(spec);
                 }
             } else if (listType.equals(FileListType.REPORTMANAGE.getValue())) {
