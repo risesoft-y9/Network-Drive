@@ -1,5 +1,6 @@
 package net.risesoft.service.Impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,10 +14,10 @@ import net.risesoft.repository.FileDownLoadRecordRepository;
 import net.risesoft.service.FileDownLoadRecordService;
 
 @Service
+@RequiredArgsConstructor
 public class FileDownLoadRecordServiceImpl implements FileDownLoadRecordService {
 
-    @Autowired
-    private FileDownLoadRecordRepository fileDownLoadRecordRepository;
+    private final FileDownLoadRecordRepository fileDownLoadRecordRepository;
 
     @Override
     public Page<FileDownLoadRecord> getFileDownLoadRecord(String fileId, int page, int rows) {

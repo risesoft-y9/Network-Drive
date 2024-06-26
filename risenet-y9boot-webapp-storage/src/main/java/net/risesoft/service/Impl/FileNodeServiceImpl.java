@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,7 @@ import y9.client.rest.platform.org.OrgUnitApiClient;
 import y9.client.rest.platform.org.PersonApiClient;
 
 @Service
+@RequiredArgsConstructor
 public class FileNodeServiceImpl implements FileNodeService {
 
     private static final Map<String, Comparator<FileNode>> sortTypeComparatorMap = new HashMap<>();
@@ -74,26 +76,13 @@ public class FileNodeServiceImpl implements FileNodeService {
             new CreateTimeComparator(false));
     }
 
-    @Autowired
-    private FileNodeRepository fileNodeRepository;
-
-    @Autowired
-    private FileNodeShareRepository fileNodeShareRepository;
-
-    @Autowired
-    private PersonApiClient personManager;
-
-    @Autowired
-    private OrgUnitApiClient orgUnitApiClient;
-
-    @Autowired
-    private PositionApi positionApi;
-
-    @Autowired
-    private Y9FileStoreService y9FileStoreService;
-
-    @Autowired
-    private StorageCapacityService storageCapacityService;
+    private final FileNodeRepository fileNodeRepository;
+    private final FileNodeShareRepository fileNodeShareRepository;
+    private final PersonApiClient personManager;
+    private final OrgUnitApiClient orgUnitApiClient;
+    private final PositionApi positionApi;
+    private final Y9FileStoreService y9FileStoreService;
+    private final StorageCapacityService storageCapacityService;
 
     @Override
     public void cancelShare(List<String> fileNodeIdList) {

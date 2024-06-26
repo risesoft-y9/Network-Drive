@@ -20,6 +20,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -55,24 +57,17 @@ import net.risesoft.y9.util.signing.Y9MessageDigest;
 import net.risesoft.y9public.entity.Y9FileStore;
 import net.risesoft.y9public.service.Y9FileStoreService;
 
+@RequiredArgsConstructor
+@Slf4j
 @RestController
 @RequestMapping("/vue/fileNode")
 public class FileNodeController {
 
-    @Autowired
-    private Y9FileStoreService y9FileStoreService;
-
-    @Autowired
-    private FileNodeService fileNodeService;
-
-    @Autowired
-    private FileDownLoadRecordService fileDownLoadRecordService;
-
-    @Autowired
-    private FileNodeShareService fileNodeShareService;
-
-    @Autowired
-    private FileNodeCollectService fileNodeCollectService;
+    private final Y9FileStoreService y9FileStoreService;
+    private final FileNodeService fileNodeService;
+    private final FileDownLoadRecordService fileDownLoadRecordService;
+    private final FileNodeShareService fileNodeShareService;
+    private final FileNodeCollectService fileNodeCollectService;
 
     @RequestMapping(value = "/cancelFolderPassword")
     public Y9Result<String> cancelFolderPassword(FileNode folder) {
@@ -95,7 +90,7 @@ public class FileNodeController {
             }
             return Y9Result.failure("文件夹密码取消失败！未找到文件！");
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("取消文件夹密码失败！", e);
             return Y9Result.failure("文件夹密码取消失败！");
         }
     }
@@ -124,7 +119,7 @@ public class FileNodeController {
             }
             return Y9Result.failure("文件夹密码验证失败，未找到文件！");
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("验证文件夹密码失败！", e);
             return Y9Result.failure("文件夹密码验证失败！");
         }
     }
@@ -160,7 +155,7 @@ public class FileNodeController {
                 is.close();
                 out.closeEntry();
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.error("压缩文件失败！", e);
             }
         }
     }
@@ -187,7 +182,7 @@ public class FileNodeController {
             }
             return Y9Result.failure("文件夹解密失败！未找到文件!");
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("文件夹解密失败！", e);
             return Y9Result.failure("文件夹解密失败！");
         }
     }
@@ -231,12 +226,12 @@ public class FileNodeController {
             }
             // response.setHeader("Content-Length", fileSize + "");
         } catch (Exception e) {
-            e.printStackTrace();
+           LOGGER.error("批量下载文件失败！", e);
         } finally {
             try {
                 zipos.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("关闭压缩流失败！", e);
             }
         }
     }
@@ -267,14 +262,14 @@ public class FileNodeController {
                 fileDownLoadRecordService.save(fdr);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("下载文件失败！", e);
         } finally {
             try {
                 if (os != null) {
                     os.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("关闭输出流失败！", e);
             }
         }
     }
@@ -360,7 +355,7 @@ public class FileNodeController {
             String info = y9FileStoreService.downloadFileToString(fileStoreId);
             return Y9Result.success(info, "获取文件内容失败");
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("获取文件内容失败！", e);
         }
         return Y9Result.success(null, "获取文件内容失败");
     }
@@ -523,14 +518,14 @@ public class FileNodeController {
                 return;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("下载文件失败！", e);
         } finally {
             try {
                 if (os != null) {
                     os.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("关闭输出流失败！", e);
             }
         }
     }
@@ -608,7 +603,7 @@ public class FileNodeController {
             }
             return Y9Result.failure("文件夹密码重置失败！未找到文件!");
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("文件夹密码重置失败！", e);
             return Y9Result.failure("文件夹密码重置失败！");
         }
 
@@ -692,7 +687,7 @@ public class FileNodeController {
                 fileNodeService.saveNode(fileNode);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("设置文件直链密码失败！", e);
         }
         return Y9Result.success(null, "设置文件直链密码成功");
     }

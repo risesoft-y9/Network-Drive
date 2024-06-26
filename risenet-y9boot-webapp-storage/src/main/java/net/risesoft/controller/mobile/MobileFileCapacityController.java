@@ -9,6 +9,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,14 +34,14 @@ import net.risesoft.y9.util.Y9Util;
  * @author yihong
  *
  */
+@RequiredArgsConstructor
+@Slf4j
 @RestController
 @RequestMapping("/mobile/fileCapacity")
 public class MobileFileCapacityController {
 
     protected Logger log = LoggerFactory.getLogger(MobileFileCapacityController.class);
-
-    @Autowired
-    private StorageCapacityService storageCapacityService;
+    private final StorageCapacityService storageCapacityService;
 
     /**
      * 获取文件空间管理列表
@@ -87,7 +89,7 @@ public class MobileFileCapacityController {
         } catch (Exception e) {
             ret_map.put(UtilConsts.SUCCESS, false);
             ret_map.put("msg", "获取文件空间管理列表失败");
-            e.printStackTrace();
+            LOGGER.error("获取文件空间管理列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(ret_map));
         return;
@@ -115,7 +117,7 @@ public class MobileFileCapacityController {
         } catch (Exception e) {
             ret_map.put(UtilConsts.SUCCESS, false);
             ret_map.put("msg", "获取存储空间信息失败");
-            e.printStackTrace();
+            LOGGER.error("获取存储空间信息失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(ret_map));
         return;
@@ -157,7 +159,7 @@ public class MobileFileCapacityController {
         } catch (Exception e) {
             ret_map.put(UtilConsts.SUCCESS, false);
             ret_map.put("msg", "存储空间设置更新失败");
-            e.printStackTrace();
+            LOGGER.error("存储空间设置更新失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(ret_map));
         return;

@@ -3,6 +3,7 @@ package net.risesoft.service.Impl;
 import java.util.Date;
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,13 +20,12 @@ import net.risesoft.support.FileNodeType;
 import net.risesoft.y9.Y9LoginUserHolder;
 
 @Service
+@RequiredArgsConstructor
 public class FileNodeCollectServiceImpl implements FileNodeCollectService {
 
-    @Autowired
-    private FileNodeCollectRepository fileNodeCollectRepository;
+    private final FileNodeCollectRepository fileNodeCollectRepository;
 
-    @Autowired
-    private FileNodeRepository fileNodeRepository;
+    private final FileNodeRepository fileNodeRepository;
 
     @Override
     public List<String> getCollectList(String userId, List<String> listNames) {

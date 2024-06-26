@@ -3,6 +3,7 @@ package net.risesoft.service.Impl;
 import java.util.Date;
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,13 +24,11 @@ import net.risesoft.y9.Y9LoginUserHolder;
 import y9.client.rest.platform.org.OrgUnitApiClient;
 
 @Service
+@RequiredArgsConstructor
 public class FileNodeShareServiceImpl implements FileNodeShareService {
 
-    @Autowired
-    private FileNodeShareRepository fileNodeShareRepository;
-
-    @Autowired
-    private OrgUnitApiClient orgUnitManager;
+    private final FileNodeShareRepository fileNodeShareRepository;
+    private final OrgUnitApiClient orgUnitManager;
 
     @Override
     public void cancelShare(String personId, List<String> fileNodeIdList) {

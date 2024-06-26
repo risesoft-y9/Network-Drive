@@ -1,5 +1,6 @@
 package net.risesoft.service.Impl;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,10 +15,10 @@ import net.risesoft.repository.StorageCapacityRepository;
 import net.risesoft.service.StorageCapacityService;
 
 @Service
+@RequiredArgsConstructor
 public class StorageCapacityServiceImpl implements StorageCapacityService {
 
-    @Autowired
-    private StorageCapacityRepository storageCapacityRepository;
+    private final StorageCapacityRepository storageCapacityRepository;
 
     @Override
     @Transactional(readOnly = false)

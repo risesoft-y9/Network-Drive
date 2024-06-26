@@ -2,6 +2,8 @@ package net.risesoft.controller;
 
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,15 +19,15 @@ import net.risesoft.y9public.service.Y9FileStoreService;
 /**
  * 增删数据库字段 数据做同步修改
  */
+@RequiredArgsConstructor
+@Slf4j
 @RestController
 @RequestMapping("/vue/sync")
 public class SyncController {
 
-    @Autowired
-    private FileNodeRepository fileNodeRepository;
+    private final FileNodeRepository fileNodeRepository;
 
-    @Autowired
-    private Y9FileStoreService y9FileStoreService;
+    private final Y9FileStoreService y9FileStoreService;
 
     @RequestMapping("/fileSize")
     public Y9Result<Object> fileSize() {

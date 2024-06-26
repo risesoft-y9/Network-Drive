@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,21 +30,17 @@ import net.risesoft.y9.Y9LoginUserHolder;
 import y9.client.rest.platform.org.OrgUnitApiClient;
 import y9.client.rest.platform.org.OrganizationApiClient;
 
+
+@RequiredArgsConstructor
+@Slf4j
 @RestController
 @RequestMapping(value = "/vue/org")
 public class OrgController {
 
-    @Autowired
-    private OrgUnitApiClient orgUnitManager;
-
-    @Autowired
-    private PositionApi positionApi;
-
-    @Autowired
-    private OrganizationApiClient organizationManager;
-
-    @Autowired
-    private PersonRoleApi personRoleApi;
+    private final OrgUnitApiClient orgUnitManager;
+    private final PositionApi positionApi;
+    private final OrganizationApiClient organizationManager;
+    private final PersonRoleApi personRoleApi;
 
     /**
      * 验证当前人的管理权限

@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,11 +24,12 @@ import net.risesoft.service.StorageCapacityService;
 import net.risesoft.y9.Y9LoginUserHolder;
 
 @RestController
+@RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/vue/capacity")
 public class StorageCapacityController {
 
-    @Autowired
-    private StorageCapacityService storageCapacityService;
+    private final StorageCapacityService storageCapacityService;
 
     /**
      * 获取存储信息
@@ -92,7 +95,7 @@ public class StorageCapacityController {
                 map.put("remainingLength", FileUtils.byteCountToDisplaySize(sc.getRemainingLength()));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("获取存储长度失败", e);
         }
         return Y9Result.success(map, "获取存储长度成功");
     }
@@ -121,7 +124,7 @@ public class StorageCapacityController {
                 storageCapacityService.save(sc);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("存储空间扩容失败", e);
         }
         return Y9Result.success(null, "存储空间扩容成功");
     }

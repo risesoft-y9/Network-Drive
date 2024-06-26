@@ -1,5 +1,7 @@
 package net.risesoft.controller;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -7,12 +9,13 @@ import org.springframework.web.bind.annotation.RestController;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.FileNodeCollectService;
 
+@RequiredArgsConstructor
+@Slf4j
 @RestController
 @RequestMapping("/vue/fileNodeCollect")
 public class FileNodeCollectController {
 
-    @Autowired
-    private FileNodeCollectService fileNodeCollectService;
+    private final FileNodeCollectService fileNodeCollectService;
 
     /**
      * 取消收藏
@@ -26,7 +29,7 @@ public class FileNodeCollectController {
             fileNodeCollectService.cancelCollect(fileId);
             return Y9Result.success("取消收藏成功！");
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("取消收藏失败！", e);
             return Y9Result.failure("取消收藏失败！");
         }
     }

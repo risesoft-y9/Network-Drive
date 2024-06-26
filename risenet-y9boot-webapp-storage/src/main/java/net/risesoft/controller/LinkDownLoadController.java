@@ -8,6 +8,8 @@ import java.util.Map;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,18 +26,15 @@ import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.util.mime.ContentDispositionUtil;
 import net.risesoft.y9public.service.Y9FileStoreService;
 
+@RequiredArgsConstructor
+@Slf4j
 @RestController
 @RequestMapping("/link")
 public class LinkDownLoadController {
 
-    @Autowired
-    private Y9FileStoreService y9FileStoreService;
-
-    @Autowired
-    private FileNodeService fileNodeService;
-
-    @Autowired
-    private FileDownLoadRecordService fileDownLoadRecordService;
+    private final Y9FileStoreService y9FileStoreService;
+    private final FileNodeService fileNodeService;
+    private final FileDownLoadRecordService fileDownLoadRecordService;
 
     @RequestMapping(value = "/df/{id}/{tenantId}")
     public void downloadFile(@PathVariable String id, @PathVariable String tenantId, HttpServletResponse response) {
@@ -60,14 +59,14 @@ public class LinkDownLoadController {
             fdr.setDownLoadMode("直链");
             fileDownLoadRecordService.save(fdr);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("下载文件失败", e);
         } finally {
             try {
                 if (os != null) {
                     os.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("关闭输出流失败", e);
             }
         }
     }

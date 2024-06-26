@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,18 +32,15 @@ import net.risesoft.service.FileNodeShareService;
 import net.risesoft.support.FileOptType;
 import net.risesoft.y9.Y9LoginUserHolder;
 
+@RequiredArgsConstructor
+@Slf4j
 @RestController
 @RequestMapping("/vue/fileNodeShare")
 public class FileNodeShareController {
 
-    @Autowired
-    private FileNodeShareService fileNodeShareService;
-
-    @Autowired
-    private FileNodeService fileNodeService;
-
-    @Autowired
-    private OrgUnitApi orgUnitApi;
+    private final FileNodeShareService fileNodeShareService;
+    private final FileNodeService fileNodeService;
+    private final OrgUnitApi orgUnitApi;
 
     @DeleteMapping
     public Y9Result<Object> cancelShare(@RequestParam(name = "fileNodeIds") List<String> fileNodeIdList) {

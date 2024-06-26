@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,23 +44,17 @@ import y9.client.rest.platform.org.PersonApiClient;
  * @author yihong
  *
  */
+@RequiredArgsConstructor
+@Slf4j
 @RestController
 @RequestMapping("/mobile/fileNodeShare")
 public class MobileFileShareController {
 
     protected Logger log = LoggerFactory.getLogger(MobileFileShareController.class);
-
-    @Autowired
-    private FileNodeService fileNodeService;
-
-    @Autowired
-    private FileNodeShareService fileNodeShareService;
-
-    @Autowired
-    private PersonApiClient personApiClient;
-
-    @Autowired
-    private OrgUnitApi orgUnitApi;
+    private final FileNodeService fileNodeService;
+    private final FileNodeShareService fileNodeShareService;
+    private final PersonApiClient personApiClient;
+    private final OrgUnitApi orgUnitApi;
 
     /**
      * 获取文件共享记录列表
@@ -97,7 +93,7 @@ public class MobileFileShareController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "获取文件列表失败");
-            e.printStackTrace();
+            LOGGER.error("获取文件列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -132,7 +128,7 @@ public class MobileFileShareController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "共享失败");
-            e.printStackTrace();
+            LOGGER.error("共享失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -166,7 +162,7 @@ public class MobileFileShareController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "公开失败");
-            e.printStackTrace();
+            LOGGER.error("公开失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -199,7 +195,7 @@ public class MobileFileShareController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "取消共享失败");
-            e.printStackTrace();
+            LOGGER.error("取消共享失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -252,7 +248,7 @@ public class MobileFileShareController {
         } catch (Exception e) {
             ret_map.put(UtilConsts.SUCCESS, false);
             ret_map.put("msg", "获取文件公开记录列表失败");
-            e.printStackTrace();
+            LOGGER.error("获取文件公开记录列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(ret_map));
         return;
@@ -284,7 +280,7 @@ public class MobileFileShareController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "删除公开人员失败");
-            e.printStackTrace();
+            LOGGER.error("删除公开人员失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;

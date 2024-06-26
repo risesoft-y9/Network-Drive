@@ -18,6 +18,8 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,28 +64,18 @@ import y9.client.rest.platform.org.PersonApiClient;
  *
  */
 @RestController
+@RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/mobile/fileNode")
 public class MobileFileNodeController {
 
     protected Logger log = LoggerFactory.getLogger(MobileFileNodeController.class);
-
-    @Autowired
-    private FileNodeService fileNodeService;
-
-    @Autowired
-    private FileNodeShareService fileNodeShareService;
-
-    @Autowired
-    private FileNodeCollectService fileNodeCollectService;
-
-    @Autowired
-    private FileDownLoadRecordService fileDownLoadRecordService;
-
-    @Autowired
-    private Y9FileStoreService y9FileStoreService;
-
-    @Autowired
-    private PersonApiClient personApiClient;
+    private final FileNodeService fileNodeService;
+    private final FileNodeShareService fileNodeShareService;
+    private final FileNodeCollectService fileNodeCollectService;
+    private final FileDownLoadRecordService fileDownLoadRecordService;
+    private final Y9FileStoreService y9FileStoreService;
+    private final PersonApiClient personApiClient;
 
     /**
      * 获取文件列表
@@ -136,7 +128,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "获取文件列表失败");
-            e.printStackTrace();
+            LOGGER.error("获取文件列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -194,7 +186,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "获取公共文件列表失败");
-            e.printStackTrace();
+            LOGGER.error("获取公共文件列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -254,7 +246,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "获取公共文件列表失败");
-            e.printStackTrace();
+            LOGGER.error("获取公共文件列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -318,7 +310,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "获取公共文件列表失败");
-            e.printStackTrace();
+            LOGGER.error("获取公共文件列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -345,7 +337,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "获取回收站列表失败");
-            e.printStackTrace();
+            LOGGER.error("获取回收站列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -371,7 +363,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "清空回收站失败");
-            e.printStackTrace();
+            LOGGER.error("清空回收站失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -400,7 +392,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "彻底删除回收站文件失败");
-            e.printStackTrace();
+            LOGGER.error("彻底删除回收站文件失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -428,7 +420,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "还原回收站文件失败");
-            e.printStackTrace();
+            LOGGER.error("还原回收站文件失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -461,7 +453,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "文件上传失败");
-            e.printStackTrace();
+            LOGGER.error("文件上传失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -500,7 +492,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "文件夹新建失败");
-            e.printStackTrace();
+            LOGGER.error("文件夹新建失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -562,12 +554,12 @@ public class MobileFileNodeController {
             }
             // response.setHeader("Content-Length", fileSize + "");
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("批量下载失败", e);
         } finally {
             try {
                 zipos.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("关闭压缩流失败", e);
             }
         }
     }
@@ -603,7 +595,7 @@ public class MobileFileNodeController {
                 is.close();
                 out.closeEntry();
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.error("下载文件失败", e);
             }
         }
     }
@@ -634,14 +626,14 @@ public class MobileFileNodeController {
                 fileDownLoadRecordService.save(fdr);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("下载文件失败", e);
         } finally {
             try {
                 if (os != null) {
                     os.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("关闭输出流失败", e);
             }
         }
     }
@@ -672,7 +664,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "删除失败");
-            e.printStackTrace();
+            LOGGER.error("删除失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -702,7 +694,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "移动失败");
-            e.printStackTrace();
+            LOGGER.error("移动失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -743,7 +735,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "重命名失败");
-            e.printStackTrace();
+            LOGGER.error("重命名失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -792,7 +784,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             ret_map.put(UtilConsts.SUCCESS, false);
             ret_map.put("msg", "获取公共文件下载记录列表失败");
-            e.printStackTrace();
+            LOGGER.error("获取公共文件下载记录列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(ret_map));
         return;
@@ -825,7 +817,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "文件夹加密失败");
-            e.printStackTrace();
+            LOGGER.error("文件夹加密失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -876,7 +868,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "文件夹密码取消失败");
-            e.printStackTrace();
+            LOGGER.error("文件夹密码取消失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -917,7 +909,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "文件夹密码重置失败");
-            e.printStackTrace();
+            LOGGER.error("文件夹密码重置失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -965,7 +957,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "文件夹密码验证失败");
-            e.printStackTrace();
+            LOGGER.error("文件夹密码验证失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -1010,7 +1002,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "文件夹解密失败");
-            e.printStackTrace();
+            LOGGER.error("文件夹解密失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -1040,7 +1032,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "收藏失败");
-            e.printStackTrace();
+            LOGGER.error("收藏失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
@@ -1071,7 +1063,7 @@ public class MobileFileNodeController {
         } catch (Exception e) {
             map.put(UtilConsts.SUCCESS, false);
             map.put("msg", "取消收藏失败");
-            e.printStackTrace();
+            LOGGER.error("取消收藏失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
         return;
