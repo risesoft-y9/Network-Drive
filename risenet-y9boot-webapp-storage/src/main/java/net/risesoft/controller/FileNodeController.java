@@ -20,10 +20,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +30,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.controller.dto.FileNodeDTO;
 import net.risesoft.controller.dto.FileNodeListDTO;
@@ -226,7 +226,7 @@ public class FileNodeController {
             }
             // response.setHeader("Content-Length", fileSize + "");
         } catch (Exception e) {
-           LOGGER.error("批量下载文件失败！", e);
+            LOGGER.error("批量下载文件失败！", e);
         } finally {
             try {
                 zipos.close();

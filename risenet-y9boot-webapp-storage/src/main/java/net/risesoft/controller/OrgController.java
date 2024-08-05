@@ -5,16 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.api.platform.org.PositionApi;
 import net.risesoft.api.platform.permission.PersonRoleApi;
@@ -29,7 +29,6 @@ import net.risesoft.y9.Y9LoginUserHolder;
 
 import y9.client.rest.platform.org.OrgUnitApiClient;
 import y9.client.rest.platform.org.OrganizationApiClient;
-
 
 @RequiredArgsConstructor
 @Slf4j
