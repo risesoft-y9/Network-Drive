@@ -18,7 +18,7 @@ public class FileNodeCollectController {
     private final FileNodeCollectService fileNodeCollectService;
 
     /**
-     * 取消收藏
+     * 取消收藏文件或者文件夹
      *
      * @param fileId
      * @return
