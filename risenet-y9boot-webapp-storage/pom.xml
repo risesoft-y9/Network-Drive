@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.risesoft</groupId>
-        <artifactId>y9-module-storage</artifactId>
+        <artifactId>y9-storage</artifactId>
         <version>v9.6.7-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -13,7 +13,7 @@
     <artifactId>risenet-y9boot-webapp-storage</artifactId>
     <version>v9.6.7-SNAPSHOT</version>
     <packaging>war</packaging>
- 
+
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
