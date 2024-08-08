@@ -5,17 +5,72 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.risesoft</groupId>
-        <artifactId>y9-digitalbase-pro-webapp</artifactId>
+        <artifactId>y9-digitalbase-parent</artifactId>
         <version>v9.6.7-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../y9-digitalbase/y9-digitalbase-parent/pom.xml</relativePath>
     </parent>
-    <groupId>net.risesoft</groupId>
-    <artifactId>y9-module-storage</artifactId>
+    <artifactId>y9-storage</artifactId>
     <packaging>pom</packaging>
-    <version>v9.6.7-SNAPSHOT</version>
- 
+    <name>y9-flowable</name>
+    <description>RiseSoft/WorkFlow Engine parent pom.xml file</description>
+    <url>https://gitee.com/risesoft-y9/y9-storage</url>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License (GPL) version 3.0</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.en.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>qinman</name>
+            <email>qinman@risesoft.net</email>
+            <organization>risesoft</organization>
+            <organizationUrl>https://www.risesoft.net</organizationUrl>
+        </developer>
+
+        <developer>
+            <name>yihong</name>
+            <email>yihong@risesoft.net</email>
+            <organization>risesoft</organization>
+            <organizationUrl>https://www.risesoft.net</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://gitee.com/risesoft-y9/y9-storage</url>
+        <connection>https://gitee.com/risesoft-y9/y9-storage</connection>
+        <developerConnection>https://gitee.com/risesoft-y9/y9-storage</developerConnection>
+    </scm>
+
     <modules>
+        <module>../y9-digitalbase</module>
         <module>risenet-y9boot-webapp-storage</module>
     </modules>
 
+    <profiles>
+        <profile>
+            <id>deploy-maven-central</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <configuration>
+                            <excludeArtifacts>
+                                <artifact>y9-module-flowableui</artifact>
+                                <artifact>risenet-y9boot-webapp-flowableui-position</artifact>
+                                <artifact>y9-module-jodconverter</artifact>
+                                <artifact>risenet-y9boot-webapp-jodconverter</artifact>
+                                <artifact>risenet-y9boot-webapp-processadmin</artifact>
+                                <artifact>risenet-y9boot-webapp-itemadmin</artifact>
+                            </excludeArtifacts>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
