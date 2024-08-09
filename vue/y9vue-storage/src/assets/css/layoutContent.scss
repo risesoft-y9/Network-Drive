@@ -1,0 +1,149 @@
+.tree-region {
+    background-color: var(--el-bg-color); //
+    padding: 20px;
+    border-radius:8px;
+    box-shadow: var(--el-box-shadow-light);
+}
+.center-region {
+    background-color: var(--el-color-primary-light-9); //
+    margin: auto;
+    width: 1000px;
+}
+.content {
+    width: 1000px;
+    margin: 0 auto;
+    & > .treeHeader {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        & > .left,
+        .right {
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            align-items: center;
+            & > button:hover {
+                background-color: rgb(83, 97, 171);
+            }
+            & > button {
+                display: flex;
+                line-height: 25px;
+                border: 1px solid var(--el-color-primary);
+                border-radius: 3px;
+                background-color: var(--el-color-primary);
+                font-size: 12px;
+                color: #fff;
+                padding-left: 10px;
+                margin: 5px 0;
+                cursor: pointer;
+                span {
+                    margin: 0 10px 0 5px;
+                }
+            }
+            //
+            & > .addorg {
+                margin-right: 15px;
+            }
+            // 刷新
+            & > .refreshbtn:nth-child(1) {
+                color: var(--el-color-primary);
+                background-color: var(--el-color-primary-light-9);
+            }
+            // 检索框
+            & > .search {
+                i {
+                    font-size: 13px;
+                    position: relative;
+                    left: 23px;
+                    top: 2px;
+                    color: #cccccc;
+                    // color: var(--el-color-primary); // 搜索图标的颜色
+                }
+                input {
+                    width: 200px;
+                    height: 25px;
+                    padding-left: 30px;
+                    border: 0px;
+                    border-radius: 13px;
+                    // background-color: var(--el-color-primary-light-9);
+                    &::placeholder {
+                        // background-color: var(--el-color-primary-light-9);
+                        font-size: 12px;
+                        color: #666;
+                        // color: var(--el-color-primary); // 搜索提示的颜色
+                    }
+                    &:focus {
+                        font-size: 14px;
+                        color: #333; // 聚焦后的字体颜色
+                        border: 1px solid var(--el-color-primary);
+                    }
+                }
+            }
+        }
+        & > .right {
+            & > button:nth-child(1) {
+                margin-right: 0;
+            }
+        }
+    }
+}
+
+.contentblock{
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: var(--el-box-shadow-light);
+  }
+
+.contentHeader {
+    justify-content: space-between;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.my-content {
+    width: 35%;
+}
+
+.component {
+    & > .title-region {
+        font-size: 18px;
+        margin: 10px 0;
+    }
+
+    & > .button-region {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin-bottom: 5px;
+
+        & > .left, & > .right {
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            align-items: center;
+
+            & i {
+                margin-right: 5px;
+            }
+
+            & .y9-upload {
+                margin-left: 12px;
+            }
+        }
+
+    }
+
+    & > .content-region {
+        padding: 10px;
+        background-color: #fff;
+        border-radius: 10px;
+    }
+}
+
+.y9-el-descriptions-item-label {
+    width: 120px;
+}

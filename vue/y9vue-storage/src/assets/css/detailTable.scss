@@ -1,0 +1,57 @@
+.layui-table {
+	width: 100%;
+	color: #000;
+	margin: 5px auto;
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+.layui-table td, .layui-table th {
+	position: relative;
+	padding: 8px;
+	min-height: 20px;
+	line-height: 20px;
+	font-size: 14px;
+}
+.layui-table td, .layui-table th, .layui-table[lay-skin="line"], .layui-table[lay-skin="row"] {
+	border-width: 1px;
+	border-style: solid;
+	border-color: #ebeef5;
+}
+
+.layui-table .lefttd {
+	background-color: #f5f7fa;
+	text-align: right;
+	width: 10%;
+}
+
+.layui-table .rigthtd {
+	width: 40%;
+}
+
+.layui-table td, .layui-table th {
+	position: revert;
+}
+
+.layui-table input{
+	border: none;
+	width: 100%;
+	line-height: 22px;
+}
+.layui-table input:focus{
+	border: none;
+	outline:none;
+}
+caption{
+	margin-bottom: 10px;
+}
+.textboxArea {
+	border: none;
+	background-color: Transparent;
+	font-style: normal;
+	width: 99%;
+	height: 80px;
+	overflow-y: hidden;
+	outline: none;
+	resize: none;
+  font-weight: inherit;
+}
