@@ -34,19 +34,6 @@ public class FileNodeCollectController {
         }
     }
 
-    @RequestMapping("/getCollectList")
-    public Y9Result<Object> getCollectList() {
-        // UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
-        // List<String> listNames = new ArrayList<String>();
-        // listNames.add(FileListType.MY.getValue());
-        // listNames.add(FileListType.DEPT.getValue());
-        // listNames.add(FileListType.PUBLIC.getValue());
-        // listNames.add(FileListType.SHARED.getValue());
-        // List<String> collectList = fileNodeCollectService.getCollectList(userInfo.getPersonId(),listNames);
-        // y9Result.setData(collectList);
-        return Y9Result.success("获取收藏数据成功！");
-    }
-
     /**
      * 收藏文件或者文件夹
      *
