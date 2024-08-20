@@ -1,17 +1,13 @@
 spring:
-    application:
-        name: storage
-    profiles:
-        active: prod
     cloud:
         nacos:
             config:
                 enabled: true
-                namespace: vue
                 group: DEFAULT_GROUP
-                server-addr: https://vue.youshengyun.com:443
+                namespace: test
+                server-addr: nacos:8848
                 username: nacos
-                password: Risesoft@2022
+                password: Risesoft@2024
     config:
         import:
             - optional:nacos:storage.yml
