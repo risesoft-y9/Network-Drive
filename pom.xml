@@ -7,7 +7,7 @@
         <groupId>net.risesoft</groupId>
         <artifactId>y9-digitalbase</artifactId>
         <version>v9.6.7-SNAPSHOT</version>
-        <relativePath>../y9-digitalbase/pom.xml</relativePath>
+        <relativePath/>
     </parent>
     <artifactId>y9-storage</artifactId>
     <packaging>pom</packaging>
@@ -55,7 +55,6 @@
     </scm>
 
     <modules>
-        <module>../y9-digitalbase</module>
         <module>risenet-y9boot-webapp-storage</module>
 
     </modules>
