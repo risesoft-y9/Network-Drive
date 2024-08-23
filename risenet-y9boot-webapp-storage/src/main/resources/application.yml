@@ -4,8 +4,6 @@ management:
             exposure:
                 include: '*'
 server:
-    intranet:
-        ip: 192.168.x.x,10.168.x.x
     port: 7055
     servlet:
         encoding:
@@ -135,6 +133,7 @@ spring:
         timeout: 10000
 y9:
     systemName: storage
+    internalIp: 192.168.x.x,10.0.x.x,172.20.x.x
     app:
         storage:
             #单次上传限制/字节 120Mb
