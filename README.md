@@ -17,6 +17,10 @@
 
 网络硬盘是通过存储、分类、检索、分享、协作、下发、回收等方式管理文档、文件、图片、音频、视频等资料的工具。网络硬盘擅长在国产的私有化环境中，管控文档权限、分配存储空间、安全加密、分享共享，同时可以完成一定轻量级的文件任务收发。网络硬盘是一个完全开源的项目，无商业版，但是需要依赖开源的数字底座进行人员岗位管控。[系统在线体验----->>>>>](#在线体验)
 
+## 开源地址
+
+源码地址：<a href="https://github.com/y9digitalbase/Network-Drive" target="_blank">https://github.com/y9digitalbase/Network-Drive </a>
+
 ## 源码目录
 
 ```
@@ -152,6 +156,16 @@ vue -- 前端工程
 ## 文档专区
 
 待补充
+
+## 网络硬盘截图
+
+![文件列表](https://vue.youshengyun.com/files/img/网络硬盘文件列表.png)
+
+![空间管理](https://vue.youshengyun.com/files/img/网络硬盘空间管理.png)
+
+![文件共享](https://vue.youshengyun.com/files/img/网络硬盘文件共享.png)
+
+![生成直链](https://vue.youshengyun.com/files/img/网络硬盘生成直链.png)
 
 ## 同构开源项目
 
