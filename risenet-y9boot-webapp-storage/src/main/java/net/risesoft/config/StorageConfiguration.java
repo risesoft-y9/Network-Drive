@@ -16,25 +16,7 @@ import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class StorageConfiguration implements WebMvcConfigurer {
-
-    private static final Logger log = LoggerFactory.getLogger(StorageConfiguration.class);
-
-    // starter-log工程用到了RequestContextHolder
-    // https://github.com/spring-projects/spring-boot/issues/2637
-    // https://github.com/spring-projects/spring-boot/issues/4331
-    @Bean
-    public static RequestContextFilter requestContextFilter() {
-        return new OrderedRequestContextFilter();
-    }
-
-    @Override
-    public void addViewControllers(ViewControllerRegistry registry) {}
-
-    @Override
-    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
-        configurer.enable();
-    }
+public class StorageConfiguration {
 
     @Bean
     public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
@@ -45,15 +27,6 @@ public class StorageConfiguration implements WebMvcConfigurer {
         converter.setSupportedMediaTypes(supportedMediaTypes);
         return converter;
     }
-
-    // @Override
-    // public void addCorsMappings(CorsRegistry registry){
-    // registry.addMapping("/**")
-    // .allowedOrigins("*")
-    // .allowCredentials(true)
-    // .allowedMethods("GET","POST","DELETE","PUT","OPTIONS")
-    // .maxAge(3600);
-    // }
 
     /*
      * @Bean public FilterRegistrationBean<Y9SkipSSOFilter> y9Oauth2ResourceFilter() { final FilterRegistrationBean<Y9SkipSSOFilter> filterBean = new FilterRegistrationBean<>(); filterBean.setFilter(new Y9SkipSSOFilter()); filterBean.setAsyncSupported(false);
