@@ -23,7 +23,7 @@ import net.risesoft.y9.json.Y9JsonUtil;
 import net.risesoft.y9.util.Y9Util;
 
 /**
- * 文件空间处理接口
+ * 文件存储空间管理接口
  *
  * @author yihong
  *
@@ -34,8 +34,8 @@ import net.risesoft.y9.util.Y9Util;
 @RequestMapping("/linkMobile")
 public class MobileFileLinkController {
 
-    protected Logger log = LoggerFactory.getLogger(MobileFileLinkController.class);
     private final FileNodeService fileNodeService;
+    protected Logger log = LoggerFactory.getLogger(MobileFileLinkController.class);
 
     /**
      * 设置直链文件密码
@@ -73,7 +73,6 @@ public class MobileFileLinkController {
             LOGGER.error("设置文件直链密码失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -113,6 +112,5 @@ public class MobileFileLinkController {
             LOGGER.error("密码验证失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 }

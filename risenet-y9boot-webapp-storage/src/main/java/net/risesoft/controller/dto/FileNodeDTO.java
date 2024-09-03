@@ -20,16 +20,7 @@ import net.risesoft.y9.util.Y9ModelConvertUtil;
 @NoArgsConstructor
 public class FileNodeDTO {
 
-    public static FileNodeDTO from(FileNode fileNode) {
-        return Y9ModelConvertUtil.convert(fileNode, FileNodeDTO.class);
-    }
-
-    public static List<FileNodeDTO> from(List<FileNode> fileNodeList) {
-        return Y9ModelConvertUtil.convert(fileNodeList, FileNodeDTO.class);
-    }
-
     private String id;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
@@ -53,8 +44,15 @@ public class FileNodeDTO {
     private boolean collect;
     private boolean owner;
     private String collectRoute;
-
     private FileNodeDTO parentFileNode;
+
+    public static FileNodeDTO from(FileNode fileNode) {
+        return Y9ModelConvertUtil.convert(fileNode, FileNodeDTO.class);
+    }
+
+    public static List<FileNodeDTO> from(List<FileNode> fileNodeList) {
+        return Y9ModelConvertUtil.convert(fileNodeList, FileNodeDTO.class);
+    }
 
     public String getFileSuffix() {
         if (!FileNodeType.FOLDER.getValue().equals(fileType)) {
@@ -71,6 +69,5 @@ public class FileNodeDTO {
 
     public void setUserId(String userId) {
         this.owner = Y9LoginUserHolder.getUserInfo().getPersonId().equals(userId);
-        // this.owner = false;
     }
 }
