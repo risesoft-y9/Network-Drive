@@ -148,7 +148,7 @@ vue -- 前端工程
 ### 网络硬盘
 
 **演示地址
-**：<a href="https://test.youshengyun.com/storage-open/" target="_blank">https://test.youshengyun.com/storage-open/ </a>
+**：<a href="https://demo.youshengyun.com/storage/" target="_blank">https://demo.youshengyun.com/storage/ </a>
 
 > 演示账号：测试人员 密码：Risesoft@2024
 >
