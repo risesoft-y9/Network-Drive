@@ -9,6 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.FileNodeCollectService;
 
+/**
+ * 文件收藏接口
+ *
+ * @author yihong
+ *
+ */
 @RequiredArgsConstructor
 @Slf4j
 @RestController

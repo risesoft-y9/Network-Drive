@@ -23,6 +23,12 @@ import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.StorageCapacityService;
 import net.risesoft.y9.Y9LoginUserHolder;
 
+/**
+ * 文件存储空间接口
+ *
+ * @author yihong
+ *
+ */
 @RestController
 @RequiredArgsConstructor
 @Slf4j

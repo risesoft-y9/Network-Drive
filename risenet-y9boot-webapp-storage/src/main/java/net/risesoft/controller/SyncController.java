@@ -55,4 +55,5 @@ public class SyncController {
         }
         return Y9Result.success();
     }
+
 }

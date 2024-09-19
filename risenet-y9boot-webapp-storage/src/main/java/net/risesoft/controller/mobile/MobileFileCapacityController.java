@@ -29,7 +29,7 @@ import net.risesoft.y9.json.Y9JsonUtil;
 import net.risesoft.y9.util.Y9Util;
 
 /**
- * 文件空间处理接口
+ * 文件空间管理接口
  *
  * @author yihong
  *
@@ -40,8 +40,8 @@ import net.risesoft.y9.util.Y9Util;
 @RequestMapping("/mobile/fileCapacity")
 public class MobileFileCapacityController {
 
-    protected Logger log = LoggerFactory.getLogger(MobileFileCapacityController.class);
     private final StorageCapacityService storageCapacityService;
+    protected Logger log = LoggerFactory.getLogger(MobileFileCapacityController.class);
 
     /**
      * 获取文件空间管理列表
@@ -92,7 +92,6 @@ public class MobileFileCapacityController {
             LOGGER.error("获取文件空间管理列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(ret_map));
-        return;
     }
 
     /**
@@ -120,7 +119,6 @@ public class MobileFileCapacityController {
             LOGGER.error("获取存储空间信息失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(ret_map));
-        return;
     }
 
     /**
@@ -162,6 +160,5 @@ public class MobileFileCapacityController {
             LOGGER.error("存储空间设置更新失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(ret_map));
-        return;
     }
 }

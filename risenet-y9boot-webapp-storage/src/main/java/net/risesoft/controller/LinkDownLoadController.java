@@ -26,6 +26,12 @@ import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.util.mime.ContentDispositionUtil;
 import net.risesoft.y9public.service.Y9FileStoreService;
 
+/**
+ * 文件直链接口
+ *
+ * @author yihong
+ *
+ */
 @RequiredArgsConstructor
 @Slf4j
 @RestController
@@ -36,6 +42,13 @@ public class LinkDownLoadController {
     private final FileNodeService fileNodeService;
     private final FileDownLoadRecordService fileDownLoadRecordService;
 
+    /**
+     * 文件直链下载
+     * 
+     * @param id
+     * @param tenantId
+     * @param response
+     */
     @RequestMapping(value = "/df/{id}/{tenantId}")
     public void downloadFile(@PathVariable String id, @PathVariable String tenantId, HttpServletResponse response) {
         ServletOutputStream os = null;
@@ -71,6 +84,14 @@ public class LinkDownLoadController {
         }
     }
 
+    /**
+     * 文件直链密码验证
+     *
+     * @param id
+     * @param pwd
+     * @param tenantId
+     * @return
+     */
     @RequestMapping(value = "/checkPwd")
     public Y9Result<Object> checkPwd(String id, String pwd, String tenantId) {
         Map<String, Object> map = new HashMap<String, Object>();

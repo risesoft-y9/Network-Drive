@@ -69,13 +69,13 @@ import y9.client.rest.platform.org.PersonApiClient;
 @RequestMapping("/mobile/fileNode")
 public class MobileFileNodeController {
 
-    protected Logger log = LoggerFactory.getLogger(MobileFileNodeController.class);
     private final FileNodeService fileNodeService;
     private final FileNodeShareService fileNodeShareService;
     private final FileNodeCollectService fileNodeCollectService;
     private final FileDownLoadRecordService fileDownLoadRecordService;
     private final Y9FileStoreService y9FileStoreService;
     private final PersonApiClient personApiClient;
+    protected Logger log = LoggerFactory.getLogger(MobileFileNodeController.class);
 
     /**
      * 获取文件列表
@@ -131,7 +131,6 @@ public class MobileFileNodeController {
             LOGGER.error("获取文件列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -189,7 +188,6 @@ public class MobileFileNodeController {
             LOGGER.error("获取公共文件列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -249,7 +247,6 @@ public class MobileFileNodeController {
             LOGGER.error("获取公共文件列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -313,7 +310,6 @@ public class MobileFileNodeController {
             LOGGER.error("获取公共文件列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -340,7 +336,6 @@ public class MobileFileNodeController {
             LOGGER.error("获取回收站列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -366,7 +361,6 @@ public class MobileFileNodeController {
             LOGGER.error("清空回收站失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -395,7 +389,6 @@ public class MobileFileNodeController {
             LOGGER.error("彻底删除回收站文件失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -423,7 +416,6 @@ public class MobileFileNodeController {
             LOGGER.error("还原回收站文件失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -456,7 +448,6 @@ public class MobileFileNodeController {
             LOGGER.error("文件上传失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -495,11 +486,10 @@ public class MobileFileNodeController {
             LOGGER.error("文件夹新建失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
-     * 单个或者多个文件下载
+     * 下载单个或者多个文件
      * 
      * @param tenantId 租户id
      * @param userId 用户id
@@ -667,7 +657,6 @@ public class MobileFileNodeController {
             LOGGER.error("删除失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -697,7 +686,6 @@ public class MobileFileNodeController {
             LOGGER.error("移动失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -738,7 +726,6 @@ public class MobileFileNodeController {
             LOGGER.error("重命名失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -787,7 +774,6 @@ public class MobileFileNodeController {
             LOGGER.error("获取公共文件下载记录列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(ret_map));
-        return;
     }
 
     /**
@@ -820,7 +806,6 @@ public class MobileFileNodeController {
             LOGGER.error("文件夹加密失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -871,7 +856,6 @@ public class MobileFileNodeController {
             LOGGER.error("文件夹密码取消失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -912,7 +896,6 @@ public class MobileFileNodeController {
             LOGGER.error("文件夹密码重置失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -960,7 +943,6 @@ public class MobileFileNodeController {
             LOGGER.error("文件夹密码验证失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -1005,7 +987,6 @@ public class MobileFileNodeController {
             LOGGER.error("文件夹解密失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -1035,7 +1016,6 @@ public class MobileFileNodeController {
             LOGGER.error("收藏失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -1066,6 +1046,5 @@ public class MobileFileNodeController {
             LOGGER.error("取消收藏失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 }

@@ -23,7 +23,7 @@ import net.risesoft.y9.json.Y9JsonUtil;
 import net.risesoft.y9.util.Y9Util;
 
 /**
- * 文件存储空间管理接口
+ * 文件直链接口
  *
  * @author yihong
  *

@@ -32,6 +32,12 @@ import net.risesoft.service.FileNodeShareService;
 import net.risesoft.support.FileOptType;
 import net.risesoft.y9.Y9LoginUserHolder;
 
+/**
+ * 文件共享接口
+ *
+ * @author yihong
+ *
+ */
 @RequiredArgsConstructor
 @Slf4j
 @RestController
@@ -42,6 +48,12 @@ public class FileNodeShareController {
     private final FileNodeService fileNodeService;
     private final OrgUnitApi orgUnitApi;
 
+    /**
+     * 取消分享
+     * 
+     * @param fileNodeIdList
+     * @return
+     */
     @DeleteMapping
     public Y9Result<Object> cancelShare(@RequestParam(name = "fileNodeIds") List<String> fileNodeIdList) {
         fileNodeService.cancelShare(fileNodeIdList);
@@ -61,6 +73,14 @@ public class FileNodeShareController {
         return Y9Result.success(null, "删除公开人员成功");
     }
 
+    /**
+     * 获取文件公开记录列表
+     * 
+     * @param fileId
+     * @param page
+     * @param rows
+     * @return
+     */
     @GetMapping(value = "/getFilePublicRecord")
     public Y9Page<Map<String, Object>> getFilePublicRecord(String fileId, int page, int rows) {
         String tenantId = Y9LoginUserHolder.getTenantId();
@@ -85,6 +105,11 @@ public class FileNodeShareController {
         return Y9Page.success(page, dlList.getTotalPages(), dlList.getTotalElements(), items);
     }
 
+    /**
+     * 获取我的分享列表
+     * 
+     * @return
+     */
     @GetMapping("/myList")
     public Y9Result<List<FileNodeShareDTO>> myShareList() {
         List<FileNodeShareDTO> fileNodeShareDTOList = new ArrayList<>();
@@ -109,6 +134,13 @@ public class FileNodeShareController {
         return Y9Result.success(fileNodeShareDTOList);
     }
 
+    /**
+     * 公开文件
+     * 
+     * @param fileNodeIdList
+     * @param orgUnitIdList
+     * @return
+     */
     @PostMapping("/publicTo")
     public Y9Result<Object> publicTo(@RequestParam(name = "fileNodeIds") List<String> fileNodeIdList,
         @RequestParam(name = "orgUnitIds") List<String> orgUnitIdList) {
@@ -116,6 +148,13 @@ public class FileNodeShareController {
         return Y9Result.success();
     }
 
+    /**
+     * 分享文件
+     * 
+     * @param fileNodeIdList
+     * @param orgUnitIdList
+     * @return
+     */
     @PostMapping("/share")
     public Y9Result<Object> share(@RequestParam(name = "fileNodeIds") List<String> fileNodeIdList,
         @RequestParam(name = "orgUnitIds") List<String> orgUnitIdList) {

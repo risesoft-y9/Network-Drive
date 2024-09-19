@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -69,6 +70,12 @@ public class FileNodeController {
     private final FileNodeShareService fileNodeShareService;
     private final FileNodeCollectService fileNodeCollectService;
 
+    /**
+     * 取消文件夹密码
+     * 
+     * @param folder
+     * @return
+     */
     @RequestMapping(value = "/cancelFolderPassword")
     public Y9Result<String> cancelFolderPassword(FileNode folder) {
         try {
@@ -187,6 +194,13 @@ public class FileNodeController {
         }
     }
 
+    /**
+     * 下载单个或者多个文件
+     * 
+     * @param positionId
+     * @param idList
+     * @param response
+     */
     @RequestMapping(value = "/downloadFile")
     public void downloadFile(@RequestParam(required = false) String positionId,
         @RequestParam(name = "ids") List<String> idList, HttpServletResponse response) {
@@ -285,6 +299,16 @@ public class FileNodeController {
         return Y9Result.success(null, "成功清空回收站");
     }
 
+    /**
+     * 获取收藏列表
+     * 
+     * @param positionId
+     * @param id
+     * @param searchName
+     * @param listType
+     * @param orderRequest
+     * @return
+     */
     @GetMapping(value = "/getCollectList")
     public Y9Result<FileNodeListDTO> getCollectList(@RequestHeader("positionId") String positionId,
         @RequestParam(required = false) String id, @RequestParam(required = false) String searchName,
@@ -298,7 +322,6 @@ public class FileNodeController {
         List<String> collectList = new ArrayList<String>();
         List<FileNode> subFileList = new ArrayList<FileNode>();
         if (StringUtils.isNotBlank(id) && !listNames.contains(id)) {
-            // collectList = fileNodeCollectService.openCollectFolder(id,listType);
             subFileList = fileNodeService.subCollectList(id, searchName, listType, orderRequest);
         } else {
             collectList = fileNodeCollectService.getCollectList(userInfo.getPersonId(), listNames);
@@ -349,6 +372,12 @@ public class FileNodeController {
         return Y9Page.success(page, dlList.getTotalPages(), dlList.getTotalElements(), items);
     }
 
+    /**
+     * 获取txt文件的内容
+     * 
+     * @param fileStoreId
+     * @return
+     */
     @RequestMapping(value = "/getFileText")
     public Y9Result<Object> getFileText(String fileStoreId) {
         try {
@@ -361,12 +390,12 @@ public class FileNodeController {
     }
 
     /**
-     * 获取我的回收站的记录
+     * 获取我的回收站的文件列表
      *
      * @return
      */
     @RequestMapping(value = "/deletedList")
-    public Y9Result<List<FileNodeDTO>> getMyRecycle() {
+    public Y9Result<List<FileNodeDTO>> deletedList() {
         List<FileNode> fileNodeList = fileNodeService.deletedList(Y9LoginUserHolder.getUserInfo().getPersonId());
         return Y9Result.success(FileNodeDTO.from(fileNodeList));
     }
@@ -384,7 +413,7 @@ public class FileNodeController {
     }
 
     /**
-     * 加载所有文件
+     * 根据文件类型和列表类型获取文件列表
      *
      * @param id
      * @param orderRequest
@@ -400,18 +429,13 @@ public class FileNodeController {
             fileNodeService.subList(positionId, id, fileNodeType, searchName, listType, orderRequest);
         List<FileNodeDTO> fileNodeDTOList = FileNodeDTO.from(subFileList);
 
-        // if (StringUtils.isNotBlank(searchName)) {
         for (FileNodeDTO fileNodeDTO : fileNodeDTOList) {
-            // FileNode parentFileNode = fileNodeService.getParent(fileNodeDTO.getParentId());
-            // fileNodeDTO.setParentFileNode(FileNodeDTO.from(parentFileNode));
             boolean isCollect = fileNodeCollectService.findByCollectUserIdAndFileIdAndListName(userInfo.getPersonId(),
                 fileNodeDTO.getId(), fileNodeDTO.getListType());
             fileNodeDTO.setCollect(isCollect);
         }
-        // }
 
         List<FileNode> recursiveToRootFileNodeList = fileNodeService.recursiveToRoot(id);
-
         FileNodeListDTO fileNodeListDTO = new FileNodeListDTO();
         fileNodeListDTO.setSubFileNodeList(fileNodeDTOList);
         fileNodeListDTO.setRecursiveToRootFileNodeList(FileNodeDTO.from(recursiveToRootFileNodeList));
@@ -443,7 +467,7 @@ public class FileNodeController {
     }
 
     /**
-     * 软删除文件
+     * 删除文件（标记删除）
      *
      * @param idList
      * @return
@@ -486,12 +510,26 @@ public class FileNodeController {
         return Y9Result.success(fileNodeListDTO);
     }
 
+    /**
+     * 移动文件
+     * 
+     * @param idList
+     * @param targetId
+     * @return
+     */
     @PostMapping(value = "/move")
     public Y9Result<Object> moveTo(@RequestParam(name = "ids") List<String> idList, String targetId) {
         fileNodeService.move(idList, targetId);
         return Y9Result.success(null, "移动成功！");
     }
 
+    /**
+     * 打开文件
+     * 
+     * @param fileStoreId
+     * @param request
+     * @param response
+     */
     @RequestMapping(value = "/openFile")
     public void openFile(String fileStoreId, HttpServletRequest request, HttpServletResponse response) {
         ServletOutputStream os = null;
@@ -502,10 +540,10 @@ public class FileNodeController {
                 String y9FileStoreId = f.getId();
                 String userAgent = request.getHeader("User-Agent");
                 if (userAgent.contains("MSIE") || userAgent.contains("Trident")) {
-                    fileName = URLEncoder.encode(fileName, "UTF-8");
+                    fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8);
                     fileName = fileName.replaceAll("\\+", "%20");
                 } else {
-                    fileName = new String(fileName.getBytes("UTF-8"), "ISO8859-1");
+                    fileName = new String(fileName.getBytes(StandardCharsets.UTF_8), "ISO8859-1");
                 }
 
                 response.reset();
@@ -515,7 +553,6 @@ public class FileNodeController {
 
                 os = response.getOutputStream();
                 y9FileStoreService.downloadFileToOutputStream(y9FileStoreId, os);
-                return;
             }
         } catch (Exception e) {
             LOGGER.error("下载文件失败！", e);
@@ -693,7 +730,7 @@ public class FileNodeController {
     }
 
     /**
-     * 默认顶节点
+     * 获取默认顶节点
      *
      * @return
      */
