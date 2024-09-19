@@ -54,6 +54,13 @@ public interface FileNodeService {
     void restore(List<String> idList);
 
     /**
+     * 当前节点是否存在同名文件
+     *
+     * @param fileNode
+     */
+    boolean isFileNodeExists(String parentId, String fileName);
+
+    /**
      * 保存文件夹实体
      *
      * @param fileNode

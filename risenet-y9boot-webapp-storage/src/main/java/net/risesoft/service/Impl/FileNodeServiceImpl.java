@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -83,6 +84,10 @@ public class FileNodeServiceImpl implements FileNodeService {
     private final PositionApi positionApi;
     private final Y9FileStoreService y9FileStoreService;
     private final StorageCapacityService storageCapacityService;
+    @Value("${y9.app.storage.defaultStorageCapacity}")
+    private String defaultStorageCapacity;
+    @Value("${y9.app.storage.singleUploadLimit}")
+    private String singleUploadLimit;
 
     @Override
     public void cancelShare(List<String> fileNodeIdList) {
@@ -161,7 +166,8 @@ public class FileNodeServiceImpl implements FileNodeService {
         }
     }
 
-    private boolean isFileNodeExists(String parentId, String fileName) {
+    @Override
+    public boolean isFileNodeExists(String parentId, String fileName) {
         FileNodeSpecification specification =
             new FileNodeSpecification(Y9LoginUserHolder.getPersonId(), parentId, fileName, false);
         List<FileNode> fileNodeList = fileNodeRepository.findAll(specification);
@@ -337,9 +343,9 @@ public class FileNodeServiceImpl implements FileNodeService {
             userName = userInfo.getName();
         String fileName = FilenameUtils.getName(file.getOriginalFilename());
         String fileExtension = FilenameUtils.getExtension(fileName).toLowerCase();
-        String defaultStorageCapacity = Y9Context.getProperty("y9.app.storage.defaultStorageCapacity");
+
         try {
-            long size = Long.parseLong(Y9Context.getProperty("y9.app.storage.singleUploadLimit"));
+            long size = Long.parseLong(singleUploadLimit);
             if (file.getSize() > size) {
                 map.put("msg", "上传文件的大小超过单次上传限制120M?");
                 map.put("success", false);
