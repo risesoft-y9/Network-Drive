@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "Y9_ARCHIVES_RECORDING_FILE")
 @org.hibernate.annotations.Table(comment = "档案录音类文件表", appliesTo = "Y9_ARCHIVES_RECORDING_FILE")
-public class RecordingFile implements Serializable {
+public class AudioFile implements Serializable {
 
     private static final long serialVersionUID = 8868410000634135098L;
 
