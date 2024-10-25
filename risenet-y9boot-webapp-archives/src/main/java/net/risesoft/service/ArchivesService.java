@@ -1,8 +1,9 @@
 package net.risesoft.service;
 
+import java.util.List;
 import java.util.Map;
 
 public interface ArchivesService {
 
-    Map<String, Object> getArchivesFileList();
+    List<Map<String, Object>> getArchivesFileList();
 }

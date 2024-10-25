@@ -54,9 +54,9 @@ public class Archives implements Serializable {
     @Comment("立档单位名称")
     private String establishArchiveUnitname;// 构成档案全宗的国家机构、社会组织或个人的名称
 
-    @Column(name = "ARCHIVE_ID", length = 50)
+    @Column(name = "ARCHIVE_NO", length = 50)
     @Comment("档号")
-    private String archiveId; // 以字符形式赋予本件电子档案的、用以固定和反映本件电子档案排列顺序的一组代码。
+    private String archiveNo; // 以字符形式赋予本件电子档案的、用以固定和反映本件电子档案排列顺序的一组代码。
 
     @Column(name = "GENERAL_ARCHIVE_ID", length = 100)
     @Comment("全宗号")
@@ -129,4 +129,8 @@ public class Archives implements Serializable {
     private String referenceNumber;// 与本件电子档案具有相同主题的不同记录形式和载体的各门类电子档案档号的组合，不同档号之间用“,”隔开。
     // 例如，本件电子档案与档号为“068-ZP-2017-￥-BGS-1201”的照片类电子档案及档号为“068-LX-2017-Y-BGS-0023”的录像类电子档案有关，
     // 则本件电子档案的参见号可写为“068-ZP-2017-Y-BGS-1201,068-LX-2017-Y-BGS0023”。
+
+    @Column(name = "CATEGORY_ID", length = 50)
+    @Comment("门类ID")
+    private String categoryId;
 }

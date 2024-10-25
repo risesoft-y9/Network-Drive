@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -123,4 +124,10 @@ public class CollectController {
         return Y9Result.success(catalogList);
     }
 
+    @RequestMapping(value = "/getArticleList", method = RequestMethod.GET, produces = "application/json")
+    public Y9Result<List<Map<String, Object>>> getArticleList() {
+        List<Map<String, Object>> folderList = new ArrayList<>();
+        // 文书
+        return Y9Result.success(folderList);
+    }
 }

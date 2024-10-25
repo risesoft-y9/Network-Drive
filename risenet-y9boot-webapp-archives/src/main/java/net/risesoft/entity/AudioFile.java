@@ -21,8 +21,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "Y9_ARCHIVES_RECORDING_FILE")
-@org.hibernate.annotations.Table(comment = "档案录音类文件表", appliesTo = "Y9_ARCHIVES_RECORDING_FILE")
+@Table(name = "Y9_ARCHIVES_AUDIO_FILE")
+@org.hibernate.annotations.Table(comment = "档案录音类文件表", appliesTo = "Y9_ARCHIVES_AUDIO_FILE")
 public class AudioFile implements Serializable {
 
     private static final long serialVersionUID = 8868410000634135098L;

@@ -45,6 +45,10 @@ public class MetadataConfig implements Serializable {
     @Column(name = "COLUMNNAME", length = 50, nullable = false)
     private String columnName;
 
+    @Comment("数据类型")
+    @Column(name = "DATATYPE", length = 50, nullable = false)
+    private String dataType;
+
     @Comment("显示名称")
     @Column(name = "DISPLAYNAME", length = 50, nullable = false)
     private String disPlayName;
@@ -53,16 +57,15 @@ public class MetadataConfig implements Serializable {
     @Comment("描述")
     private String description;
 
-    @Column(name = "FIELD_SOURCE", length = 50)
     @Comment("字段来源")
-    @ColumnDefault("系统内置")
-    private String fieldSource;
+    @Column(name = "FIELDORIGIN", length = 50)
+    private String fieldOrigin;
 
-    @Comment("显示宽度")
+    @Comment("列显示宽度")
     @Column(name = "DISPLAYWIDTH", length = 50, nullable = false)
     private String disPlayWidth;
 
-    @Comment("排列")
+    @Comment("列对齐方式")
     @Column(name = "DISPLAYALIGN", length = 10, nullable = false)
     private String disPlayAlign;
 
@@ -73,15 +76,15 @@ public class MetadataConfig implements Serializable {
 
     @Column(name = "ISLISTSHOW")
     @Comment("是否列表显示")
-    private Integer isListShow = 0;
+    private Integer isListShow = 1;
 
     @Column(name = "ISORDER")
     @Comment("是否可排序")
-    private Integer isOrder = 0;
+    private Integer isOrder = 1;
 
     @Column(name = "ISRECORD")
     @Comment("是否著录")
-    private Integer isRecord = 0;
+    private Integer isRecord = 1;
 
     @Column(name = "ISRECORDNULL")
     @Comment("是否著录必填")

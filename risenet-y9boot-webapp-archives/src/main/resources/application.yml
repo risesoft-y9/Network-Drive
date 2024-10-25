@@ -146,6 +146,7 @@ y9:
       archivesManagerRoleName: 公共文件管理角色
       productDocument: 95b19opvx9d40458c002dd61c41eb2c
       upload-folder: D:\testPlaceholder\upload
+      tenantId: 11111111-1111-1111-1111-111111111113
   service:
     org:
       directUrl: http://localhost:7055

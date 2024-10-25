@@ -79,6 +79,12 @@
         </dependency>
 
         <dependency>
+            <groupId>net.risesoft</groupId>
+            <artifactId>risenet-y9boot-common-sqlddl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
         </dependency>
