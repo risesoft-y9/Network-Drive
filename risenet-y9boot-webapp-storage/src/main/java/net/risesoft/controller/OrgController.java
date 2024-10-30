@@ -60,16 +60,16 @@ public class OrgController {
         String publicManagerRoleName = Y9Context.getProperty("y9.app.storage.publicManagerRoleName");
         String capacityManagerRoleName = Y9Context.getProperty("y9.app.storage.capacityManagerRoleName");
         String reportManagerRoleName = Y9Context.getProperty("y9.app.storage.reportManagerRoleName");
-        // boolean publicManager = personRoleApi
-        // .hasRole(tenantId, Y9Context.getSystemName(), "", publicManagerRoleName, userInfo.getPersonId()).getData();
-        // boolean capacityManager = personRoleApi
-        // .hasRole(tenantId, Y9Context.getSystemName(), "", capacityManagerRoleName, userInfo.getPersonId())
-        // .getData();
-        // boolean reportManager = personRoleApi
-        // .hasRole(tenantId, Y9Context.getSystemName(), "", reportManagerRoleName, userInfo.getPersonId()).getData();
-        // res_map.put("publicManager", publicManager);
-        // res_map.put("capacityManager", capacityManager);
-        // res_map.put("reportManager", reportManager);
+        boolean publicManager = personRoleApi
+            .hasRole(tenantId, Y9Context.getSystemName(), "", publicManagerRoleName, userInfo.getPersonId()).getData();
+        boolean capacityManager = personRoleApi
+            .hasRole(tenantId, Y9Context.getSystemName(), "", capacityManagerRoleName, userInfo.getPersonId())
+            .getData();
+        boolean reportManager = personRoleApi
+            .hasRole(tenantId, Y9Context.getSystemName(), "", reportManagerRoleName, userInfo.getPersonId()).getData();
+        res_map.put("publicManager", publicManager);
+        res_map.put("capacityManager", capacityManager);
+        res_map.put("reportManager", reportManager);
         return Y9Result.success(res_map);
     }
 
