@@ -236,9 +236,7 @@ public class FileNodeController {
                 fdr.setDownLoadUserName(userInfo.getName());
                 fdr.setDownLoadMode("网盘");
                 fileDownLoadRecordService.save(fdr);
-                fileSize = fileSize + folder.getFileSize();
             }
-            // response.setHeader("Content-Length", fileSize + "");
         } catch (Exception e) {
             LOGGER.error("批量下载文件失败！", e);
         } finally {
