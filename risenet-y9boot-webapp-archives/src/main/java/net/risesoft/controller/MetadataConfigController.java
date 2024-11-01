@@ -1,7 +1,6 @@
 package net.risesoft.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -11,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.entity.MetadataConfig;
+import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.MetadataConfigService;
 
@@ -23,9 +23,12 @@ public class MetadataConfigController {
     private final MetadataConfigService metadataConfigService;
 
     @RequestMapping(value = "/getMetadataList", method = RequestMethod.GET, produces = "application/json")
-    public Y9Result<List<MetadataConfig>> getMetadataList(String category) {
-        List<MetadataConfig> configList = metadataConfigService.listAll();
-        return Y9Result.success(configList);
+    public Y9Page<MetadataConfig> getMetadataList(String viewType, int page, int rows) {
+        if (page < 1) {
+            page = 1;
+        }
+        Page<MetadataConfig> configList = metadataConfigService.listByViewType(viewType, page, rows);
+        return Y9Page.success(page, configList.getTotalPages(), configList.getTotalElements(), configList.getContent());
     }
 
     @RequestMapping(value = "/saveMetadataConfig", method = RequestMethod.POST, produces = "application/json")
@@ -51,9 +54,9 @@ public class MetadataConfigController {
     }
 
     @RequestMapping(value = "/resetConfig", method = RequestMethod.POST, produces = "application/json")
-    public Y9Result<String> resetConfig() {
+    public Y9Result<String> resetConfig(String viewType) {
         try {
-            metadataConfigService.resetConfig();
+            metadataConfigService.initMetadataConfigByViewType(viewType);
             return Y9Result.success("重置配置成功");
         } catch (Exception e) {
             LOGGER.error("重置配置失败", e);

@@ -3,7 +3,9 @@ package net.risesoft.service.Impl;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -19,21 +21,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.entity.Category;
+import net.risesoft.enums.CategoryEnums;
+import net.risesoft.enums.DataSourceEnums;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
+import net.risesoft.model.platform.Manager;
 import net.risesoft.model.user.UserInfo;
 import net.risesoft.repository.CategoryRepository;
 import net.risesoft.service.CategoryService;
 import net.risesoft.y9.Y9LoginUserHolder;
 
+import y9.client.rest.platform.org.ManagerApiClient;
+
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CategoryServiceImpl implements CategoryService {
 
-    public final CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
+    private final ManagerApiClient managerApiClient;
 
     @Override
     public Page<Category> pageAll(int page, int rows) {
@@ -89,7 +99,9 @@ public class CategoryServiceImpl implements CategoryService {
             newof.setCreateDate(sdf.format(new Date()));
             newof.setModifyDate(sdf.format(new Date()));
             newof.setName(category.getName());
+            newof.setUserId(person.getPersonId());
             newof.setUserName(person.getName());
+            newof.setCategorySource(DataSourceEnums.SYSTEM_ADD.getValue());
             categoryRepository.save(newof);
 
             return newof;
@@ -97,5 +109,37 @@ public class CategoryServiceImpl implements CategoryService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public List<Category> findByCategorySource(String categorySource) {
+        return categoryRepository.findByCategorySource(categorySource);
+    }
+
+    @Override
+    public List<Category> findAll() {
+        return categoryRepository.findAll();
+    }
+
+    @Override
+    public void initCategoryData() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        List<CategoryEnums> categoryEnumsList =
+            EnumSet.allOf(CategoryEnums.class).stream().collect(Collectors.toList());
+        String tenantId = Y9LoginUserHolder.getTenantId();
+        for (CategoryEnums categoryEnums : categoryEnumsList) {
+            LOGGER.info("categoryEnums: " + categoryEnums.getEnName() + " - " + categoryEnums.getCnName());
+            Category newof = new Category();
+            newof.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
+            newof.setMark(categoryEnums.getEnName());
+            newof.setCreateDate(sdf.format(new Date()));
+            newof.setModifyDate(sdf.format(new Date()));
+            newof.setName(categoryEnums.getCnName());
+            Manager manager = managerApiClient.getByLoginName(tenantId, "systemManager").getData();
+            newof.setUserId(manager.getId());
+            newof.setUserName(manager.getName());
+            newof.setCategorySource(DataSourceEnums.SYSTEM_DEFAULT.getValue());
+            categoryRepository.save(newof);
+        }
     }
 }

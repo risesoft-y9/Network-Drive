@@ -21,9 +21,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "Y9_ARCHIVES_PHOTO_FILE")
-@org.hibernate.annotations.Table(comment = "档案照片类文件表", appliesTo = "Y9_ARCHIVES_PHOTO_FILE")
-public class PhotoFile implements Serializable {
+@Table(name = "Y9_ARCHIVES_IMAGE_FILE")
+@org.hibernate.annotations.Table(comment = "档案照片类文件表", appliesTo = "Y9_ARCHIVES_IMAGE_FILE")
+public class ImageFile implements Serializable {
 
     private static final long serialVersionUID = 8868410000634135098L;
 

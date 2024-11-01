@@ -125,4 +125,8 @@ public class MetadataConfig implements Serializable {
     @Comment("更新时间")
     @Column(name = "UPDATETIME", length = 50)
     private String updateTime;
+
+    @Comment("对应数据库表字段id")
+    @Column(name = "TABLEFIELDID", length = 50)
+    private String tableFieldId;
 }

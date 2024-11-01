@@ -219,6 +219,10 @@ y9:
           - http://localhost:8084
           - http://127.0.0.1:7055
           - http://127.0.0.1:7056
+      xss:
+        ignoreParam:
+          - tables
+          - fields
     oauth2:
       resource:
         enabled: true

@@ -39,6 +39,12 @@ public class CategoryController {
         return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), list, "获取列表成功");
     }
 
+    @GetMapping(value = "/getAllCategory")
+    public Y9Result<List<Category>> getAllCategory() {
+        List<Category> list = categoryService.findAll();
+        return Y9Result.success(list, "获取列表成功");
+    }
+
     /**
      * 移除
      *
@@ -61,8 +67,8 @@ public class CategoryController {
     public Y9Result<String> saveOrUpdate(Category category) {
         String id = category.getId();
         if (StringUtils.isEmpty(id)) {
-            Category oldViewType = categoryService.findByMark(category.getMark());
-            if (null != oldViewType) {
+            Category oldCategory = categoryService.findByMark(category.getMark());
+            if (null != oldCategory) {
                 return Y9Result.failure("保存失败：唯一标示【" + category.getMark() + "】已存在");
             }
         }

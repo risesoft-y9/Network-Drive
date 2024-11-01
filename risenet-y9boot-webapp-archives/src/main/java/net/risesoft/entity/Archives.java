@@ -133,4 +133,8 @@ public class Archives implements Serializable {
     @Column(name = "CATEGORY_ID", length = 50)
     @Comment("门类ID")
     private String categoryId;
+
+    @Column(name = "TENANT_ID", length = 50)
+    @Comment("租户ID")
+    private String tenantId;
 }

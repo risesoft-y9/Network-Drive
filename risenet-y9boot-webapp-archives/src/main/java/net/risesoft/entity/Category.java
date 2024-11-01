@@ -38,6 +38,10 @@ public class Category implements Serializable {
     @Column(name = "NAME", length = 100, nullable = false)
     private String name;
 
+    @Comment("门类来源")
+    @Column(name = "CATEGORY_SOURCE", length = 50)
+    private String categorySource;
+
     @Comment("操作人ID")
     @Column(name = "USERID", length = 50)
     private String userId;
@@ -58,4 +62,7 @@ public class Category implements Serializable {
     @Column(name = "DELETED")
     private Boolean deleted = Boolean.FALSE;
 
+    @Column(name = "TENANT_ID", length = 50)
+    @Comment("租户ID")
+    private String tenantId;
 }

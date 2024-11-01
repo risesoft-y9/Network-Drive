@@ -9,15 +9,20 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.persistence.Table;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Comment;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -27,26 +32,35 @@ import com.google.common.collect.Lists;
 import net.risesoft.consts.PunctuationConsts;
 import net.risesoft.consts.SqlConstants;
 import net.risesoft.entity.Archives;
+import net.risesoft.entity.AudioFile;
+import net.risesoft.entity.DocumentFile;
+import net.risesoft.entity.ImageFile;
 import net.risesoft.entity.MetadataConfig;
-import net.risesoft.enums.FileCategory;
+import net.risesoft.entity.VideoFile;
+import net.risesoft.enums.CategoryEnums;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
+import net.risesoft.model.platform.Manager;
 import net.risesoft.model.user.UserInfo;
 import net.risesoft.repository.MetadataConfigRepository;
 import net.risesoft.service.MetadataConfigService;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.sqlddl.DbMetaDataUtil;
 
+import y9.client.rest.platform.org.ManagerApiClient;
+
 @Service
 public class MetadataConfigServiceImpl implements MetadataConfigService {
 
     private final JdbcTemplate jdbcTemplate4Tenant;
     private final MetadataConfigRepository metadataConfigRepository;
+    private final ManagerApiClient managerApiClient;
 
     public MetadataConfigServiceImpl(@Qualifier("jdbcTemplate4Tenant") JdbcTemplate jdbcTemplate4Tenant,
-        MetadataConfigRepository metadataConfigRepository) {
+        MetadataConfigRepository metadataConfigRepository, ManagerApiClient managerApiClient) {
         this.jdbcTemplate4Tenant = jdbcTemplate4Tenant;
         this.metadataConfigRepository = metadataConfigRepository;
+        this.managerApiClient = managerApiClient;
     }
 
     @Override
@@ -171,7 +185,7 @@ public class MetadataConfigServiceImpl implements MetadataConfigService {
             metadataConfig.setUpdateTime(sdf.format(new Date()));
             metadataConfig.setUserId(userInfo.getPersonId());
             metadataConfig.setUserName(userInfo.getName());
-            Integer tabIndex = metadataConfigRepository.getMaxTabIndex();
+            Integer tabIndex = metadataConfigRepository.getMaxTabIndex(metadataConfig.getViewType());
             metadataConfig.setTabIndex(tabIndex == null ? 1 : tabIndex + 1);
             return metadataConfigRepository.save(metadataConfig);
         }
@@ -192,9 +206,10 @@ public class MetadataConfigServiceImpl implements MetadataConfigService {
     }
 
     @Override
-    public List<MetadataConfig> listAll() {
+    public Page<MetadataConfig> listByViewType(String viewType, int page, int rows) {
         Sort sort = Sort.by(Sort.Direction.ASC, "tabIndex");
-        return metadataConfigRepository.findAll(sort);
+        Pageable pageable = PageRequest.of(page - 1, rows, sort);
+        return metadataConfigRepository.findByViewType(viewType, pageable);
     }
 
     @Override
@@ -211,35 +226,150 @@ public class MetadataConfigServiceImpl implements MetadataConfigService {
     }
 
     @Override
-    public void resetConfig() {
+    public void initMetadataConfig() {
         metadataConfigRepository.deleteAll();
+        List<CategoryEnums> categoryEnumsList =
+            EnumSet.allOf(CategoryEnums.class).stream().collect(Collectors.toList());
+        for (CategoryEnums categoryEnums : categoryEnumsList) {
+            List<Map<String, Object>> fieldList = this.getEntityFieldList(Archives.class);
+            if (categoryEnums.getEnName().equals("document")) {
+                fieldList.addAll(this.getEntityFieldList(DocumentFile.class));
+            } else if (categoryEnums.getEnName().equals("image")) {
+                fieldList.addAll(this.getEntityFieldList(ImageFile.class));
+            } else if (categoryEnums.getEnName().equals("video")) {
+                fieldList.addAll(this.getEntityFieldList(VideoFile.class));
+            } else if (categoryEnums.getEnName().equals("audio")) {
+                fieldList.addAll(this.getEntityFieldList(AudioFile.class));
+            }
+            int i = 0;
+            Manager manager =
+                managerApiClient.getByLoginName(Y9LoginUserHolder.getTenantId(), "systemManager").getData();
+            for (Map<String, Object> field : fieldList) {
+                String fieldName = (String)field.get("fieldName");
+                String fieldType = (String)field.get("fieldType");
+                String comment = (String)field.get("comment");
+                initData(categoryEnums.getEnName(), fieldName, fieldType, "系统内置", manager.getId(), manager.getName(),
+                    comment, i);
+                i++;
+            }
+        }
+    }
+
+    @Override
+    public void initMetadataConfigByViewType(String viewType) {
+        List<MetadataConfig> configList = metadataConfigRepository.findByViewType(viewType);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
+
+        if (configList.size() > 0) {
+            for (MetadataConfig config : configList) {
+                Integer tabIndex = metadataConfigRepository.getMaxTabIndex(viewType);
+                config.setTabIndex(null == tabIndex ? 1 : tabIndex + 1);
+                config.setUserId(userInfo.getPersonId());
+                config.setUserName(userInfo.getName());
+                config.setCreateTime(sdf.format(new Date()));
+                config.setUpdateTime(sdf.format(new Date()));
+                config.setDisPlayWidth("100");
+                config.setIsRecord(1);
+                config.setIsOrder(1);
+                config.setOpenSearch(0);
+                config.setIsListShow(1);
+                config.setDisPlayAlign("center");
+                this.save(config);
+            }
+        }
+    }
+
+    @Override
+    public MetadataConfig findByViewTypeAndTableField(String viewType, String tableField) {
+        return metadataConfigRepository.findByViewTypeAndTableFieldId(viewType, tableField);
+    }
+
+    @Override
+    public MetadataConfig findByViewTypeAndColumnName(String viewType, String columnName) {
+        return metadataConfigRepository.findByViewTypeAndColumnName(viewType, columnName);
+    }
+
+    @Override
+    public void initBaseMetadataConfig(String viewType) {
         List<Map<String, Object>> fieldList = this.getEntityFieldList(Archives.class);
         int i = 0;
+        String userId = Y9LoginUserHolder.getUserInfo().getPersonId(),
+            userName = Y9LoginUserHolder.getUserInfo().getName();
         for (Map<String, Object> field : fieldList) {
             String fieldName = (String)field.get("fieldName");
             String fieldType = (String)field.get("fieldType");
             String comment = (String)field.get("comment");
-            initData(FileCategory.WENJIAN.getValue(), fieldName, fieldType, comment, i);
-            // initData(FileCategory.ANJIAN.getValue(), fieldName, fieldType, comment, i);
+            Integer tabIndex = metadataConfigRepository.getMaxTabIndex(viewType);
+            initData(viewType, fieldName, fieldType, "默认字段", comment, userId, userName,
+                null == tabIndex ? 1 : tabIndex + 1);
             i++;
         }
     }
 
-    private void initData(String category, String fieldName, String fieldType, String comment, int i) {
+    @Override
+    public void save(String saveType, String viewType, String tableField, String columnName, String displayName,
+        String dataType, String fieldOrigin) {
+        // TODO 保存数据
+        if (saveType.equals("add")) {
+            // 再保存门类新增数据
+            this.save(viewType, tableField, columnName, displayName, dataType, fieldOrigin);
+        } else if (saveType.equals("edit")) {
+            MetadataConfig metadataConfig = this.findByViewTypeAndTableField(viewType, tableField);
+            if (null == metadataConfig) {
+                this.save(viewType, tableField, columnName, displayName, dataType, fieldOrigin);
+            } else {
+                metadataConfig.setColumnName(columnName);
+                metadataConfig.setDisPlayName(displayName);
+                metadataConfig.setDataType(dataType);
+                this.save(metadataConfig);
+            }
+        }
+    }
+
+    public void save(String viewType, String tableField, String columnName, String displayName, String dataType,
+        String fieldOrigin) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
+        MetadataConfig config = new MetadataConfig();
+        config.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
+        config.setViewType(viewType);
+        config.setFieldOrigin(fieldOrigin);
+        config.setColumnName(columnName);
+        config.setDisPlayName(displayName);
+        config.setDataType(dataType);
+        config.setIsListShow(1);
+        config.setDisPlayAlign("center");
+        Integer tabIndex = metadataConfigRepository.getMaxTabIndex(viewType);
+        config.setTabIndex(null == tabIndex ? 1 : tabIndex + 1);
+        config.setUserId(userInfo.getPersonId());
+        config.setUserName(userInfo.getName());
+        config.setCreateTime(sdf.format(new Date()));
+        config.setUpdateTime(sdf.format(new Date()));
+        config.setDisPlayWidth("100");
+        config.setIsRecord(1);
+        config.setIsOrder(1);
+        config.setTableFieldId(tableField);
+        this.save(config);
+    }
+
+    private void initData(String category, String fieldName, String fieldType, String fieldOrigin, String comment,
+        String userId, String userName, int i) {
         // TODO 初始化数据
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if (!fieldName.equals("id")) {
             MetadataConfig config = new MetadataConfig();
             config.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
             config.setViewType(category);
-            config.setFieldOrigin("系统内置");
+            config.setFieldOrigin(fieldOrigin);
             config.setColumnName(fieldName);
             config.setDisPlayName(comment);
             config.setDataType(fieldType);
             config.setIsListShow(1);
             config.setDisPlayAlign("center");
             config.setTabIndex(i);
-            config.setUserName("系统管理员");
+            config.setUserId(userId);
+            config.setUserName(userName);
             config.setCreateTime(sdf.format(new Date()));
             config.setUpdateTime(sdf.format(new Date()));
             config.setDisPlayWidth("100");
