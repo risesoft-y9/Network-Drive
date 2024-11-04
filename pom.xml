@@ -55,8 +55,8 @@
     </scm>
 
     <modules>
+        <module>risenet-y9boot-webapp-archives</module>
         <module>risenet-y9boot-webapp-storage</module>
-
     </modules>
 
     <repositories>
