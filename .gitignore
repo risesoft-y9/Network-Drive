@@ -25,5 +25,8 @@ rebel.xml
 
 # vue
 node_modules/
+vue/y9vue-storage/storage/
+vue/y9vue-archives/archives/
 
+#maven
 .flattened-pom.xml
