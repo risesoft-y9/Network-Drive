@@ -90,4 +90,23 @@ public interface CategoryTableService {
      */
     Y9Result<Object> updateTable(CategoryTable table, List<Map<String, Object>> listMap, String type);
 
+    /**
+     * Description: 根据门类分类标识获取业务表信息
+     *
+     * @param categoryMark
+     * @return
+     */
+    CategoryTable findByCategoryMark(String categoryMark);
+
+    /**
+     * Description: 根据表名获取表数据
+     *
+     * @param tableName
+     * @param detail_id
+     * @return
+     */
+    List<Map<String, Object>> getTableData(String tableName, String detail_id);
+
+    Y9Result<Object> saveTableData(String saveTtype, String categoryMark, String detail_id,
+        Map<String, Object> listMap);
 }

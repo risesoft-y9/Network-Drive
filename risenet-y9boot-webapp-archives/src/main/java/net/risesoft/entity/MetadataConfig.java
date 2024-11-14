@@ -90,6 +90,18 @@ public class MetadataConfig implements Serializable {
     @Comment("是否著录必填")
     private Integer isRecordNull = 0;
 
+    @Comment("著录输入框类型") // search-带图标前缀的搜索框,input,select,date
+    @Column(name = "RE_INPUTBOXTYPE", length = 20)
+    private String re_inputBoxType;
+
+    @Comment("著录输入框宽度")
+    @Column(name = "RE_INPUTBOXWIDTH", length = 50)
+    private String re_inputBoxWidth;
+
+    @Comment("是否著录一行显示")
+    @Column(name = "RE_ISONELINE", length = 50)
+    private Integer re_isOneLine = 0;
+
     @Comment("输入框类型") // search-带图标前缀的搜索框,input,select,date
     @Column(name = "INPUTBOXTYPE", length = 20)
     private String inputBoxType;

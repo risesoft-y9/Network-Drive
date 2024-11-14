@@ -31,7 +31,9 @@ public interface MetadataConfigRepository
 
     Page<MetadataConfig> findByViewType(String viewType, Pageable pageable);
 
-    List<MetadataConfig> findByViewType(String viewType);
+    List<MetadataConfig> findByViewTypeAndIsListShowOrderByTabIndex(String viewType, Integer isListShow);
+
+    List<MetadataConfig> findByViewTypeOrderByTabIndex(String viewType);
 
     @Modifying
     @Transactional(readOnly = false)

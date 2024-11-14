@@ -34,13 +34,13 @@ public class ArchivesCatalogController {
     /**
      * 根据id或name获取组织架构树
      * 
-     * @param id
+     * @param parentId
      * @return
      */
     @GetMapping("/getCatelogTree")
-    public Y9Result<List<DataCatalog>> getCatelogTree(@RequestParam(required = false) String id) {
+    public Y9Result<List<DataCatalog>> getCatelogTree(@RequestParam(required = false) String parentId) {
         String tenantId = Y9LoginUserHolder.getTenantId(), userId = Y9LoginUserHolder.getUserInfo().getPersonId();
-        return dataCatalogApiClient.getTree("normal", id, false, tenantId, userId, AuthorityEnum.BROWSE);
+        return dataCatalogApiClient.getTree("normal", parentId, false, tenantId, userId, AuthorityEnum.BROWSE);
     }
 
 }

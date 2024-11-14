@@ -223,6 +223,8 @@ y9:
         ignoreParam:
           - tables
           - fields
+          - idAndIsShowJson
+          - formDataJson
     oauth2:
       resource:
         enabled: true

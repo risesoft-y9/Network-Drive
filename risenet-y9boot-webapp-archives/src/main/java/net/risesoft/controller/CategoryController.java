@@ -18,6 +18,12 @@ import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.CategoryService;
 
+/**
+ * 门类管理控制器
+ *
+ * @author yihong
+ * @date 2024-10-26
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/vue/category", produces = MediaType.APPLICATION_JSON_VALUE)

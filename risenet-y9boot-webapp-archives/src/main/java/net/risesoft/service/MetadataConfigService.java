@@ -21,13 +21,19 @@ public interface MetadataConfigService {
 
     MetadataConfig findByColumnName(String columnName);
 
+    MetadataConfig findById(String id);
+
     Page<MetadataConfig> listByViewType(String viewType, int page, int rows);
+
+    List<MetadataConfig> listByViewType(String viewType);
 
     void saveOrder(String[] idAndTabIndexs);
 
     void initMetadataConfig();
 
     void initMetadataConfigByViewType(String viewType);
+
+    void initCustomMetadataConfigByViewType(String viewType);
 
     void save(String saveType, String viewType, String tableField, String columnName, String displayName,
         String dataType, String fieldOrigin);
@@ -37,4 +43,8 @@ public interface MetadataConfigService {
     MetadataConfig findByViewTypeAndColumnName(String viewType, String columnName);
 
     void initBaseMetadataConfig(String viewType);
+
+    List<MetadataConfig> getMetadataFieldList(String viewType, Integer isListShow);
+
+    void saveListFiledShow(String[] idAndIsShow);
 }

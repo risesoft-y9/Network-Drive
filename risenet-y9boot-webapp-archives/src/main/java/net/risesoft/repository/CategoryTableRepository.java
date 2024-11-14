@@ -12,5 +12,7 @@ import net.risesoft.entity.CategoryTable;
 public interface CategoryTableRepository
     extends JpaRepository<CategoryTable, String>, JpaSpecificationExecutor<CategoryTable> {
 
-    List<CategoryTable> findByCategoryMark(String categoryMark);
+    List<CategoryTable> findByCategoryMarkOrderByCreateTimeDesc(String categoryMark);
+
+    CategoryTable findByCategoryMark(String categoryMark);
 }

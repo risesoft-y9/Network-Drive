@@ -1,9 +1,14 @@
 package net.risesoft.service;
 
-import java.util.List;
-import java.util.Map;
+import org.springframework.data.domain.Page;
+
+import net.risesoft.entity.Archives;
 
 public interface ArchivesService {
 
-    List<Map<String, Object>> getArchivesFileList();
+    Page<Archives> pageArchives(String categoryId, int page, int size);
+
+    Archives save(Archives archives);
+
+    Archives findByArchives_id(Long id);
 }
