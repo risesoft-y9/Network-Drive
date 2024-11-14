@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2024-10-18 17:13:58
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2024-11-01 10:39:23
+ * @LastEditTime: 2024-11-12 09:45:18
  * @FilePath: \vue\y9vue-archives\src\views\dictionary\metadata\manage.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -45,32 +45,13 @@
                         @click="reloadTable"
                         ><i class="ri-refresh-line"></i>刷新
                     </el-button>
+                    <el-button 
+                            :size="fontSizeObj.buttonSize"
+                            :style="{ fontSize: fontSizeObj.baseFontSize }"
+                            @click="openOrder"
+                            ><i class="ri-sort-asc"></i>排序
+                        </el-button>
                 </el-col>
-                <el-col :span="4"
-                    ><el-button-group style="float: right">
-                        <el-button
-                            type="primary"
-                            :size="fontSizeObj.buttonSize"
-                            :style="{ fontSize: fontSizeObj.baseFontSize }"
-                            @click="moveUp"
-                            ><i class="ri-arrow-up-line"></i>上移
-                        </el-button>
-                        <el-button
-                            type="primary"
-                            :size="fontSizeObj.buttonSize"
-                            :style="{ fontSize: fontSizeObj.baseFontSize }"
-                            @click="moveDown"
-                            ><i class="ri-arrow-down-line"></i>下移
-                        </el-button>
-                        <el-button
-                            type="primary"
-                            :size="fontSizeObj.buttonSize"
-                            :style="{ fontSize: fontSizeObj.baseFontSize }"
-                            @click="saveViewOrder"
-                            ><span>保存</span></el-button
-                        >
-                    </el-button-group></el-col
-                >
             </el-row>
         </div>
         <y9Table
@@ -94,6 +75,7 @@
                 :reloadTable="reloadTable"
                 :dialogConfig_parent="dialogConfig"
             />
+            <orderList v-if="dialogConfig.type == 'orderList'" ref="orderListRef" :metadata="metadata" :categoryMark="activeName"/>
         </y9Dialog>
     </y9Card>
 </template>
@@ -103,9 +85,11 @@
     import { useSettingStore } from '@/store/modules/settingStore';
     import editMetadata from './editMetadata.vue';
     import newOrModifyTable from './table/newOrModifyTable.vue';
+    import orderList from './orderList.vue';
     import { getMetadataList, saveMetadataConfig, saveOrder, resetConfig } from '@/api/archives/metadata';
     import { getAllCategory, getCategoryList } from '@/api/archives/category';
     import { render } from 'vue';
+    import { or } from '@vueuse/core';
 
     const { t } = useI18n();
     const fontSizeObj: any = inject('sizeObjInfo') || {};
@@ -120,6 +104,7 @@
     };
     const data = reactive({
         editMetadataRef: '',
+        orderListRef:'',
         metadata: {},
         activeName: 'document',
         categoryList: [],
@@ -175,7 +160,16 @@
                     width: '110',
                     sortable: true,
                     render: (row) => {
-                        return row.isListShow == 1 ? '是' : '否';
+                        return h(
+                            'span',
+                            {
+                                style: {
+                                    color: row.isListShow == 1 ?'green':'red',
+                                    fontWeight: 600
+                                }
+                            },
+                            row.isListShow == 1 ? '是' : '否'
+                        );
                     }
                 },
                 {
@@ -184,7 +178,16 @@
                     width: '120',
                     sortable: true,
                     render: (row) => {
-                        return row.isOrder == 1 ? '是' : '否';
+                        return h(
+                            'span',
+                            {
+                                style: {
+                                    color: row.isOrder == 1 ?'green':'red',
+                                    fontWeight: 600
+                                }
+                            },
+                            row.isOrder == 1 ? '是' : '否'
+                        );
                     }
                 },
                 {
@@ -193,7 +196,16 @@
                     width: '110',
                     sortable: true,
                     render: (row) => {
-                        return row.isRecord == 1 ? '是' : '否';
+                        return h(
+                            'span',
+                            {
+                                style: {
+                                    color: row.isRecord == 1 ?'green':'red',
+                                    fontWeight: 600
+                                }
+                            },
+                            row.isRecord == 1 ? '是' : '否'
+                        );
                     }
                 },
                 {
@@ -202,7 +214,16 @@
                     width: '110',
                     sortable: true,
                     render: (row) => {
-                        return row.isRecordNull == 1 ? '是' : '否';
+                        return h(
+                            'span',
+                            {
+                                style: {
+                                    color: row.isRecordNull == 1 ?'green':'red',
+                                    fontWeight: 600
+                                }
+                            },
+                            row.isRecordNull == 1 ? '是' : '否'
+                        );
                     }
                 },
                 {
@@ -277,7 +298,7 @@
         currentRow: null,
         categoryData: { categoryMark: '', categoryName: '' }
     });
-    let { activeName, categoryList, tableConfig, metadata, editMetadataRef, dialogConfig, currentRow, categoryData } =
+    let { activeName, categoryList, tableConfig, metadata, editMetadataRef,orderListRef, dialogConfig, currentRow, categoryData } =
         toRefs(data);
 
     onMounted(() => {
@@ -341,6 +362,16 @@
         });
     }
 
+    function openOrder(){
+        Object.assign(dialogConfig.value, {
+            show: true,
+            width: '75%',
+            type: 'orderList',
+            title: '元数据列表字段排序',
+            showFooter: false,
+            margin: '5vh auto'
+        });
+    }
 
     async function resetData() {
         ElMessageBox.confirm('你确定要重置元数据配置数据吗？重置后，将初始化默认配置，请谨慎操作！', '提示', {

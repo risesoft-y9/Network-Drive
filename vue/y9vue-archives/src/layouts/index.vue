@@ -14,7 +14,7 @@
     } from 'vue';
     import { useSettingStore } from '@/store/modules/settingStore';
     import { useRouterStore } from '@/store/modules/routerStore';
-    import { useStorageStore } from '@/store/modules/storageStore';
+    import { useArchivesStore } from '@/store/modules/archivesStore';
     import { useRoute } from 'vue-router';
     import {
         getSelectLeftMenuPath,
@@ -33,7 +33,7 @@
     import type { ElMessage } from 'element-plus';
     import { useI18n } from 'vue-i18n';
 
-    const storageStore = useStorageStore();
+    const archivesStore = useArchivesStore();
     interface IndexLayoutSetupData {
         menuCollapsed: computed<Boolean>;
         tabNavEnable: boolean;
@@ -153,12 +153,12 @@
                                     currentName = item.name;
                                 }
                             });
-                            storageStore.$patch({
+                            archivesStore.$patch({
                                 positionList: res.data.positionList,
                                 currentPositionName: currentName,
                                 tenantId: res.data.tenantId
                             });
-                            console.log(storageStore.positionList);
+                            console.log(archivesStore.positionList);
                             sessionStorage.setItem('positionId', positionId);
                             sessionStorage.setItem('positionName', currentName);
                             sessionStorage.setItem('tenantId', res.data.tenantId);

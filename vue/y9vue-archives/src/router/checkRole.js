@@ -8,7 +8,7 @@
  */
 import router, { asyncRoutes } from "@/router";
 import { useRouterStore } from "@/store/modules/routerStore";
-import { useStorageStore } from '@/store/modules/storageStore';
+import { useArchivesStore } from '@/store/modules/archivesStore';
 import OrgApi from '@/api/archives/org';
 
 /**
@@ -65,7 +65,7 @@ export function getPermissionRoutes(rolesArr = ['systemAdmin']) {
 export async function checkRole(rolesArr = ['systemAdmin']) {
     // 获取权限路由
     const permissionRoutes = getPermissionRoutes(rolesArr);
-    const storageStore = useStorageStore();
+    const archivesStore = useArchivesStore();
     if (permissionRoutes.length !== 0) {
         await permissionRoutes.map((route) => {
             router.addRoute(route);
@@ -77,29 +77,29 @@ export async function checkRole(rolesArr = ['systemAdmin']) {
         if (positionId == null || positionId == 'null') {
             let pres = await OrgApi.getPositionList();
             if (pres.success) {
-                storageStore.$patch({
+                archivesStore.$patch({
                     positionList: pres.data.positionList,
                     currentPositionId: pres.data.positionList.length > 0 ? pres.data.positionList[0].id : '',
-                    currentPositionName: storageStore.positionList.length > 0 ? storageStore.positionList[0].name : 0,
+                    currentPositionName: archivesStore.positionList.length > 0 ? archivesStore.positionList[0].name : 0,
                     tenantId: pres.data.tenantId
                 });
                 sessionStorage.setItem(
                     'positionId',
-                    storageStore.positionList.length > 0 ? storageStore.positionList[0].id : ''
+                    archivesStore.positionList.length > 0 ? archivesStore.positionList[0].id : ''
                 );
                 sessionStorage.setItem(
                     'positionName',
-                    storageStore.positionList.length > 0 ? storageStore.positionList[0].name : ''
+                    archivesStore.positionList.length > 0 ? archivesStore.positionList[0].name : ''
                 );
                 sessionStorage.setItem(
                     'tenantId',
                     pres.data.tenantId
                 );
             }
-        } else if (storageStore.positionList.length == 0) {
+        } else if (archivesStore.positionList.length == 0) {
             let pres = await OrgApi.getPositionList();
             if (pres.success) {
-                storageStore.$patch({
+                archivesStore.$patch({
                     positionList: pres.data.positionList,
                     currentPositionId: positionId,
                     tenantId: pres.data.tenantId

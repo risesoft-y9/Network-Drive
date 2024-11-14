@@ -264,53 +264,12 @@
                     oldFieldName: '',
                     opt: 'false'
                 };
+                let field1 = {id:"",state:0,tableId:"",fieldCnName:"详情表id",fieldName:"detail_id"
+							,fieldLength:50,fieldType:type + "("+50+")",isMayNull:0,isSystemField:1,oldFieldName:"",opt:"false"};
                 fieldList.value.push(field);
+                fieldList.value.push(field1);
             }
         }
-
-        // if (y9table == null) {
-        //     title.value = '创建门类表';
-        //     table.value = { id: '', systemCnName: systemCnName, systemName: systemName, tableType: 1 };
-        // } else {
-        //     title.value = '编辑门类表【' + y9table.tableCnName + '】';
-        //     table.value = y9table;
-        //     tableOldName.value = y9table.tableName;
-        //     let res = await getTableFieldList(table.value.id);
-        //     fieldList.value = res.data;
-        // }
-        // let res = await getTable(table.value.id);
-        // loading.value = false;
-        // if (res.success) {
-        //     if (y9table != null) {
-        //         table.value = res.data.y9Table;
-        //         if (y9table.tableName.indexOf('y9_archives_') > -1 || y9table.tableName.indexOf('Y9_ARCHIVES_') > -1) {
-        //             prefix.value = y9table.tableName.substring(0, 8);
-        //             table.value.tableName = y9table.tableName.substring(8);
-        //         }
-        //     }
-        //     databaseName.value = res.data.databaseName;
-        //     tableNames.value = res.data.tableNames;
-        // }
-        // if (y9table == null) {
-        //     let type = 'varchar';
-        //     if (databaseName.value == 'oracle' || 'kingbase' == databaseName.value || 'dm' == databaseName.value) {
-        //         type = 'VARCHAR2';
-        //     }
-        //     let field = {
-        //         id: '',
-        //         state: 0,
-        //         tableId: '',
-        //         fieldCnName: '主键',
-        //         fieldName: 'id',
-        //         fieldLength: 38,
-        //         fieldType: type + '(' + 38 + ')',
-        //         isMayNull: 0,
-        //         isSystemField: 1,
-        //         oldFieldName: '',
-        //         opt: 'false'
-        //     };
-        //     fieldList.value.push(field);
-        // }
     }
 
     async function validForm() {

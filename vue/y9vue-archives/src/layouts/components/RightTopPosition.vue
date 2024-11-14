@@ -10,7 +10,7 @@
             </div>
             <template #dropdown>
                 <el-dropdown-menu>
-                    <div v-for="(item, index) in storageStore.positionList" :key="index">
+                    <div v-for="(item, index) in archivesStore.positionList" :key="index">
                         <el-dropdown-item :command="item" v-if="item.id !== positionId">
                             <div class="el-dropdown-item">
                                 <div> <i class="ri-shield-user-line"></i>{{ item.name }} </div>
@@ -39,17 +39,17 @@
     import { ref, computed, ComputedRef, defineComponent } from 'vue';
     import { useRoute } from 'vue-router';
     import y9_storage from '@/utils/storage';
-    import { useStorageStore } from '@/store/modules/storageStore';
+    import { useArchivesStore } from '@/store/modules/archivesStore';
     const fontSizeObj: any = inject('sizeObjInfo');
     let positionName = sessionStorage.getItem('positionName') ? sessionStorage.getItem('positionName') : '';
 
-    const storageStore = useStorageStore();
-    console.log(storageStore.positionList);
+    const archivesStore = useArchivesStore();
+    console.log(archivesStore.positionList);
     // const personInfo = ref();
     // 获取当前登录用户信息
     const userInfo =JSON.parse(sessionStorage.getItem('ssoUserInfo'));
     // 岗位列表
-    let positions: any = storageStore.positionList;
+    let positions: any = archivesStore.positionList;
     let positionId = sessionStorage.getItem('positionId');
     positions.forEach((item, index) => {
         if (item.id == positionId) {
@@ -62,7 +62,7 @@
         sessionStorage.setItem('positionId', command?.id);
         // 设置 positionName
         sessionStorage.setItem('positionName', command?.name);
-        storageStore.$patch({
+        archivesStore.$patch({
             currentPositionId: command?.id,
             currentPositionName: command?.todoCount,
         });

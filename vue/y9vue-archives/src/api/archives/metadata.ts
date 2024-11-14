@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2024-10-22 09:31:48
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2024-10-28 17:43:01
+ * @LastEditTime: 2024-11-14 11:07:02
  * @FilePath: \vue\y9vue-archives\src\api\archives\metadata.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -19,6 +19,18 @@ export function getMetadataList(viewType,page,rows){
   };
   return archivesRequest({
     url: "/vue/metadata/config/getMetadataList",
+    method: 'get',
+    params: params
+  });
+}
+
+
+export function getMetadataOrderList(viewType){
+  const params = {
+    viewType: viewType,
+  };
+  return archivesRequest({
+    url: "/vue/metadata/config/getMetadataOrderList",
     method: 'get',
     params: params
   });
@@ -56,6 +68,28 @@ export function resetConfig(viewType){
     url: "/vue/metadata/config/resetConfig",
     method: 'post',
     params: params
+  });
+}
+
+
+export function getMetadataFieldList(categoryId){
+  const params = {
+    categoryId: categoryId
+  };
+  return archivesRequest({
+    url: "/vue/metadata/config/getMetadataFieldList",
+    method: 'get',
+    params: params
+  });
+}
+
+export function saveListFiledShow(idAndIsShowJson){
+  let data = new FormData();
+  data.append("idAndIsShowJson", idAndIsShowJson);
+  return archivesRequest({
+    url: "/vue/metadata/config/saveListFiledShow",
+    method: 'post',
+    data: data
   });
 }
 
