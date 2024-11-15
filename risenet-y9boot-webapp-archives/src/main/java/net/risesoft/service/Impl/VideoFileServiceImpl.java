@@ -19,7 +19,7 @@ public class VideoFileServiceImpl implements VideoFileService {
     private final VideoFileRepository videoFileRepository;
 
     @Override
-    public Map<String, Object> findByDetailId(String detailId) {
+    public Map<String, Object> findByDetailId(Long detailId) {
         Map<String, Object> map = new HashMap<>();
         VideoFile videoFile = videoFileRepository.findByDetailId(detailId);
         if (null != videoFile) {
@@ -37,4 +37,5 @@ public class VideoFileServiceImpl implements VideoFileService {
     public VideoFile findById(Long id) {
         return videoFileRepository.findById(id).orElse(null);
     }
+
 }

@@ -93,13 +93,13 @@ public class RecordController {
             Map<String, Object> map = new HashMap<>();
             map = EntityToMapConverter.convertToMap(archives);
             if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
-                map.putAll(documentFileService.findByDetailId(archives.getArchives_id().toString()));
+                map.putAll(documentFileService.findByDetailId(archives.getArchives_id()));
             } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
-                map.putAll(imageFileService.findByDetailId(archives.getArchives_id().toString()));
+                map.putAll(imageFileService.findByDetailId(archives.getArchives_id()));
             } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
-                map.putAll(audioFileService.findByDetailId(archives.getArchives_id().toString()));
+                map.putAll(audioFileService.findByDetailId(archives.getArchives_id()));
             } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
-                map.putAll(videoFileService.findByDetailId(archives.getArchives_id().toString()));
+                map.putAll(videoFileService.findByDetailId(archives.getArchives_id()));
             } else {
                 CategoryTable categoryTable = categoryTableService.findByCategoryMark(customId);
                 if (null != categoryTable) {
@@ -187,16 +187,16 @@ public class RecordController {
             archives.setCreateTime(new Date());
             archivesService.save(archives);
             if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
-                documentFile.setDetailId(archives.getArchives_id().toString());
+                documentFile.setDetailId(archives.getArchives_id());
                 documentFileService.save(documentFile);
             } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
-                imageFile.setDetailId(archives.getArchives_id().toString());
+                imageFile.setDetailId(archives.getArchives_id());
                 imageFileService.save(imageFile);
             } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
-                audioFile.setDetailId(archives.getArchives_id().toString());
+                audioFile.setDetailId(archives.getArchives_id());
                 audioFileService.save(audioFile);
             } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
-                videoFile.setDetailId(archives.getArchives_id().toString());
+                videoFile.setDetailId(archives.getArchives_id());
                 videoFileService.save(videoFile);
             } else {
                 categoryTableService.saveTableData("add", customId, archives.getArchives_id().toString(), map);
@@ -209,26 +209,58 @@ public class RecordController {
                     archivesService.save(oldArchives);
                 }
                 if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
-                    DocumentFile oldDocumentFile = documentFileService.findById(documentFile.getId());
-                    Y9BeanUtil.copyProperties(documentFile, oldDocumentFile);
-                    documentFileService.save(oldDocumentFile);
+                    if (null != documentFile.getId()) {
+                        DocumentFile oldDocumentFile = documentFileService.findById(documentFile.getId());
+                        Y9BeanUtil.copyProperties(documentFile, oldDocumentFile);
+                        documentFileService.save(oldDocumentFile);
+                    } else {
+                        documentFile.setDetailId(archives.getArchives_id());
+                        documentFileService.save(documentFile);
+                    }
                 } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
-                    ImageFile oldImageFile = imageFileService.findById(imageFile.getId());
-                    Y9BeanUtil.copyProperties(imageFile, oldImageFile);
-                    imageFileService.save(oldImageFile);
+                    if (null != imageFile.getId()) {
+                        ImageFile oldImageFile = imageFileService.findById(imageFile.getId());
+                        Y9BeanUtil.copyProperties(imageFile, oldImageFile);
+                        imageFileService.save(oldImageFile);
+                    } else {
+                        imageFile.setDetailId(archives.getArchives_id());
+                        imageFileService.save(imageFile);
+                    }
                 } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
-                    AudioFile oldAudioFile = audioFileService.findById(audioFile.getId());
-                    Y9BeanUtil.copyProperties(audioFile, oldAudioFile);
-                    audioFileService.save(oldAudioFile);
+                    if (null != audioFile.getId()) {
+                        AudioFile oldAudioFile = audioFileService.findById(audioFile.getId());
+                        Y9BeanUtil.copyProperties(audioFile, oldAudioFile);
+                        audioFileService.save(oldAudioFile);
+                    } else {
+                        audioFile.setDetailId(archives.getArchives_id());
+                        audioFileService.save(audioFile);
+                    }
                 } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
-                    VideoFile oldVideoFile = videoFileService.findById(videoFile.getId());
-                    Y9BeanUtil.copyProperties(videoFile, oldVideoFile);
-                    videoFileService.save(oldVideoFile);
+                    if (null != videoFile.getId()) {
+                        VideoFile oldVideoFile = videoFileService.findById(videoFile.getId());
+                        Y9BeanUtil.copyProperties(videoFile, oldVideoFile);
+                        videoFileService.save(oldVideoFile);
+                    } else {
+                        videoFile.setDetailId(archives.getArchives_id());
+                        videoFileService.save(videoFile);
+                    }
                 } else {
                     categoryTableService.saveTableData("edit", customId, archives.getArchives_id().toString(), map);
                 }
             }
         }
         return Y9Result.successMsg("保存成功");
+    }
+
+    /**
+     * 删除档案著录数据
+     *
+     * @param ids
+     * @return
+     */
+    @PostMapping(value = "/delete")
+    public Y9Result<String> delete(String categoryId, @RequestParam Long[] ids) {
+        archivesService.delete(categoryId, ids);
+        return Y9Result.successMsg("删除成功");
     }
 }

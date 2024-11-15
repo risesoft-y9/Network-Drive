@@ -11,4 +11,6 @@ public interface ArchivesService {
     Archives save(Archives archives);
 
     Archives findByArchives_id(Long id);
+
+    void delete(String categoryId, Long[] id);
 }

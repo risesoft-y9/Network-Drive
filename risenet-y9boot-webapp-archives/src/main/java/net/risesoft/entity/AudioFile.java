@@ -36,7 +36,7 @@ public class AudioFile implements Serializable {
 
     @Column(name = "DETAIL_ID", nullable = false)
     @Comment("详情关联id")
-    private String detailId;
+    private Long detailId;
 
     @Column(name = "RESPONSIBILITY_PERSON", length = 100)
     @Comment("责任者")

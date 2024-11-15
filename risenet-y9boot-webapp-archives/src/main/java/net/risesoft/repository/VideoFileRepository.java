@@ -9,5 +9,7 @@ import net.risesoft.entity.VideoFile;
 @Transactional(value = "rsTenantTransactionManager", readOnly = true)
 public interface VideoFileRepository extends JpaRepository<VideoFile, Long>, JpaSpecificationExecutor<VideoFile> {
 
-    VideoFile findByDetailId(String detailId);
+    VideoFile findByDetailId(Long detailId);
+
+    void deleteByDetailId(Long detailId);
 }

@@ -109,4 +109,6 @@ public interface CategoryTableService {
 
     Y9Result<Object> saveTableData(String saveTtype, String categoryMark, String detail_id,
         Map<String, Object> listMap);
+
+    Y9Result<Object> deleteTableData(String categoryMark, String detail_id);
 }

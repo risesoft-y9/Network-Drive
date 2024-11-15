@@ -36,7 +36,7 @@ public class DocumentFile implements Serializable {
 
     @Column(name = "DETAIL_ID", nullable = false)
     @Comment("详情关联id")
-    private String detailId;
+    private Long detailId;
 
     @Column(name = "ABREAST_TITLE", length = 600)
     @Comment("并列题名")

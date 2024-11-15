@@ -10,5 +10,7 @@ import net.risesoft.entity.DocumentFile;
 public interface DocumentFileRepository
     extends JpaRepository<DocumentFile, Long>, JpaSpecificationExecutor<DocumentFile> {
 
-    DocumentFile findByDetailId(String detailId);
+    DocumentFile findByDetailId(Long detailId);
+
+    void deleteByDetailId(Long id);
 }

@@ -9,5 +9,7 @@ import net.risesoft.entity.AudioFile;
 @Transactional(value = "rsTenantTransactionManager", readOnly = true)
 public interface AudioFileRepository extends JpaRepository<AudioFile, Long>, JpaSpecificationExecutor<AudioFile> {
 
-    AudioFile findByDetailId(String detailId);
+    AudioFile findByDetailId(Long detailId);
+
+    void deleteByDetailId(Long detailId);
 }

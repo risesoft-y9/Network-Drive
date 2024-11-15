@@ -9,5 +9,7 @@ import net.risesoft.entity.ImageFile;
 @Transactional(value = "rsTenantTransactionManager", readOnly = true)
 public interface ImageFileRepository extends JpaRepository<ImageFile, Long>, JpaSpecificationExecutor<ImageFile> {
 
-    ImageFile findByDetailId(String detailId);
+    ImageFile findByDetailId(Long detailId);
+
+    void deleteByDetailId(Long detailId);
 }

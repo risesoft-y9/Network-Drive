@@ -394,7 +394,6 @@ public class CategoryTableServiceImpl implements CategoryTableService {
             CategoryTable categoryTable = categoryTableRepository.findByCategoryMark(categoryMark);
             String tableName = categoryTable.getTableName();
             String dialect = Y9FormDbMetaDataUtil.getDatabaseDialectName(jdbcTemplate4Tenant.getDataSource());
-            // Map<String, Object> keyValue = this.listMapToKeyValue(listMap);
             String id = keyValue.get("id") != null ? (String)keyValue.get("id") : "";
             if (StringUtils.isBlank(id)) {
                 id = keyValue.get("ID") != null ? (String)keyValue.get("ID") : "";
@@ -558,6 +557,28 @@ public class CategoryTableServiceImpl implements CategoryTableService {
         } catch (Exception e) {
             e.printStackTrace();
             return Y9Result.failure("保存失败");
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public Y9Result<Object> deleteTableData(String categoryMark, String detail_id) {
+        try {
+            CategoryTable categoryTable = categoryTableRepository.findByCategoryMark(categoryMark);
+            String tableName = categoryTable.getTableName();
+            String dialect = Y9FormDbMetaDataUtil.getDatabaseDialectName(jdbcTemplate4Tenant.getDataSource());
+            StringBuilder sqlStr = new StringBuilder();
+            if (SqlConstants.DBTYPE_ORACLE.equals(dialect) || SqlConstants.DBTYPE_DM.equals(dialect)
+                || SqlConstants.DBTYPE_KINGBASE.equals(dialect)) {
+                sqlStr.append("delete from \"" + tableName + "\" where detail_id ='" + detail_id + "'");
+            } else if (SqlConstants.DBTYPE_MYSQL.equals(dialect)) {
+                sqlStr.append("delete from " + tableName + " where detail_id ='" + detail_id + "'");
+            }
+            jdbcTemplate4Tenant.execute(sqlStr.toString());
+            return Y9Result.successMsg("删除成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Y9Result.failure("删除失败");
         }
     }
 

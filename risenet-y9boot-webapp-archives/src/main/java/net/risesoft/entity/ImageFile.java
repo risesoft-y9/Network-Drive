@@ -36,7 +36,7 @@ public class ImageFile implements Serializable {
 
     @Column(name = "DETAIL_ID", nullable = false)
     @Comment("详情关联id")
-    private String detailId;
+    private Long detailId;
 
     @Column(name = "GROUP_NUMBER", length = 4)
     @Comment("组号")

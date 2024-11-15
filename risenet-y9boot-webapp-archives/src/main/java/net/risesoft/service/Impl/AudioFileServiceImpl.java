@@ -19,7 +19,7 @@ public class AudioFileServiceImpl implements AudioFileService {
     private final AudioFileRepository audioFileRepository;
 
     @Override
-    public Map<String, Object> findByDetailId(String detailId) {
+    public Map<String, Object> findByDetailId(Long detailId) {
         Map<String, Object> map = new HashMap<>();
         AudioFile audioFile = audioFileRepository.findByDetailId(detailId);
         if (null != audioFile) {
@@ -37,4 +37,5 @@ public class AudioFileServiceImpl implements AudioFileService {
     public AudioFile findById(Long id) {
         return audioFileRepository.findById(id).orElse(null);
     }
+
 }

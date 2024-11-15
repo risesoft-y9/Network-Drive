@@ -6,9 +6,10 @@ import net.risesoft.entity.VideoFile;
 
 public interface VideoFileService {
 
-    Map<String, Object> findByDetailId(String detailId);
+    Map<String, Object> findByDetailId(Long detailId);
 
     VideoFile save(VideoFile videoFile);
 
     VideoFile findById(Long id);
+
 }

@@ -6,9 +6,10 @@ import net.risesoft.entity.DocumentFile;
 
 public interface DocumentFileService {
 
-    Map<String, Object> findByDetailId(String detailId);
+    Map<String, Object> findByDetailId(Long detailId);
 
     DocumentFile save(DocumentFile documentFile);
 
     DocumentFile findById(Long id);
+
 }

@@ -19,7 +19,7 @@ public class DocumentFileServiceImpl implements DocumentFileService {
     private final DocumentFileRepository documentFileRepository;
 
     @Override
-    public Map<String, Object> findByDetailId(String detailId) {
+    public Map<String, Object> findByDetailId(Long detailId) {
         Map<String, Object> map = new HashMap<>();
         DocumentFile documentFile = documentFileRepository.findByDetailId(detailId);
         if (null != documentFile && null != documentFile.getId()) {
@@ -37,4 +37,5 @@ public class DocumentFileServiceImpl implements DocumentFileService {
     public DocumentFile findById(Long id) {
         return documentFileRepository.findById(id).orElse(null);
     }
+
 }

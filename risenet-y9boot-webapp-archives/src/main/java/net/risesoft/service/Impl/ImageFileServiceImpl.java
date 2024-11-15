@@ -19,7 +19,7 @@ public class ImageFileServiceImpl implements ImageFileService {
     private final ImageFileRepository imageFileRepository;
 
     @Override
-    public Map<String, Object> findByDetailId(String detailId) {
+    public Map<String, Object> findByDetailId(Long detailId) {
         Map<String, Object> map = new HashMap<>();
         ImageFile imageFile = imageFileRepository.findByDetailId(detailId);
         if (null != imageFile) {
@@ -37,4 +37,5 @@ public class ImageFileServiceImpl implements ImageFileService {
     public ImageFile findById(Long id) {
         return imageFileRepository.findById(id).orElse(null);
     }
+
 }
