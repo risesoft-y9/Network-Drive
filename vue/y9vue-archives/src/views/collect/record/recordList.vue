@@ -1,5 +1,5 @@
 <template>
-    <y9Card :showHeader="false">
+    <y9Card :showHeader="false" class="recordList">
         <div class="toolbar">
             <div class="toolbar-left">
                 <el-form :inline="true" @submit.native.prevent>
@@ -7,7 +7,6 @@
                         <el-input
                             v-model="userName"
                             :placeholder="$t('输入档号搜索')"
-                            @keyup.enter.native="loadList"
                             class="search-input global-btn-second"
                             clearable
                         >
@@ -17,7 +16,6 @@
                         <el-input
                             v-model="userName"
                             :placeholder="$t('输入题名搜索')"
-                            @keyup.enter.native="loadList"
                             class="search-input global-btn-second"
                             clearable
                         >
@@ -38,14 +36,14 @@
                     :size="fontSizeObj.buttonSize"
                     :style="{ fontSize: fontSizeObj.baseFontSize }"
                     class="global-btn-second"
-                    @click="loadList"
+                    @click="reset"
                     ><i class="ri-refresh-line"></i>{{ $t('重置') }}</el-button
                 >
                 <el-button
                     :size="fontSizeObj.buttonSize"
                     :style="{ fontSize: fontSizeObj.baseFontSize }"
                     class="global-btn-second"
-                    @click="loadList"
+                    @click="hignSearch"
                     ><i class="ri-search-line"></i>{{ $t('高级搜索') }}</el-button
                 >
             </div>
@@ -110,34 +108,9 @@
                     @click="addRecord"
                     ><i class="ri-file-add-line"></i>{{ $t('新增') }}
                     </el-button>
-                <!-- <el-dropdown>
-                    <span class="el-dropdown-link">
-                        <el-button
-                            class="global-btn-main"
-                            :size="fontSizeObj.buttonSize"
-                            :style="{ fontSize: fontSizeObj.baseFontSize }"
-                            ><i class="ri-file-add-line"></i>{{ $t('新增') }}&nbsp;&nbsp;<i
-                                class="ri-arrow-down-s-line"
-                            ></i
-                        ></el-button>
-                    </span>
-                    <template #dropdown>
-                        <el-dropdown-menu>
-                            <el-dropdown-item>
-                                <el-checkbox
-                                    v-model="checked1"
-                                    label="Option 1"
-                                    size="large"
-                                    @click.native="changeOrder($event, 'FILE_NAME')"
-                                    >{{ $t('文件名') }}</el-checkbox
-                                >
-                            </el-dropdown-item>
-                        </el-dropdown-menu>
-                    </template>
-                </el-dropdown> -->
             </el-col>
             <el-col :span="6">
-                <el-dropdown :hide-on-click="false" :max-height="dropdown_height">
+                <el-dropdown :hide-on-click="false">
                     <span class="el-dropdown-link">
                         <el-button
                             class="global-btn-main"
@@ -150,10 +123,11 @@
                     </span>
                     <template #dropdown>
                         <el-dropdown-menu>
-                            <el-dropdown-item>
+                            <el-dropdown-item style="width: 100px;">
                                 <span
                                     :size="fontSizeObj.buttonSize"
                                     :style="{ fontSize: fontSizeObj.baseFontSize }"
+                                    @click="deleteSelect"
                                     ><i class="ri-delete-bin-2-line"></i>{{ $t('删除') }}</span>
                             </el-dropdown-item>
                         </el-dropdown-menu>
@@ -165,50 +139,72 @@
         <el-drawer
             class="drawerSearch"
             title=""
-            :visible.sync="drawer"
-            :direction="direction"
+            v-model="drawer"
+            direction="ttb"
             :with-header="false"
             :modal="false"
-            :modal-append-to-body="false"
+            :append-to-body="false"
             size="30%"
             >
             <div style="margin: 8px;">
                 <el-form ref="searchForm" label-position="right" label-width="120px" :inline="true" :inline-message="true" :status-icon="true">
                 <el-form-item v-for="(item,index) in searchConf" :label="(item.labelName == undefined || item.labelName == '' || item.labelName == null) ? item.disPlayName : item.labelName" :key="index">
                     <template v-if="item.inputBoxType == 'input' || item.inputBoxType == 'textarea'">
-                    <el-input v-model="searchValue[index]" clearable></el-input>
+                        <el-input v-model="searchValue[index]" clearable></el-input>
                     </template>
                     <template v-if="item.inputBoxType == 'select'">
-                    <el-select v-model="searchValue[index]" :placeholder="`请选择` + ((item.labelName == undefined || item.labelName == '' || item.labelName == null) ? item.disPlayName : item.labelName)" clearable>
-                        <el-option
-                            v-for="(option,index) in item.optionClass"
-                            :label="option.label == undefined ? option.value : option.label"
-                            :value="option.value"
-                            :key="index"
-                        />
-                    </el-select>
+                        <el-select style="width: 175px" v-model="searchValue[index]" :placeholder="`请选择` + ((item.labelName == undefined || item.labelName == '' || item.labelName == null) ? item.disPlayName : item.labelName)" clearable>
+                            <el-option
+                                v-for="(option,index) in item.optionClass"
+                                :label="option.label == undefined ? option.value : option.label"
+                                :value="option.value"
+                                :key="index"
+                            />
+                        </el-select>
                     </template>
-                    <template v-else>
-                    <el-input v-model="searchValue[index]" clearable></el-input> 
+                    <template v-if="item.queryType == 'date'">
+                        <el-date-picker
+                            v-model="item.value"
+                            :range-separator="$t('至')"
+                            clearable
+                            type="daterange"
+                            unlink-panels
+                            value-format="YYYY-MM-DD"
+                        />
+                    </template>
+                    <template v-if="item.inputBoxType == 'dateTime'">
+                        <el-date-picker
+                            v-model="item.value"
+                            :range-separator="$t('至')"
+                            clearable
+                            type="datetimerange"
+                            unlink-panels
+                            value-format="YYYY-MM-DD hh:mm:ss"
+                        />
                     </template>
                 </el-form-item>
                 </el-form>  
             </div>
-            <div style="text-align: center;margin: 15px 10px 10px;">
-                    <span slot="footer" class="dialog-footer">
-                    <el-button type="primary" size="small" @click="searchList">查询</el-button>
-                    <el-button type="primary" size="small" @click="resetSearch">重置</el-button>
-                    <el-button size="small" @click="drawer = false">取消</el-button>
-                    </span>
-                </div>
+            <template #footer>
+                <div style="text-align: center;margin: 15px 10px 10px;">
+                        <span slot="footer" class="dialog-footer">
+                        <el-button type="primary" size="small" @click="searchList">查询</el-button>
+                        <el-button type="primary" size="small" @click="resetSearch">重置</el-button>
+                        <el-button size="small" @click="drawer = false">取消</el-button>
+                        </span>
+                    </div>
+            </template>
             </el-drawer>
         <y9Table
             :config="dataTableConfig"
             @on-curr-page-change="onCurrPageChange"
             @on-page-size-change="onPageSizeChange"
+            @select="handleSelect"
+            @select-all="handleSelect"
         >
             <template #optButton="{ row, column, index }">
                 <span style="font-weight: 600" @click="editRecord(row)"><i class="ri-edit-line"></i>编辑</span>
+                <span style="font-weight: 600;margin-left: 10px;" @click="fileManage(row)"><i class="ri-folder-settings-line"></i>文件管理</span>
             </template>
         </y9Table>
         <y9Dialog v-model:config="dialogConfig">
@@ -221,7 +217,7 @@
     import { $deepAssignObject } from '@/utils/object.ts';
     import { useSettingStore } from '@/store/modules/settingStore';
     import { getMetadataFieldList,saveListFiledShow } from '@/api/archives/metadata';
-    import { getArchivesRecordList,saveFormData} from '@/api/archives/record';
+    import { getArchivesRecordList,saveFormData,deleteData} from '@/api/archives/record';
     import detail from './detail.vue';
 
     const props = defineProps({
@@ -249,7 +245,11 @@
     const data = reactive({
         detailRef:'',
         formData:{},
+        selectData:[],
+        searchConf: [],
+        searchValue: [],
         optType:'',
+        drawer:false,
         //当前节点信息
         currInfo: props.currTreeNodeInfo,
         dataTableConfig: {
@@ -324,7 +324,7 @@
         dropdownIsShowRef: ''
     });
 
-    let { detailRef,formData,optType,currInfo, dataTableConfig,dialogConfig,metadataFieldList,fieldChecked,selectField,dropdownIsShowRef } = toRefs(data);
+    let { detailRef,formData,selectData,searchConf,searchValue,optType,drawer,currInfo, dataTableConfig,dialogConfig,metadataFieldList,fieldChecked,selectField,dropdownIsShowRef } = toRefs(data);
 
     watch(
         () => props.currTreeNodeInfo,
@@ -359,18 +359,45 @@
                         align: item.disPlayAlign
                     });
                 }
-                
+                if(item.openSearch){
+                    if (item.inputBoxType == 'radio' || item.inputBoxType == 'checkbox' || item.inputBoxType == 'select') {
+                        if (item.optionClass.indexOf('[') > -1) {
+                            //静态数据
+                            item.optionClass = JSON.parse(item.optionClass);
+                        } else if (item.optionClass.indexOf('(') > -1) {
+                            //动态数据
+                            let str = item.optionClass.split('(')[0];
+                            let type = str.slice(0, str.length - 1); //数据字典类型标识
+                            // getOptionValueList(type).then((res) => {
+                            //     if (res.success) {
+                            //         let data = res.data;
+                            //         let option = []; //选项
+                            //         for (let obj of data) {
+                            //             let optionObj = {};
+                            //             optionObj.value = obj.code;
+                            //             optionObj.label = obj.name;
+                            //             option.push(optionObj);
+                            //         }
+                            //         item.optionClass = option;
+                            //     }
+                            // });
+                        }
+                    }
+                    searchConf.value.push(item);
+                }
             }
 
             dataTableConfig.value.columns.push({
                 title: computed(() => t('操作')),
                 key: 'optButton',
-                width: '150',
+                width: '180',
                 align: 'center',
                 fixed: 'right',
                 slot: 'optButton'
             });
             getRecordList();
+            console.log('searchConf',searchConf.value);
+            
        }
     }
 
@@ -389,6 +416,10 @@
                 selectField.value.push({id:id,isShow:val});
             }
         }
+    }
+
+    function handleSelect(id,data){
+        selectData.value = id;
     }
 
     async function getRecordList() {
@@ -412,6 +443,14 @@
                 dataTableConfig.value.tableData = res.rows;
                 dataTableConfig.value.pageConfig.total = res.total;
             }
+    }
+
+    function reset(){
+        
+    }
+    
+    function hignSearch(){
+        drawer.value = true;
     }
     
     function convertTimestamp(timestamp,timeType){
@@ -467,6 +506,53 @@
             margin: '2vh auto'
         });
     }
+    
+    function fileManage(){
+        
+    }
+
+    async function deleteSelect(){
+        if (selectData.value.length == 0) {
+            ElNotification({
+                title: '操作提示',
+                message: '请勾选要删除的数据',
+                type: 'error',
+                duration: 2000,
+                offset: 80
+            });
+            return;
+        }
+        ElMessageBox.confirm('你确定要删除的选中的数据吗？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'info'
+        })
+            .then(async () => {
+                let result = { success: false, msg: '' };
+                let ids = [];
+                for (let obj of selectData.value) {
+                    ids.push(obj.archives_id);
+                }
+                result = await deleteData(props.currTreeNodeInfo.id,ids.join(','));
+                ElNotification({
+                    title: result.success ? '成功' : '失败',
+                    message: result.msg,
+                    type: result.success ? 'success' : 'error',
+                    duration: 2000,
+                    offset: 80
+                });
+                if (result.success) {
+                    getRecordList();
+                }
+            })
+            .catch(() => {
+                ElMessage({
+                    type: 'info',
+                    message: '已取消删除',
+                    offset: 65
+                });
+            });
+    }
 
     async function saveChecked(){
         console.log('jsonStr',JSON.stringify(selectField.value));
@@ -506,6 +592,23 @@
             min-width: 0px;
             box-shadow: 0px 0px 0px 0px rgb(0 0 0 / 6%);
         }
+    }
+    .drawerSearch .el-input {
+        display: inline-block;
+        width: 200px; 
+    }
+    
+    .recordList{ 
+        :deep(.el-drawer.ttb,.el-drawer.btt) {
+            top: 255px !important;
+            //width: calc(100% - 815px) !important;
+            width: calc(100vw - 40.2vw) !important;
+            left: calc(100vw - (100vw - 37.8vw)) !important;
+            right: 0;
+            border-top: solid !important;
+            border-top-color: var(--el-color-primary) !important;
+        }
+        
     }
 
 </style>

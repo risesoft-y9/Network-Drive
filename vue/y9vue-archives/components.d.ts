@@ -43,6 +43,7 @@ declare module 'vue' {
     FixedTreeModule: typeof import('./src/components/pageModule/fixedTreeModule.vue')['default']
     Loading: typeof import('element-plus/es')['ElLoadingDirective']
     SelectTree: typeof import('./src/components/pageModule/selectTree.vue')['default']
+    Uploader: typeof import('./src/components/uploader/index.vue')['default']
   }
 }
 

@@ -27,3 +27,15 @@ export function saveFormData(saveType,categoryId,formDataJson){
       data: data
     });
   }
+
+  export function deleteData(categoryId,ids){
+    const params = {
+      categoryId:categoryId,
+      ids:ids
+    };
+    return archivesRequest({
+      url: "/vue/record/delete",
+      method: 'post',
+      params: params
+    });
+  }

@@ -169,7 +169,7 @@
         <el-row v-if="metadataForm.openSearch == '1'">
             <el-col :span="24">
                 <el-form-item label="输入框类型" prop="inputBoxType">
-                    <el-select v-model="metadataForm.inputBoxType" placeholder="请选择">
+                    <el-select v-model="metadataForm.inputBoxType" placeholder="请选择" class="select-input">
                         <el-option key="search" label="文本输入框(带搜索图标)" value="search"></el-option>
                         <el-option key="input" label="文本输入框" value="input"></el-option>
                         <el-option key="select" label="下拉框" value="select"></el-option>
