@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.domain.Page;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +27,7 @@ import net.risesoft.entity.ImageFile;
 import net.risesoft.entity.MetadataConfig;
 import net.risesoft.entity.VideoFile;
 import net.risesoft.enums.CategoryEnums;
+import net.risesoft.model.SearchPage;
 import net.risesoft.model.platform.DataCatalog;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
@@ -78,33 +79,38 @@ public class RecordController {
      * @return
      */
     @GetMapping(value = "/getArchivesRecordList")
-    public Y9Page<Map<String, Object>> getArchivesRecordList(String categoryId, @RequestParam Integer page,
+    public Y9Page<Map<String, Object>> getArchivesRecordList(@RequestParam String categoryId,
+        @RequestParam(required = false) String columnNameAndValues, @RequestParam Integer page,
         @RequestParam Integer rows) {
         if (page < 1) {
             page = 1;
         }
-        List<Map<String, Object>> list_map = new ArrayList<>();
         String tenantId = Y9LoginUserHolder.getTenantId();
+        List<Map<String, Object>> list_map = new ArrayList<>();
+        SearchPage<Archives> searchPage = null;
+        if (StringUtils.isBlank(columnNameAndValues)) {
+            searchPage = archivesService.listArchives(categoryId, page, rows);
+        } else {
+            searchPage = archivesService.listArchivesByColumnNameAndValues(categoryId, columnNameAndValues, page, rows);
+        }
         DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
         String customId = dataCatalog.getCustomId();
-        Page<Archives> pageList = archivesService.pageArchives(categoryId, page, rows);
-        List<Archives> list = pageList.getContent();
-        for (Archives archives : list) {
+        for (Archives archives : searchPage.getRows()) {
             Map<String, Object> map = new HashMap<>();
             map = EntityToMapConverter.convertToMap(archives);
             if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
-                map.putAll(documentFileService.findByDetailId(archives.getArchives_id()));
+                map.putAll(documentFileService.findByDetailId(archives.getArchivesId()));
             } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
-                map.putAll(imageFileService.findByDetailId(archives.getArchives_id()));
+                map.putAll(imageFileService.findByDetailId(archives.getArchivesId()));
             } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
-                map.putAll(audioFileService.findByDetailId(archives.getArchives_id()));
+                map.putAll(audioFileService.findByDetailId(archives.getArchivesId()));
             } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
-                map.putAll(videoFileService.findByDetailId(archives.getArchives_id()));
+                map.putAll(videoFileService.findByDetailId(archives.getArchivesId()));
             } else {
                 CategoryTable categoryTable = categoryTableService.findByCategoryMark(customId);
                 if (null != categoryTable) {
                     List<Map<String, Object>> list_categoryTable = categoryTableService
-                        .getTableData(categoryTable.getTableName(), archives.getArchives_id().toString());
+                        .getTableData(categoryTable.getTableName(), archives.getArchivesId().toString());
                     for (Map<String, Object> map_categoryTable : list_categoryTable) {
                         map.putAll(map_categoryTable);
                     }
@@ -112,7 +118,7 @@ public class RecordController {
             }
             list_map.add(map);
         }
-        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), list_map, "获取列表成功");
+        return Y9Page.success(page, searchPage.getTotalpages(), searchPage.getTotal(), list_map, "获取列表成功");
     }
 
     /**
@@ -187,23 +193,23 @@ public class RecordController {
             archives.setCreateTime(new Date());
             archivesService.save(archives);
             if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
-                documentFile.setDetailId(archives.getArchives_id());
+                documentFile.setDetailId(archives.getArchivesId());
                 documentFileService.save(documentFile);
             } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
-                imageFile.setDetailId(archives.getArchives_id());
+                imageFile.setDetailId(archives.getArchivesId());
                 imageFileService.save(imageFile);
             } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
-                audioFile.setDetailId(archives.getArchives_id());
+                audioFile.setDetailId(archives.getArchivesId());
                 audioFileService.save(audioFile);
             } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
-                videoFile.setDetailId(archives.getArchives_id());
+                videoFile.setDetailId(archives.getArchivesId());
                 videoFileService.save(videoFile);
             } else {
-                categoryTableService.saveTableData("add", customId, archives.getArchives_id().toString(), map);
+                categoryTableService.saveTableData("add", customId, archives.getArchivesId().toString(), map);
             }
         } else {
-            if (null != archives.getArchives_id()) {
-                Archives oldArchives = archivesService.findByArchives_id(archives.getArchives_id());
+            if (null != archives.getArchivesId()) {
+                Archives oldArchives = archivesService.findByArchives_id(archives.getArchivesId());
                 if (null != oldArchives) {
                     Y9BeanUtil.copyProperties(archives, oldArchives);
                     archivesService.save(oldArchives);
@@ -214,7 +220,7 @@ public class RecordController {
                         Y9BeanUtil.copyProperties(documentFile, oldDocumentFile);
                         documentFileService.save(oldDocumentFile);
                     } else {
-                        documentFile.setDetailId(archives.getArchives_id());
+                        documentFile.setDetailId(archives.getArchivesId());
                         documentFileService.save(documentFile);
                     }
                 } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
@@ -223,7 +229,7 @@ public class RecordController {
                         Y9BeanUtil.copyProperties(imageFile, oldImageFile);
                         imageFileService.save(oldImageFile);
                     } else {
-                        imageFile.setDetailId(archives.getArchives_id());
+                        imageFile.setDetailId(archives.getArchivesId());
                         imageFileService.save(imageFile);
                     }
                 } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
@@ -232,7 +238,7 @@ public class RecordController {
                         Y9BeanUtil.copyProperties(audioFile, oldAudioFile);
                         audioFileService.save(oldAudioFile);
                     } else {
-                        audioFile.setDetailId(archives.getArchives_id());
+                        audioFile.setDetailId(archives.getArchivesId());
                         audioFileService.save(audioFile);
                     }
                 } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
@@ -241,11 +247,11 @@ public class RecordController {
                         Y9BeanUtil.copyProperties(videoFile, oldVideoFile);
                         videoFileService.save(oldVideoFile);
                     } else {
-                        videoFile.setDetailId(archives.getArchives_id());
+                        videoFile.setDetailId(archives.getArchivesId());
                         videoFileService.save(videoFile);
                     }
                 } else {
-                    categoryTableService.saveTableData("edit", customId, archives.getArchives_id().toString(), map);
+                    categoryTableService.saveTableData("edit", customId, archives.getArchivesId().toString(), map);
                 }
             }
         }

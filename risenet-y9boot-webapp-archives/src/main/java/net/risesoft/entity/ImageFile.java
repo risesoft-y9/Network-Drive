@@ -34,15 +34,15 @@ public class ImageFile implements Serializable {
     @Comment("主键id")
     private Long id;
 
-    @Column(name = "DETAIL_ID", nullable = false)
+    @Column(name = "DETAILID", nullable = false)
     @Comment("详情关联id")
     private Long detailId;
 
-    @Column(name = "GROUP_NUMBER", length = 4)
+    @Column(name = "GROUPNUMBER", length = 4)
     @Comment("组号")
     private String groupNumber;// 本件电子档案所属的组在“机构或问题代码”下排列的顺序号。
 
-    @Column(name = "GROUP_TITLE", length = 600)
+    @Column(name = "GROUPTITLE", length = 600)
     @Comment("组题名")
     private String groupTitle;// 揭示本组电子档案共同反映的主要内容
 
@@ -52,7 +52,7 @@ public class ImageFile implements Serializable {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIME)
-    @Column(name = "PHOTOGRAPHY_TIME", length = 19)
+    @Column(name = "PHOTOGRAPHYTIME", length = 19)
     @Comment("摄影时间")
     private Date photographyTime;// 本件电子档案的拍摄时间。采用GB/T7408-2005中5.4.1 条的格式，例如“2021-02-24T10:23:14”
 
@@ -72,52 +72,52 @@ public class ImageFile implements Serializable {
     @Comment("背景")
     private String backdrop;// 本件电子档案记录的具有检索或参照作用的实物背景信息，如建筑物、纪念碑、文 物等。
 
-    @Column(name = "LOCATE_INFORMATION", length = 1200)
+    @Column(name = "LOCATEINFORMATION", length = 1200)
     @Comment("定位信息")
     private String locateInformation;// 本件电子档案拍摄地点的一组全球定位信息。包括全球定位系统版本，纬度基准，纬度，经度基准，经度，海拔基准，海拔，方向基准，镜头方向
 
-    @Column(name = "HORIZONTAL_RESOLUTION")
+    @Column(name = "HORIZONTALRESOLUTION")
     @Comment("水平分辨率")
     private Integer horizontalResolution = 0;// 静态图像水平方向每英寸像素数量与垂直分辨率共同构成图像分辨率如“500”
 
-    @Column(name = "VERTICAL_RESOLUTION")
+    @Column(name = "VERTICALRESOLUTION")
     @Comment("垂直分辨率")
     private Integer verticalResolution = 0;// 静态图像垂直方向每英寸像素数量与水平分辨率共同构成图像分辨率如“500”。
 
-    @Column(name = "IMAGE_WIDTH")
+    @Column(name = "IMAGEWIDTH")
     @Comment("图像宽度")
     private Integer imageWidth = 0;// 静态图像水平方向的像素数量。如“1024”。
 
-    @Column(name = "IMAGE_HEIGHT")
+    @Column(name = "IMAGEHEIGHT")
     @Comment("图像高度")
     private Integer imageHeight = 0;// 静态图像垂直方向的像素数量。如“768”
 
-    @Column(name = "COLOR_SPACE", length = 20)
+    @Column(name = "COLORSPACE", length = 20)
     @Comment("色彩空间")
     private String colorSpace;// 表示静态图像颜色集合的抽象数学模型。sRGB,AdobeRGB,ProPhoto RGB,〔其他)
 
-    @Column(name = "CAPTURE_DEVICE_MAkER", length = 100)
+    @Column(name = "CAPTUREDEVICEMAkER", length = 100)
     @Comment("捕获设备制造商")
     private String captureDeviceMaker;// 创建并形成本件电子档案的硬件设备制造商名称。
 
-    @Column(name = "CAPTURE_DEVICE_MODEL", length = 100)
+    @Column(name = "CAPTUREDEVICEMODEL", length = 100)
     @Comment("捕获设备型号")
     private String captureDeviceModel;// 创建并形成本件电子档案的硬件设备的型号。
 
-    @Column(name = "CAPTURE_DEVICE_SENSOR", length = 100)
+    @Column(name = "CAPTUREDEVICESENSOR", length = 100)
     @Comment("捕获设备感光器")
     private String captureDeviceSensor;// 创建并形成本件电子档案的设备感光器的类型和参数 Not defined,One-chip color area sensor，Two-chip color
                                        // area sensor,Three-chip colorarea sensor,〔其他]
 
-    @Column(name = "FILE_FORMAT", length = 10)
+    @Column(name = "FILEFORMAT", length = 10)
     @Comment("文件格式")
     private String fileFormat;// 本件电子档案的计算机文件格式名称。 JPEG,TIFF,〔其他】
 
-    @Column(name = "FILE_SIZE")
+    @Column(name = "FILESIZE")
     @Comment("文件大小")
     private Integer fileSize = 0;// 本件电子档案的字节数。如“3269120”。
 
-    @Column(name = "MICRO_NUMBER", length = 50)
+    @Column(name = "MICRONUMBER", length = 50)
     @Comment("缩微号")
     private String microNumber;// 与本件电子档案对应的缩微胶片的编号。若本件电子档案有对应的缩微胶片则必须采用。
 

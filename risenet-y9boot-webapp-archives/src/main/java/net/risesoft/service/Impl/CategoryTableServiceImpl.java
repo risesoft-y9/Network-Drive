@@ -198,12 +198,12 @@ public class CategoryTableServiceImpl implements CategoryTableService {
             if (StringUtils.isNotBlank(name)) {
                 List<Map<String, String>> list1 = Y9FormDbMetaDataUtil.listAllTables(dataSource, "%" + name + "%");
                 for (Map<String, String> m : list1) {
-                    if (m.get("name").startsWith("y9_form_") || m.get("name").startsWith("Y9_FORM_")) {
+                    if (m.get("name").startsWith("y9_archives_") || m.get("name").startsWith("Y9_ARCHIVES_")) {
                         list.add(m);
                     }
                 }
             } else {
-                list = Y9FormDbMetaDataUtil.listAllTables(dataSource, "y9_form_%");
+                list = Y9FormDbMetaDataUtil.listAllTables(dataSource, "y9_archives_%");
                 String dialect = Y9FormDbMetaDataUtil.getDatabaseDialectName(dataSource);
                 if (SqlConstants.DBTYPE_ORACLE.equals(dialect)) {
                     List<Map<String, String>> list1 = Y9FormDbMetaDataUtil.listAllTables(dataSource, "Y9_ARCHIVES_%");
@@ -372,23 +372,23 @@ public class CategoryTableServiceImpl implements CategoryTableService {
     }
 
     @Override
-    public List<Map<String, Object>> getTableData(String tableName, String detail_id) {
+    public List<Map<String, Object>> getTableData(String tableName, String detailId) {
         List<Map<String, Object>> list_map = new ArrayList<>();
         String dialect = Y9FormDbMetaDataUtil.getDatabaseDialectName(jdbcTemplate4Tenant.getDataSource());
 
         StringBuilder sqlStr = new StringBuilder();
         if (SqlConstants.DBTYPE_ORACLE.equals(dialect) || SqlConstants.DBTYPE_DM.equals(dialect)
             || SqlConstants.DBTYPE_KINGBASE.equals(dialect)) {
-            sqlStr = new StringBuilder("SELECT * FROM \"" + tableName + "\" where detail_id =?");
+            sqlStr = new StringBuilder("SELECT * FROM \"" + tableName + "\" where detailId =?");
         } else if (SqlConstants.DBTYPE_MYSQL.equals(dialect)) {
-            sqlStr = new StringBuilder("SELECT * FROM " + tableName + " where detail_id =?");
+            sqlStr = new StringBuilder("SELECT * FROM " + tableName + " where detailId =?");
         }
-        list_map = jdbcTemplate4Tenant.queryForList(sqlStr.toString(), detail_id);
+        list_map = jdbcTemplate4Tenant.queryForList(sqlStr.toString(), detailId);
         return list_map;
     }
 
     @Override
-    public Y9Result<Object> saveTableData(String saveType, String categoryMark, String detail_id,
+    public Y9Result<Object> saveTableData(String saveType, String categoryMark, String detailId,
         Map<String, Object> keyValue) {
         try {
             CategoryTable categoryTable = categoryTableRepository.findByCategoryMark(categoryMark);
@@ -398,7 +398,7 @@ public class CategoryTableServiceImpl implements CategoryTableService {
             if (StringUtils.isBlank(id)) {
                 id = keyValue.get("ID") != null ? (String)keyValue.get("ID") : "";
             }
-            System.out.println("***********************detail_id:" + detail_id + ",id:" + id);
+            System.out.println("***********************detailId:" + detailId + ",id:" + id);
 
             List<CategoryTableField> tableFieldList =
                 categoryTableFieldRepository.findByTableIdOrderByDisplayOrderAsc(categoryTable.getId());
@@ -463,8 +463,8 @@ public class CategoryTableServiceImpl implements CategoryTableService {
                                 sqlStr1.append(StringUtils.isNotBlank((String)keyValue.get(fieldName))
                                     ? "'" + keyValue.get(fieldName) + "'" : "''");
                             }
-                        } else if (fieldName.equals("detail_id") || fieldName.equals("DETAIL_ID")) {
-                            sqlStr1.append("'" + detail_id + "'");
+                        } else if (fieldName.equals("detailId") || fieldName.equals("DETAILID")) {
+                            sqlStr1.append("'" + detailId + "'");
                         } else {
                             if (keyValue.get(fieldName) instanceof ArrayList) {
                                 sqlStr1.append(StringUtils.isNotBlank(keyValue.get(fieldName).toString())
@@ -562,7 +562,7 @@ public class CategoryTableServiceImpl implements CategoryTableService {
 
     @Override
     @Transactional(readOnly = false)
-    public Y9Result<Object> deleteTableData(String categoryMark, String detail_id) {
+    public Y9Result<Object> deleteTableData(String categoryMark, String detailId) {
         try {
             CategoryTable categoryTable = categoryTableRepository.findByCategoryMark(categoryMark);
             String tableName = categoryTable.getTableName();
@@ -570,9 +570,9 @@ public class CategoryTableServiceImpl implements CategoryTableService {
             StringBuilder sqlStr = new StringBuilder();
             if (SqlConstants.DBTYPE_ORACLE.equals(dialect) || SqlConstants.DBTYPE_DM.equals(dialect)
                 || SqlConstants.DBTYPE_KINGBASE.equals(dialect)) {
-                sqlStr.append("delete from \"" + tableName + "\" where detail_id ='" + detail_id + "'");
+                sqlStr.append("delete from \"" + tableName + "\" where detailId ='" + detailId + "'");
             } else if (SqlConstants.DBTYPE_MYSQL.equals(dialect)) {
-                sqlStr.append("delete from " + tableName + " where detail_id ='" + detail_id + "'");
+                sqlStr.append("delete from " + tableName + " where detailId ='" + detailId + "'");
             }
             jdbcTemplate4Tenant.execute(sqlStr.toString());
             return Y9Result.successMsg("删除成功");

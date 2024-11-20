@@ -34,11 +34,11 @@ public class DocumentFile implements Serializable {
     @Comment("主键id")
     private Long id;
 
-    @Column(name = "DETAIL_ID", nullable = false)
+    @Column(name = "DETAILID", nullable = false)
     @Comment("详情关联id")
     private Long detailId;
 
-    @Column(name = "ABREAST_TITLE", length = 600)
+    @Column(name = "ABREASTTITLE", length = 600)
     @Comment("并列题名")
     private String abreastTitle;// 用第二种语言文字书写的与题名对照并列的题名
 
@@ -46,11 +46,11 @@ public class DocumentFile implements Serializable {
     @Comment("副题名")
     private String subtitle;// 解释或从属于题名的另一题名，利于通过题名的解释文字或从属信息进步了解文件
 
-    @Column(name = "KEY_WORD", length = 100)
+    @Column(name = "KEYWORD", length = 100)
     @Comment("关键词")
     private String keyWord;// 用以表达本件电子档案的主题并具有检索意义的词或词组
 
-    @Column(name = "PERSON_NAME", length = 200)
+    @Column(name = "PERSONNAME", length = 200)
     @Comment("人名")
     private String personName;// 本件电子档案中涉及的具有检索意义的人物姓名。
 
@@ -58,45 +58,45 @@ public class DocumentFile implements Serializable {
     @Comment("摘要")
     private String excerpt;// 对本件电子档案核心内容的简短描述
 
-    @Column(name = "DOCUMENT_NUMBER", length = 50)
+    @Column(name = "DOCUMENTNUMBER", length = 50)
     @Comment("文号")
     private String documentNumber;// 本文件在制发过程中由制发机关、团体或个人赋予该文件的顺序号。一般由发文机关代字、发文年号和发文顺序号三部分组成。若本文件有文号则必须采用。
 
-    @Column(name = "RESPONSIBILITY_PERSON", length = 100)
+    @Column(name = "RESPONSIBILITYPERSON", length = 100)
     @Comment("责任者")
     private String responsibilityPerson;// 对本文件的内容进行创造、负有责任的团体或个人。
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIME)
-    @Column(name = "PHOTOGRAPHY_TIME", length = 19)
+    @Column(name = "PHOTOGRAPHYTIME", length = 19)
     @Comment("成文日期")
     private Date photographyTime;// 本文件形成的日期，为文件发文时间、发表时间、签署时间或通过时间。采用GB/T 7408-2005中5.2.1.1条规定的格式,例如“2021-02-24”
 
-    @Column(name = "DOCUMENT_TYPE", length = 12)
+    @Column(name = "DOCUMENTTYPE", length = 12)
     @Comment("文种")
     private String documentType;// 按性质和用途确定的文件种类的名称。 命令(令)，决定，公告通告,通知,通报,议案报告,请示,批复,意见函,纪要，指示,决议，公报,条例，规定，〔其他]
 
-    @Column(name = "LANGUAGE_TYPE", length = 50)
+    @Column(name = "LANGUAGETYPE", length = 50)
     @Comment("语种")
     private String languageType;// 本文件正文所使用的语言的类别。默认为汉语。
 
-    @Column(name = "URGENT_LEVEL", length = 4)
+    @Column(name = "URGENTLEVEL", length = 4)
     @Comment("紧急程度")
     private String urgentLevel;// 对本文件送达和办理时间要求的急缓等级。 特提、特急、加急、平急、急件、〔其他〕。
 
-    @Column(name = "ACTIVE_SEND", length = 200)
+    @Column(name = "ACTIVESEND", length = 200)
     @Comment("主送")
     private String activeSend;// 本文件的主要受理者，说明文件的发送对象。
 
-    @Column(name = "COPY_SEND", length = 200)
+    @Column(name = "COPYSEND", length = 200)
     @Comment("抄送")
     private String copySend;// 除主送者以外需要执行或知晓本文件的其他受文者
 
-    @Column(name = "PAGE_NUMBER")
+    @Column(name = "PAGENUMBER")
     @Comment("页数")
     private Integer pageNumber = 0;// 本件电子档案包含的总页数。如33”
 
-    @Column(name = "MICRO_NUMBER", length = 50)
+    @Column(name = "MICRONUMBER", length = 50)
     @Comment("缩微号")
     private String microNumber;// 与本件电子档案对应的缩微胶片的编号。若本件电子档案有对应的缩微胶片则必须采用。
 
@@ -107,7 +107,7 @@ public class DocumentFile implements Serializable {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIME)
-    @Column(name = "DRAFT_TIME", length = 19)
+    @Column(name = "DRAFTTIME", length = 19)
     @Comment("拟稿时间")
     private Date draftTime;// 起草本文件草稿的时间。采用GB/T7408-2005中5.4.1条的格式，例如“2021-02-24T10:23:14”。若发文则必须采用。
 
@@ -118,18 +118,18 @@ public class DocumentFile implements Serializable {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIME)
-    @Column(name = "REVIEW_TIME", length = 19)
+    @Column(name = "REVIEWTIME", length = 19)
     @Comment("核稿时间")
     private Date reviewTime;// 审核本文件的时间。采用GB/T7408-2005中5.4.1条的格式，例如“2021-02-24T10:23:14”。若发文则必须采用
 
-    @Column(name = "LEGITIMACY_REVIEWER", length = 50)
+    @Column(name = "LEGITIMACYREVIEWER", length = 50)
     @Comment("合法性审查人")
     private String legitimacyReviewer;// 对于一些机关发布行政规范性文件来讲，还须把好法制关，应由法制部门对文件进行合法性审查，
     // 主要包括制定主体的审查、是否逾越权限的审查、具体行政措施的审查、是否与上位法抵本触的审查等。合法性审查人即完成文件合法性审查的工作人员。若发文并进行了合法性审查则必须采用。
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIME)
-    @Column(name = "LEGITIMACY_REVIEWE_TIME", length = 19)
+    @Column(name = "LEGITIMACYREVIEWETIME", length = 19)
     @Comment("合法性审查时间")
     private Date legitimacyRevieWeTime;// 对本文件进行合法性审查的时间。采用GB/T7408-2005中5.4.1条的格式，例如“2021-02-24T10:23:14”。若发文并进行了合法性审查则必须采用。
 
@@ -140,7 +140,7 @@ public class DocumentFile implements Serializable {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIME)
-    @Column(name = "SIGN_TIME", length = 19)
+    @Column(name = "SIGNTIME", length = 19)
     @Comment("签发时间")
     private Date signTime;// 领导签发本文件的时间。采用(;B/T7408-2005中5.4.1条的格式，例如“2021-02-24T10:23:14”。若发文则必须采用。
 
@@ -150,7 +150,7 @@ public class DocumentFile implements Serializable {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIME)
-    @Column(name = "PROOFREADING_TIME", length = 19)
+    @Column(name = "PROOFREADINGTIME", length = 19)
     @Comment("校对时间")
     private Date proofreadingTime;// 对本文件进行校对的时间。采用GB/T7408-2005 中5.4.1条的格式，例如“2021-02-24T10:23:14若发文则必须采用。
 
@@ -160,7 +160,7 @@ public class DocumentFile implements Serializable {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIME)
-    @Column(name = "REGISTRANT_TIME", length = 19)
+    @Column(name = "REGISTRANTTIME", length = 19)
     @Comment("登记时间")
     private Date registrantTime;// 对本文件进行登记的时间。采用GB/T7408-2005中 5.4.1条的格式,例如“2021-02-24T10:23:14”若收文则必须采用。
 
@@ -171,7 +171,7 @@ public class DocumentFile implements Serializable {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIME)
-    @Column(name = "PROPOSER_TIME", length = 19)
+    @Column(name = "PROPOSERTIME", length = 19)
     @Comment("拟办时间")
     private Date proposerTime;// 拟办人员对本文件进行办理的时间采用GB/T7408-2005中5.4.1 条的格式，例如“2021-02-24T10:23:14”。若收文则必须采用。
 
@@ -182,7 +182,7 @@ public class DocumentFile implements Serializable {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIME)
-    @Column(name = "APPROVER_TIME", length = 19)
+    @Column(name = "APPROVERTIME", length = 19)
     @Comment("批办时间")
     private Date approverTime;// 领导人对本文件批示办理意见的时间。采用GB/T7408-2005中5.4.1条的格式，例如“2021-02-24T10:23:14”。若收文则必须采用。
 
@@ -193,27 +193,27 @@ public class DocumentFile implements Serializable {
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIME)
-    @Column(name = "UNDERTAKER_TIME", length = 19)
+    @Column(name = "UNDERTAKERTIME", length = 19)
     @Comment("承办时间")
     private Date undertakerTime;// 本文件承办的时间。采用GB/T7408-2005中5.4.1条的格式，例如“2021-02-24T10:23:14”。若收文则必须采用。
 
-    @Column(name = "COMPONENT_NUMBER", length = 3)
+    @Column(name = "COMPONENTNUMBER", length = 3)
     @Comment("组件号")
     private String componentNumber;// 本组件在该件电子档案内排列的顺序号。如“D01”
 
-    @Column(name = "COMPONENT_CATEGORY", length = 20)
+    @Column(name = "COMPONENTCATEGORY", length = 20)
     @Comment("组件类别")
     private String componentCategory;// 揭示本组件的类型、稿本等属性。 正本，文件处理单，定稿，重要修改稿，〔其他〕。
 
-    @Column(name = "COMPONENT_TITLE", length = 600)
+    @Column(name = "COMPONENTTITLE", length = 600)
     @Comment("组件题名")
     private String componentTitle;// 揭示本组件的中心主题的标题或名称 。
 
-    @Column(name = "COMPONENT_FORMAT", length = 10)
+    @Column(name = "COMPONENTFORMAT", length = 10)
     @Comment("组件格式")
     private String componentFormat;// 本组件的计算机文件格式名称
 
-    @Column(name = "COMPONENT_SIZE")
+    @Column(name = "COMPONENTSIZE")
     @Comment("组件大小")
     private Integer componentSize = 0;// 本组件的计算机文件大小。以字节为单位。如“69120”
 }
