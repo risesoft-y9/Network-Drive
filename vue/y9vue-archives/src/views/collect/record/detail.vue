@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2024-11-07 14:54:27
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2024-11-14 11:19:25
+ * @LastEditTime: 2024-11-19 18:30:27
  * @FilePath: \vue\y9vue-archives\src\views\collect\record\detail.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -96,7 +96,7 @@
                         <template v-if="item.re_inputBoxType == 'select'">
                             <el-select v-model="detailForm[item.columnName]" :placeholder="item.disPlayName" class="select-input" clearable>
                                 <el-option
-                                    v-for="option in item.optionValue"
+                                    v-for="option in item.optionClass"
                                     :label="option.label == undefined ? option.value : option.label"
                                     :value="option.value"
                                 />
@@ -158,7 +158,11 @@ import { onMounted, watch } from 'vue';
     onMounted(() => {
         formFieldList.value = props.metadataFieldList;
         initRecordRules();
-        detailForm.value = props.formData;
+        if(props.optType=='add'){
+            detailForm.value = {};
+        }else{
+            detailForm.value = props.formData;
+        }
     });
 
     defineExpose({
@@ -282,11 +286,18 @@ import { onMounted, watch } from 'vue';
 
    
 </script>
+<style lang="scss" scoped>
+.y9-dialog-content{
+    .el-form-item:last-child{
+        margin-bottom: 26px !important;
+    }
+}
+</style>
 <style>
 .detailPageForm .select-input {
-        width: 175px !important;
-    }
-    .detailPageForm .el-input__wrapper{
-        width: 177px !important;;
-    }
+        width: 198px !important;
+}
+.detailPageForm .el-input__wrapper{
+    width: 177px !important;;
+}
 </style>

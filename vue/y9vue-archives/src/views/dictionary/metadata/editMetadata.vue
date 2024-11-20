@@ -178,10 +178,14 @@
                 </el-form-item>
             </el-col>
         </el-row>
-        <el-row v-if="metadataForm.inputBoxType == 'select' && metadataForm.openSearch == '1'">
+        <!--字典设置-->
+        <el-divider v-if="(metadataForm.openSearch == '1' && metadataForm.inputBoxType == 'select') || (metadataForm.isRecord == '1' && metadataForm.re_inputBoxType == 'select')" content-position="left">字典设置</el-divider>
+        <el-row v-if="(metadataForm.openSearch == '1' && metadataForm.inputBoxType == 'select') || (metadataForm.isRecord == '1' && metadataForm.re_inputBoxType == 'select')">
             <el-col :span="24">
                 <el-form-item label="数据字典" prop="optionClass">
-                    <el-input v-model="metadataForm.optionClass" :readonly="true" @click="selectOption"></el-input>
+                    <el-select v-for="item in optionClassList" :key="item.type" v-model="metadataForm.optionClass" placeholder="请选择" class="select-input">
+                        <el-option  :label="item.name" :value="item.type"></el-option>
+                    </el-select>
                 </el-form-item>
             </el-col>
         </el-row>
@@ -189,6 +193,7 @@
 </template>
 
 <script lang="ts" setup>
+import {  getOptionClassList } from '@/api/archives/dictionaryOption';
     const props = defineProps({
         metadata: {
             type: Object,
@@ -201,22 +206,30 @@
     const data = reactive({
         metadataForm: {},
         fieldFormRef: '',
+        optionClassList: [],
         rules: {
             disPlayName: { required: true, message: '请输入显示名称' },
             disPlayWidth: { required: true, message: '请输入显示宽度' },
             disPlayAlign: { required: true, message: '请选择显示位置' },
         }
     });
-    let { metadataForm, rules, fieldFormRef } = toRefs(data);
+    let { metadataForm,optionClassList, rules, fieldFormRef } = toRefs(data);
 
     onMounted(() => {
         metadataForm.value = props.metadata;
+        getAllDictionaryOption();
     });
 
     defineExpose({
         metadataForm,
         fieldFormRef
     });
+
+    function getAllDictionaryOption() {
+        getOptionClassList().then((res) => {
+            optionClassList.value = res.data;
+        });
+    }
 
     function switchchange(val) {
         if (val == 1) {
@@ -234,6 +247,15 @@
             rules.value.re_inputBoxType = {};
             rules.value.re_inputBoxWidth = {};
         }
+    }
+
+    function selectOption() {
+        Object.assign(dialogConfig.value, {
+            show: true,
+            width: '30%',
+            title: '字典选择',
+            showFooter: true
+        });
     }
 </script>
 <style>

@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2022-01-10 18:09:52
- * @LastEditTime: 2024-04-10 16:55:25
- * @LastEditors: mengjuhua
+ * @LastEditTime: 2024-11-20 11:48:05
+ * @LastEditors: yihong yihong@risesoft.net
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /sz- team-frontend-9.6.x/y9vue-archives/src/main.js
  */
@@ -19,6 +19,8 @@ import './theme/global.scss'
 import 'viewerjs/dist/viewer.css'
 import VueViewer from 'v-viewer'
 import i18n from "./language"
+import uploader from 'vue-simple-uploader'
+import 'vue-simple-uploader/dist/style.css'
 
 // 传入sso所需的环境变量
 const env = {
@@ -50,6 +52,7 @@ app.use(VueViewer)
 setupStore(app)
 app.use(router)
 app.use(i18n)
+app.use(uploader)
 app.mount('#app')
 
 export const $y9_SSO = app.$y9_SSO;
