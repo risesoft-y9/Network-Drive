@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2024-10-15 17:23:12
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2024-11-05 14:05:56
+ * @LastEditTime: 2024-11-22 10:39:06
  * @FilePath: \vue\y9vue-archives\src\views\collect\recordList.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -10,43 +10,28 @@
     <catalogTree ref="catalogTreeRef" :treeApiObj="treeApiObj" @onTreeClick="onTreeClick" @onNodeExpand="onNodeExpand">
         <template #rightContainer>
             <template v-if="Object.keys(currTreeNodeInfo).length > 0">
-                <RecordList :currTreeNodeInfo="currTreeNodeInfo" :parentCatalog="parentCatalog"></RecordList>
+                <RecordList v-if="menuType=='record'" :currTreeNodeInfo="currTreeNodeInfo" :parentCatalog="parentCatalog"/>
+                <PreArchingList v-if="menuType=='preArchiving'" :currTreeNodeInfo="currTreeNodeInfo"/>
             </template>
         </template>
     </catalogTree>
-    <!-- <form ref="formRef" :model="formData" :rules="rules">
-            <table>
-                <tr>
-                    <td>
-                        <el-form-item label="类别代码" prop="name">
-                            <el-select v-model="formData.categoryCode" placeholder="请选择类别代码">
-                                <el-option label="文书类" value="WS" />
-                                <el-option label="照片类" value="ZP" />
-                                <el-option label="录音类" value="LY" />
-                                <el-option label="录像类" value="LX" />
-                            </el-select>
-                        </el-form-item>
-                    </td>
-                    <td>
-                        <el-form-item label="全宗名称" prop="name">
-                            <el-input
-                                type="number"
-                                style="width: 200px; margin-left: 15px"
-                                ref="nameSign"
-                                v-model="formData.capacitySize"
-                                clearable
-                            />
-                        </el-form-item>
-                    </td>
-                </tr>
-            </table>
-        </form> -->
 </template>
 <script lang="ts" setup>
     import { ref, reactive } from 'vue';
-    import RecordList from './recordList.vue';
-    import { getCatalogList } from '@/api/archives/collect';
+    import RecordList from '@/views/collect/record/recordList.vue';
+    import PreArchingList from '@/views/collect/beforehand/preArchingList.vue';
     import { getCatelogTree } from '@/api/archives/catalog';
+
+    const props = defineProps({
+        menuType: String
+    });
+
+    watch(() => props.menuType,
+        (newVal, oldVal) => {
+            catalogTreeRef.value.onRefreshTree();
+        },
+        {deep: true}
+    );
 
     const data = reactive({
         catalogTreeRef: '', //tree实例
