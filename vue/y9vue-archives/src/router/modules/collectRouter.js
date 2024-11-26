@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2024-10-09 10:05:19
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2024-11-01 15:58:42
+ * @LastEditTime: 2024-11-22 17:28:53
  * @FilePath: \vue\y9vue-archives\src\router\modules\collectRouter.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -37,17 +37,19 @@ const collectRouter = {
             },
             {
                 path: '/collect/cataloging',
-                component: () => import('@/views/collect/record/index.vue'),
+                component: () => import('@/views/common/index.vue'),
                 name: 'cataloging',
+                props: route => ({menuType: 'record'}),
                 meta: {
                     title: '档案著录',
                     icon: 'ri-book-read-line',
                 },
             },
             {
-                path: '/collect/preAarchiving',
-                component: () => import('@/views/collect/index3.vue'),
-                name: 'preAarchiving',
+                path: '/collect/preArchiving',
+                component: () => import('@/views/common/index.vue'),
+                name: 'preArchiving',
+                props: route => ({menuType: 'preArchiving'}),
                 meta: {
                     title: '预归档库',
                     icon: 'ri-clockwise-line',
@@ -64,7 +66,7 @@ const collectRouter = {
             },
             {
                 path: '/collect/recycleBin',
-                component: () => import('@/views/collect/index3.vue'),
+                component: () => import('@/views/collect/recycleBin/list.vue'),
                 name: 'recycleBin',
                 meta: {
                     title: '回收站',

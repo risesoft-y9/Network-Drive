@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2024-10-22 09:31:48
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2024-11-14 11:07:02
+ * @LastEditTime: 2024-11-25 18:03:07
  * @FilePath: \vue\y9vue-archives\src\api\archives\metadata.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -71,13 +71,25 @@ export function resetConfig(viewType){
   });
 }
 
-
+//获取元数据字段列表(根据categoryId获取数据目录的顶节点)
 export function getMetadataFieldList(categoryId){
   const params = {
     categoryId: categoryId
   };
   return archivesRequest({
     url: "/vue/metadata/config/getMetadataFieldList",
+    method: 'get',
+    params: params
+  });
+}
+
+
+export function getMetadataConfigList(viewType){
+  const params = {
+    viewType: viewType
+  };
+  return archivesRequest({
+    url: "/vue/metadata/config/getMetadataConfigList",
     method: 'get',
     params: params
   });

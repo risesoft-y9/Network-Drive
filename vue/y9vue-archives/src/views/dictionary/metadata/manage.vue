@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2024-10-18 17:13:58
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2024-11-12 09:45:18
+ * @LastEditTime: 2024-11-26 12:00:37
  * @FilePath: \vue\y9vue-archives\src\views\dictionary\metadata\manage.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -18,10 +18,10 @@
                 <el-col :span="20">
                     <template
                         v-if="
-                            activeName != 'document' &&
-                            activeName != 'image' &&
-                            activeName != 'video' &&
-                            activeName != 'audio'
+                            activeName != 'WS' &&
+                            activeName != 'ZP' &&
+                            activeName != 'LX' &&
+                            activeName != 'LY'
                         "
                     >
                         <el-button
@@ -32,6 +32,13 @@
                             ><i class="ri-database-line"></i>门类表管理
                         </el-button>
                     </template>
+                    <el-button
+                        type="primary"
+                        :size="fontSizeObj.buttonSize"
+                        :style="{ fontSize: fontSizeObj.baseFontSize }"
+                        @click="numberRules"
+                        ><i class="ri-list-ordered-2"></i>档号规则
+                    </el-button>
                     <el-button
                         type="primary"
                         :size="fontSizeObj.buttonSize"
@@ -76,6 +83,7 @@
                 :dialogConfig_parent="dialogConfig"
             />
             <orderList v-if="dialogConfig.type == 'orderList'" ref="orderListRef" :metadata="metadata" :categoryMark="activeName"/>
+            <NumberRules v-if="dialogConfig.type == 'numberRules'" ref="numberRulesRef" :categoryMark="activeName" :dialogConfig_parent="dialogConfig"/>
         </y9Dialog>
     </y9Card>
 </template>
@@ -86,6 +94,7 @@
     import editMetadata from './editMetadata.vue';
     import newOrModifyTable from './table/newOrModifyTable.vue';
     import orderList from './orderList.vue';
+    import NumberRules from './numberRules.vue';
     import { getMetadataList, saveMetadataConfig, saveOrder, resetConfig } from '@/api/archives/metadata';
     import { getAllCategory, getCategoryList } from '@/api/archives/category';
     import { render } from 'vue';
@@ -103,10 +112,11 @@
         })();
     };
     const data = reactive({
+        numberRulesRef: '',
         editMetadataRef: '',
         orderListRef:'',
         metadata: {},
-        activeName: 'document',
+        activeName: 'WS',
         categoryList: [],
         tableConfig: {
             columns: [
@@ -259,36 +269,38 @@
             onOkLoading: true,
             onOk: (newConfig) => {
                 return new Promise(async (resolve, reject) => {
-                    const fieldInstance = editMetadataRef.value.fieldFormRef;
-                    fieldInstance.validate(async (valid) => {
-                        if (valid) {
-                            let res = { success: false, msg: '' };
-                            let formData = editMetadataRef.value.metadataForm;
-                            res = await saveMetadataConfig(formData);
-                            if (res == undefined) {
+                    if (dialogConfig.value.type == 'editMetadata') {
+                        const fieldInstance = editMetadataRef.value.fieldFormRef;
+                        fieldInstance.validate(async (valid) => {
+                            if (valid) {
+                                let res = { success: false, msg: '' };
+                                let formData = editMetadataRef.value.metadataForm;
+                                res = await saveMetadataConfig(formData);
+                                if (res == undefined) {
+                                    reject();
+                                    return;
+                                }
+                                ElNotification({
+                                    title: res.success ? '成功' : '失败',
+                                    message: res.msg,
+                                    type: res.success ? 'success' : 'error',
+                                    duration: 2000,
+                                    offset: 80
+                                });
+                                if (res.success) {
+                                    reloadTable();
+                                }
+                                resolve();
+                            } else {
+                                ElMessage({
+                                    type: 'error',
+                                    message: '验证不通过，请检查',
+                                    offset: 65
+                                });
                                 reject();
-                                return;
                             }
-                            ElNotification({
-                                title: res.success ? '成功' : '失败',
-                                message: res.msg,
-                                type: res.success ? 'success' : 'error',
-                                duration: 2000,
-                                offset: 80
-                            });
-                            if (res.success) {
-                                reloadTable();
-                            }
-                            resolve();
-                        } else {
-                            ElMessage({
-                                type: 'error',
-                                message: '验证不通过，请检查',
-                                offset: 65
-                            });
-                            reject();
-                        }
-                    });
+                        });
+                    }
                 });
             },
             visibleChange: (visible) => {
@@ -298,7 +310,7 @@
         currentRow: null,
         categoryData: { categoryMark: '', categoryName: '' }
     });
-    let { activeName, categoryList, tableConfig, metadata, editMetadataRef,orderListRef, dialogConfig, currentRow, categoryData } =
+    let { activeName, categoryList, tableConfig, metadata,numberRulesRef, editMetadataRef,orderListRef, dialogConfig, currentRow, categoryData } =
         toRefs(data);
 
     onMounted(() => {
@@ -362,6 +374,16 @@
         });
     }
 
+    function numberRules(){
+        Object.assign(dialogConfig.value, {
+            show: true,
+            width: '35%',
+            type: 'numberRules',
+            title: '档号生成规则',
+            showFooter: false,
+        });
+    }
+
     function openOrder(){
         Object.assign(dialogConfig.value, {
             show: true,
@@ -409,95 +431,7 @@
             cancelText: '取消'
         });
     }
-
-    const moveUp = () => {
-        //上移
-        if (currentRow.value.length == 0) {
-            ElNotification({
-                title: '操作提示',
-                message: '请点击选中一条数据',
-                type: 'error',
-                duration: 2000,
-                offset: 80
-            });
-            return;
-        }
-
-        let index = 0;
-        for (let i = 0; i < tableConfig.value.tableData.length; i++) {
-            if (currentRow.value.id == tableConfig.value.tableData[i].id) {
-                index = i;
-                break;
-            }
-        }
-        if (index > 0) {
-            let upRow = tableConfig.value.tableData[index - 1];
-            let currRow = tableConfig.value.tableData[index];
-            let tabIndex = upRow.tabIndex;
-            upRow.tabIndex = currRow.tabIndex;
-            currRow.tabIndex = tabIndex;
-            tableConfig.value.tableData.splice(index - 1, 1);
-            tableConfig.value.tableData.splice(index, 0, upRow);
-        } else {
-            ElNotification({
-                title: '操作提示',
-                message: '已经是第一条，不可上移',
-                type: 'error',
-                duration: 2000,
-                offset: 80
-            });
-        }
-    };
-
-    const moveDown = () => {
-        //下移
-        if (currentRow.value.length == 0) {
-            ElNotification({ title: '操作提示', message: '请选择数据', type: 'error', duration: 2000, offset: 80 });
-            return;
-        }
-
-        let index = 0;
-        for (let i = 0; i < tableConfig.value.tableData.length; i++) {
-            if (currentRow.value.id == tableConfig.value.tableData[i].id) {
-                index = i;
-                break;
-            }
-        }
-        if (index + 1 == tableConfig.value.tableData.length) {
-            ElNotification({
-                title: '操作提示',
-                message: '已经是最后一条，不可下移',
-                type: 'error',
-                duration: 2000,
-                offset: 80
-            });
-        } else {
-            let downRow = tableConfig.value.tableData[index + 1];
-            let currRow = tableConfig.value.tableData[index];
-            let tabIndex = downRow.tabIndex;
-            downRow.tabIndex = currRow.tabIndex;
-            currRow.tabIndex = tabIndex;
-            tableConfig.value.tableData.splice(index + 1, 1);
-            tableConfig.value.tableData.splice(index, 0, downRow);
-        }
-    };
-
-    function saveViewOrder() {
-        let ids = [];
-        for (let item of tableConfig.value.tableData) {
-            ids.push(item.id + ':' + item.tabIndex);
-        }
-        const loading = ElLoading.service({ lock: true, text: '正在处理中', background: 'rgba(0, 0, 0, 0.3)' });
-        saveOrder(ids.toString()).then((res) => {
-            loading.close();
-            if (res.success) {
-                ElNotification({ title: '操作提示', message: res.msg, type: 'success', duration: 2000, offset: 80 });
-                reloadTable();
-            } else {
-                ElNotification({ title: '操作提示', message: res.msg, type: 'error', duration: 2000, offset: 80 });
-            }
-        });
-    }
+  
 </script>
 <style lang="scss">
     .newOrModifyTable .el-dialog__body {

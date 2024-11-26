@@ -129,11 +129,18 @@
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item style="width: 100px;">
-                                <span
-                                    :size="fontSizeObj.buttonSize"
-                                    :style="{ fontSize: fontSizeObj.baseFontSize }"
-                                    @click="deleteSelect"
-                                ><i class="ri-delete-bin-2-line"></i>{{ $t('删除') }}</span>
+                    <span
+                        :size="fontSizeObj.buttonSize"
+                        :style="{ fontSize: fontSizeObj.baseFontSize }"
+                        @click="deleteSelect"
+                    ><i class="ri-delete-bin-2-line"></i>{{ $t('批量删除') }}</span>
+              </el-dropdown-item>
+              <el-dropdown-item style="width: 100px;">
+                    <span
+                        :size="fontSizeObj.buttonSize"
+                        :style="{ fontSize: fontSizeObj.baseFontSize }"
+                        @click="batchArchiving"
+                    ><i class="ri-clockwise-2-line"></i>{{ $t('批量归档') }}</span>
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -214,6 +221,10 @@
         @on-page-size-change="onPageSizeChange"
         @select-all="handleSelect"
     >
+      <template #hasFile="{ row, column, index }">
+        <i v-if="row.hasFile" class="ri-attachment-2"></i>
+        <span v-else>无</span>
+      </template>
       <template #optButton="{ row, column, index }">
         <span style="font-weight: 600" @click="editRecord(row)"><i class="ri-edit-line"></i>编辑</span>
         <span style="font-weight: 600;margin-left: 10px;" @click="fileManage(row)"><i
@@ -224,7 +235,7 @@
       <detail v-if="dialogConfig.type == 'addRecord'" ref="detailRef" :formData="formData"
               :metadataFieldList="metadataFieldList"/>
               <Uploader
-                v-if="dialogConfig.type == 'Uploader'"
+                v-if="dialogConfig.type == 'Uploader'" :archivesId="archivesId"
             />
     </y9Dialog>
   </y9Card>
@@ -234,9 +245,9 @@
 import {$deepAssignObject} from '@/utils/object.ts';
 import {useSettingStore} from '@/store/modules/settingStore';
 import {getMetadataFieldList, saveListFiledShow} from '@/api/archives/metadata';
-import {deleteData, getArchivesRecordList, saveFormData} from '@/api/archives/record';
+import {deleteData, getArchivesList, saveFormData,recordArchiving} from '@/api/archives/archives';
 import {getOptionValueList} from '@/api/archives/dictionaryOption';
-import detail from './detail.vue';
+import detail from '@/views/common/detail.vue';
 
 const props = defineProps({
   currTreeNodeInfo: {
@@ -369,27 +380,33 @@ watch(
     () => props.currTreeNodeInfo,
     (newVal, oldVal) => {
       currInfo.value = $deepAssignObject(currInfo.value, newVal);
+      //getMetadataField();
       getRecordList();
-      getMetadataField();
     },
     {deep: true}
 );
 
 onMounted(() => {
-
-  getRecordList();
+    getMetadataField();
 });
 
 async function getMetadataField() {
+  dataTableConfig.value.columns = [];
   dataTableConfig.value.columns = [{
     type: "selection",
     width: 60,
-  }];
+  },{
+      title: computed(() => t('附件')),
+      key: 'hasFile',
+      width: '50',
+      align: 'center',
+      slot: 'hasFile'
+    }];
   let res = await getMetadataFieldList(props.currTreeNodeInfo.id);
   if (res.success) {
     metadataFieldList.value = res.data;
     for (let item of metadataFieldList.value) {
-      if (item.isListShow == 1) {
+      //if (item.isListShow == 1) {
         dataTableConfig.value.columns.push({
           title: computed(() => t(item.disPlayName)),
           key: item.columnName,
@@ -397,7 +414,7 @@ async function getMetadataField() {
           sortable: item.isOrder == 1 ? true : false,
           align: item.disPlayAlign
         });
-      }
+      //}
       if (item.openSearch == 1) {
         if (item.inputBoxType == 'radio' || item.inputBoxType == 'checkbox' || item.inputBoxType == 'select') {
           if (item.optionClass) {
@@ -429,8 +446,6 @@ async function getMetadataField() {
       slot: 'optButton'
     });
     getRecordList();
-    console.log('searchConf', searchConf.value);
-
   }
 }
 
@@ -459,9 +474,9 @@ async function getRecordList() {
   dataTableConfig.value.tableData = [];
   let page = dataTableConfig.value.pageConfig.currentPage;
   let rows = dataTableConfig.value.pageConfig.pageSize;
-  let res = await getArchivesRecordList(
+  let res = await getArchivesList(
       props.currTreeNodeInfo.id,
-      columnNameAndValues.value,
+      columnNameAndValues.value,0,
       page,
       rows
   );
@@ -629,6 +644,36 @@ async function deleteSelect() {
           offset: 65
         });
       });
+}
+
+async function batchArchiving(){
+    if (selectData.value.length == 0) {
+        ElNotification({
+        title: '操作提示',
+        message: '请勾选要归档的数据',
+        type: 'error',
+        duration: 2000,
+        offset: 80
+        });
+        return;
+    }
+
+    let result = {success: false, msg: ''};
+    let ids = [];
+    for (let obj of selectData.value) {
+        ids.push(obj.archivesId);
+    }
+    result = await recordArchiving( ids.join(','));
+    ElNotification({
+        title: result.success ? '成功' : '失败',
+        message: result.msg,
+        type: result.success ? 'success' : 'error',
+        duration: 2000,
+        offset: 80
+    });
+    if (result.success) {
+        getRecordList();
+    }
 }
 
 async function saveChecked() {
