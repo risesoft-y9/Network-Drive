@@ -1,5 +1,7 @@
 package net.risesoft.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +17,6 @@ public interface ArchivesFileRepository
 
     @Query("SELECT MAX(a.tabIndex) FROM ArchivesFile a WHERE a.archivesId = ?1")
     Integer getMaxTabIndex(Long archiveId);
+
+    List<ArchivesFile> findByArchivesId(Long archivesId);
 }

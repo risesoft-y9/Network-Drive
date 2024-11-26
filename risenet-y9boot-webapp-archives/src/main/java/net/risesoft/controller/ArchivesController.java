@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 
 import net.risesoft.entity.Archives;
+import net.risesoft.entity.ArchivesFile;
 import net.risesoft.entity.AudioFile;
 import net.risesoft.entity.CategoryTable;
 import net.risesoft.entity.DocumentFile;
@@ -31,6 +32,7 @@ import net.risesoft.model.SearchPage;
 import net.risesoft.model.platform.DataCatalog;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
+import net.risesoft.service.ArchivesFileService;
 import net.risesoft.service.ArchivesService;
 import net.risesoft.service.AudioFileService;
 import net.risesoft.service.CategoryTableService;
@@ -46,29 +48,23 @@ import net.risesoft.y9.util.Y9BeanUtil;
 import y9.client.rest.platform.resource.DataCatalogApiClient;
 
 /**
- * 档案著录管理
+ * 档案管理
  *
  * @author yihong
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = "/vue/record", produces = MediaType.APPLICATION_JSON_VALUE)
-public class RecordController {
+@RequestMapping(value = "/vue/archives", produces = MediaType.APPLICATION_JSON_VALUE)
+public class ArchivesController {
 
     private final ArchivesService archivesService;
-
     private final DocumentFileService documentFileService;
-
     private final ImageFileService imageFileService;
-
     private final AudioFileService audioFileService;
-
     private final VideoFileService videoFileService;
-
     private final MetadataConfigService metadataConfigService;
-
     private final CategoryTableService categoryTableService;
-
+    private final ArchivesFileService archivesFileService;
     private final DataCatalogApiClient dataCatalogApiClient;
 
     /**
@@ -78,10 +74,10 @@ public class RecordController {
      * @param rows 条数
      * @return
      */
-    @GetMapping(value = "/getArchivesRecordList")
-    public Y9Page<Map<String, Object>> getArchivesRecordList(@RequestParam String categoryId,
-        @RequestParam(required = false) String columnNameAndValues, @RequestParam Integer page,
-        @RequestParam Integer rows) {
+    @GetMapping(value = "/getArchivesList")
+    public Y9Page<Map<String, Object>> getArchivesList(@RequestParam String categoryId,
+        @RequestParam(required = false) String columnNameAndValues, @RequestParam Integer fileStatus,
+        @RequestParam Integer page, @RequestParam Integer rows) {
         if (page < 1) {
             page = 1;
         }
@@ -89,9 +85,10 @@ public class RecordController {
         List<Map<String, Object>> list_map = new ArrayList<>();
         SearchPage<Archives> searchPage = null;
         if (StringUtils.isBlank(columnNameAndValues)) {
-            searchPage = archivesService.listArchives(categoryId, page, rows);
+            searchPage = archivesService.listArchives(categoryId, fileStatus, page, rows);
         } else {
-            searchPage = archivesService.listArchivesByColumnNameAndValues(categoryId, columnNameAndValues, page, rows);
+            searchPage = archivesService.listArchivesByColumnNameAndValues(categoryId, fileStatus, columnNameAndValues,
+                page, rows);
         }
         DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
         String customId = dataCatalog.getCustomId();
@@ -116,6 +113,8 @@ public class RecordController {
                     }
                 }
             }
+            List<ArchivesFile> archivesFiles = archivesFileService.findByArchivesId(archives.getArchivesId());
+            map.put("hasFile", null != archivesFiles && !archivesFiles.isEmpty());
             list_map.add(map);
         }
         return Y9Page.success(page, searchPage.getTotalpages(), searchPage.getTotal(), list_map, "获取列表成功");
@@ -266,7 +265,31 @@ public class RecordController {
      */
     @PostMapping(value = "/delete")
     public Y9Result<String> delete(String categoryId, @RequestParam Long[] ids) {
-        archivesService.delete(categoryId, ids);
+        archivesService.signDelete(categoryId, ids);
         return Y9Result.successMsg("删除成功");
+    }
+
+    /**
+     * 档案著录数据预归档
+     *
+     * @param ids
+     * @return
+     */
+    @PostMapping(value = "/recordArchiving")
+    public Y9Result<String> recordArchiving(@RequestParam Long[] ids) {
+        archivesService.recordArchiving(ids);
+        return Y9Result.successMsg("归档成功");
+    }
+
+    /**
+     * 档案数据生成档号
+     *
+     * @param ids
+     * @return
+     */
+    @PostMapping(value = "/createArchivesNo")
+    public Y9Result<String> createArchivesNo(@RequestParam Long[] ids) {
+        archivesService.recordArchiving(ids);
+        return Y9Result.successMsg("归档成功");
     }
 }

@@ -51,6 +51,10 @@ public class ArchivesFile implements Serializable {
     @Column(name = "FILETYPE", length = 20)
     private String fileType;
 
+    @Comment("文件哈希值")
+    @Column(name = "FILEHASH", length = 200)
+    private String fileHash;
+
     @Comment("上传时间")
     @Column(name = "UPLOADTIME", length = 100)
     private String uploadTime;

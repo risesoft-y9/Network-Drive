@@ -61,6 +61,7 @@ public class MetadataConfigServiceImpl implements MetadataConfigService {
     private final ManagerApiClient managerApiClient;
     private final CategoryTableRepository categoryTableRepository;
     private final CategoryTableFieldService categoryTableFieldService;
+    private final String ingoreFields = "id,categoryId,tenantId,tabIndex,detailId,archivesId";
 
     public MetadataConfigServiceImpl(@Qualifier("jdbcTemplate4Tenant") JdbcTemplate jdbcTemplate4Tenant,
         MetadataConfigRepository metadataConfigRepository, ManagerApiClient managerApiClient,
@@ -270,8 +271,10 @@ public class MetadataConfigServiceImpl implements MetadataConfigService {
                 String fieldName = (String)field.get("fieldName");
                 String fieldType = (String)field.get("fieldType");
                 String comment = (String)field.get("comment");
-                initData(categoryEnums.getEnName(), fieldName, fieldType, comment, manager.getId(), manager.getName(),
-                    categoryEnums.getEnName());
+                if (!fieldName.contains(ingoreFields)) {
+                    initData(categoryEnums.getEnName(), fieldName, fieldType, comment, manager.getId(),
+                        manager.getName(), categoryEnums.getEnName());
+                }
             }
         }
     }
@@ -282,7 +285,10 @@ public class MetadataConfigServiceImpl implements MetadataConfigService {
             String fieldName = (String)field.get("fieldName");
             String fieldType = (String)field.get("fieldType");
             String comment = (String)field.get("comment");
-            initData(category, fieldName, fieldType, comment, userId, userName, fielOrigin);
+            if (!fieldName.contains(ingoreFields)) {
+                initData(category, fieldName, fieldType, comment, userId, userName, fielOrigin);
+            }
+
         }
     }
 
@@ -383,29 +389,31 @@ public class MetadataConfigServiceImpl implements MetadataConfigService {
         String fieldOrigin) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
-        MetadataConfig config = new MetadataConfig();
-        config.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
-        config.setViewType(viewType);
-        config.setFieldOrigin(fieldOrigin);
-        config.setColumnName(columnName);
-        config.setDisPlayName(displayName);
-        config.setDataType(dataType);
-        config.setIsListShow(1);
-        config.setDisPlayAlign("center");
-        Integer tabIndex = metadataConfigRepository.getMaxTabIndex(viewType);
-        config.setTabIndex(null == tabIndex ? 1 : tabIndex + 1);
-        config.setUserId(userInfo.getPersonId());
-        config.setUserName(userInfo.getName());
-        config.setCreateTime(sdf.format(new Date()));
-        config.setUpdateTime(sdf.format(new Date()));
-        config.setDisPlayWidth("100");
-        config.setIsRecord(1);
-        config.setRe_inputBoxType("input");
-        config.setRe_inputBoxWidth("200");
-        config.setRe_isOneLine(0);
-        config.setIsOrder(1);
-        config.setTableFieldId(tableField);
-        this.save(config);
+        if (!columnName.contains(ingoreFields)) {
+            MetadataConfig config = new MetadataConfig();
+            config.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
+            config.setViewType(viewType);
+            config.setFieldOrigin(fieldOrigin);
+            config.setColumnName(columnName);
+            config.setDisPlayName(displayName);
+            config.setDataType(dataType);
+            config.setIsListShow(1);
+            config.setDisPlayAlign("center");
+            Integer tabIndex = metadataConfigRepository.getMaxTabIndex(viewType);
+            config.setTabIndex(null == tabIndex ? 1 : tabIndex + 1);
+            config.setUserId(userInfo.getPersonId());
+            config.setUserName(userInfo.getName());
+            config.setCreateTime(sdf.format(new Date()));
+            config.setUpdateTime(sdf.format(new Date()));
+            config.setDisPlayWidth("100");
+            config.setIsRecord(1);
+            config.setRe_inputBoxType("input");
+            config.setRe_inputBoxWidth("200");
+            config.setRe_isOneLine(0);
+            config.setIsOrder(1);
+            config.setTableFieldId(tableField);
+            this.save(config);
+        }
     }
 
     private void initData(String category, String fieldName, String fieldType, String comment, String userId,

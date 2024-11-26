@@ -1,5 +1,7 @@
 package net.risesoft.service.Impl;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -28,5 +30,20 @@ public class ArchivesFileServiceImpl implements ArchivesFileService {
     @Override
     public Integer getMaxTabIndex(Long archiveId) {
         return archivesFileRepository.getMaxTabIndex(archiveId);
+    }
+
+    @Override
+    public List<ArchivesFile> findByArchivesId(Long archivesId) {
+        return archivesFileRepository.findByArchivesId(archivesId);
+    }
+
+    @Override
+    public void deleteFile(String id) {
+        archivesFileRepository.deleteById(id);
+    }
+
+    @Override
+    public ArchivesFile findById(String id) {
+        return archivesFileRepository.findById(id).orElse(null);
     }
 }

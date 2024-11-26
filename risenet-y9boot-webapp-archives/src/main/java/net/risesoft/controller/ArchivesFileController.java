@@ -2,6 +2,9 @@ package net.risesoft.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -9,15 +12,18 @@ import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,6 +42,7 @@ import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.ArchivesFileService;
 import net.risesoft.service.FileChunkService;
 import net.risesoft.service.FileInfoService;
+import net.risesoft.util.ArchiveDetection;
 import net.risesoft.util.FileUtils;
 import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
@@ -45,7 +52,7 @@ import net.risesoft.y9public.service.Y9FileStoreService;
 @RequiredArgsConstructor
 @Slf4j
 @RestController
-@RequestMapping("/vue/fileInfo")
+@RequestMapping("/vue/files")
 public class ArchivesFileController {
 
     private final FileInfoService fileInfoService;
@@ -53,6 +60,47 @@ public class ArchivesFileController {
     private final Y9FileStoreService y9FileStoreService;
     private final ArchivesFileService archivesFileService;
     private final OrgUnitApi orgUnitApi;
+
+    @GetMapping(value = "/getArchivesFileList")
+    public Y9Result<List<ArchivesFile>> getArchivesFileList(Long archivesId) {
+        List<ArchivesFile> list = archivesFileService.findByArchivesId(archivesId);
+        return Y9Result.success(list, "获取列表成功");
+    }
+
+    @PostMapping(value = "/deleteFile")
+    public Y9Result<String> deleteFile(String id) {
+        ArchivesFile archivesFile = archivesFileService.findById(id);
+        if (null != archivesFile) {
+            archivesFileService.deleteFile(id);
+            y9FileStoreService.deleteFile(archivesFile.getFileStoreId());
+        }
+        return Y9Result.successMsg("删除成功");
+    }
+
+    @RequestMapping(value = "/downloadFile")
+    public void downloadFile(@RequestParam(name = "id") String id, HttpServletResponse response,
+        HttpServletRequest request) {
+        try {
+            ArchivesFile archivesFile = archivesFileService.findById(id);
+            String filename = archivesFile.getFileName();
+            String filePath = archivesFile.getFileStoreId();
+            if (request.getHeader("User-Agent").toLowerCase().indexOf("firefox") > 0) {
+                filename = new String(filename.getBytes(StandardCharsets.UTF_8), "ISO8859-1");// 火狐浏览器
+            } else {
+                filename = URLEncoder.encode(filename, StandardCharsets.UTF_8);
+            }
+            OutputStream out = response.getOutputStream();
+            response.reset();
+            response.setHeader("Content-disposition", "attachment; filename=\"" + filename + "\"");
+            response.setHeader("Content-type", "text/html;charset=UTF-8");
+            response.setContentType("application/octet-stream");
+            y9FileStoreService.downloadFileToOutputStream(filePath, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            LOGGER.error("文件下载失败", e);
+        }
+    }
 
     public Map<String, Object> mergeMethod(String targetFile, String folder, String fileName, Long archivesId) {
         Map<String, Object> map = new HashMap<>();
@@ -85,12 +133,13 @@ public class ArchivesFileController {
             UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
             String fileExtension = FilenameUtils.getExtension(fileName);
             long fileSize = file.length();
+            String fileHash = ArchiveDetection.calculateHash(file);
             String fullPath = Y9FileStore.buildPath(Y9Context.getSystemName(), Y9LoginUserHolder.getTenantId(),
                 userInfo.getPersonId(), archivesId.toString());
             Y9FileStore y9FileStore = y9FileStoreService.uploadFile(file, fullPath, fileName);
             if (y9FileStore != null) {
                 LOGGER.debug("文件 {} 上传成功, uuid:{}", y9FileStore.getFileName(), y9FileStore.getId());
-                map = saveArchivesFile(archivesId, fileName, fileExtension, fileSize, y9FileStore.getId());
+                map = saveArchivesFile(archivesId, fileName, fileExtension, fileSize, fileHash, y9FileStore.getId());
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -138,7 +187,8 @@ public class ArchivesFileController {
         String folder = chunckPath + "/" + fileInfo.getIdentifier();
         // 合并文件
         map = mergeMethod(file, folder, fileName, archivesId);
-        if (map.get("success") == null) {
+        Boolean success = Boolean.valueOf(map.get("success").toString());
+        if (success) {
             // 保存文件信息
             Long archivesFileId = Long.parseLong(map.get("archivesFileId").toString());
             fileInfo.setLocation(file);
@@ -150,7 +200,7 @@ public class ArchivesFileController {
     }
 
     private Map<String, Object> saveArchivesFile(Long archivesId, String fileName, String fileExtension, long fileSize,
-        String y9FileStoreId) {
+        String fileHash, String y9FileStoreId) {
         Map<String, Object> map = new HashMap<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
@@ -162,6 +212,7 @@ public class ArchivesFileController {
             ArchivesFile archivesFile = new ArchivesFile();
             archivesFile.setFileType(fileExtension);
             archivesFile.setFileSize(fileSize);
+            archivesFile.setFileHash(fileHash);
             archivesFile.setUploadTime(sdf.format(new Date()));
             archivesFile.setFileStoreId(y9FileStoreId);
             archivesFile.setPersonId(userId);

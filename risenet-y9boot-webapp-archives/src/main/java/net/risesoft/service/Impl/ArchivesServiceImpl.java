@@ -47,15 +47,9 @@ public class ArchivesServiceImpl implements ArchivesService {
     private final MetadataConfigRepository metadataConfigRepository;
 
     @Override
-    public Page<Archives> pageArchives(String categoryId, int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createTime"));
-        return archivesRepository.findByCategoryId(categoryId, pageable);
-    }
-
-    @Override
-    public SearchPage<Archives> listArchives(String categoryId, int page, int rows) {
+    public SearchPage<Archives> listArchives(String categoryId, Integer fileStatus, int page, int rows) {
         Pageable pageable = PageRequest.of(page - 1, rows, Sort.by(Sort.Direction.DESC, "createTime"));
-        Page<Archives> pageList = archivesRepository.findByCategoryId(categoryId, pageable);
+        Page<Archives> pageList = archivesRepository.findByCategoryIdAndFileStatus(categoryId, fileStatus, pageable);
         List<Archives> list = pageList.getContent();
         SearchPage<Archives> searchPage = SearchPage.<Archives>builder().rows(list).currpage(page).size(rows)
             .totalpages(pageList.getTotalPages()).total(pageList.getTotalElements()).build();
@@ -63,8 +57,8 @@ public class ArchivesServiceImpl implements ArchivesService {
     }
 
     @Override
-    public SearchPage<Archives> listArchivesByColumnNameAndValues(String categoryId, String columnNameAndValues,
-        int page, int rows) {
+    public SearchPage<Archives> listArchivesByColumnNameAndValues(String categoryId, Integer fileStatus,
+        String columnNameAndValues, int page, int rows) {
         String tenantId = Y9LoginUserHolder.getTenantId();
         DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
         String customId = dataCatalog.getCustomId();
@@ -108,14 +102,15 @@ public class ArchivesServiceImpl implements ArchivesService {
                 joinSql = "LEFT JOIN " + categoryTable.getTableName() + " C ON T.ARCHIVESID = C.DETAILID";
             }
         }
-        String sql = "SELECT T.* FROM Y9_ARCHIVES_DETAILS T " + joinSql + " WHERE T.CATEGORYID = ? AND " + conditionSql
-            + " ORDER BY T.CREATETIME DESC";
+        String sql = "SELECT T.* FROM Y9_ARCHIVES_DETAILS T " + joinSql
+            + " WHERE T.CATEGORYID = ? AND T.FILESTATUS = ? AND " + conditionSql + " ORDER BY T.CREATETIME DESC";
         String countSql = "SELECT COUNT(T.ARCHIVESID) FROM Y9_ARCHIVES_DETAILS T " + joinSql
-            + " WHERE T.CATEGORYID = ? AND " + conditionSql;
+            + " WHERE T.CATEGORYID = ? AND T.FILESTATUS = ? AND " + conditionSql;
         System.out.println(sql);
         System.out.println(countSql);
-        Object[] args = new Object[1];
+        Object[] args = new Object[2];
         args[0] = categoryId;
+        args[1] = fileStatus;
         SearchPage<Archives> searchPage =
             pageUtil.page(sql, args, new BeanPropertyRowMapper<>(Archives.class), countSql, args, page, rows);
         return searchPage;
@@ -148,6 +143,42 @@ public class ArchivesServiceImpl implements ArchivesService {
                 videoFileRepository.deleteByDetailId(id);
             } else {
                 categoryTableService.deleteTableData(dataCatalog.getCustomId(), id.toString());
+            }
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public void signDelete(String categoryId, Long[] ids) {
+        for (Long id : ids) {
+            Archives archives = this.findByArchives_id(id);
+            if (null != archives) {
+                archives.setIsDeleted(true);
+                this.save(archives);
+            }
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public void recordArchiving(Long[] ids) {
+        for (Long id : ids) {
+            Archives archives = this.findByArchives_id(id);
+            if (null != archives) {
+                archives.setFileStatus(1);
+                this.save(archives);
+            }
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public void createArchivesNo(Long[] ids) {
+        for (Long id : ids) {
+            Archives archives = this.findByArchives_id(id);
+            if (null != archives) {
+                archives.setArchiveNo("");
+                this.save(archives);
             }
         }
     }

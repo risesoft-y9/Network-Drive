@@ -148,4 +148,16 @@ public class Archives implements Serializable {
     @Column(name = "CREATETIME", updatable = false)
     private Date createTime;
 
+    @Column(name = "ISDELETED")
+    @Comment("删除标记")
+    private Boolean isDeleted = false;
+
+    @Column(name = "FILEGRADE", length = 10)
+    @Comment("文件等级")
+    private String fileGrade;// 本文件登记，文件级、案卷级
+
+    @Column(name = "FILESTATUS")
+    @Comment("文件状态")
+    private Integer fileStatus;// 0:著录，1:预归档，2:归档
+
 }

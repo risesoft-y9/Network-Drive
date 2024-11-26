@@ -1,7 +1,7 @@
 package net.risesoft.enums;
 
 public enum CategoryEnums {
-    DOCUMENT("document", "文书"), IMAGE("image", "图片"), VIDEO("video", "视频"), AUDIO("audio", "音频");
+    DOCUMENT("WS", "文书"), IMAGE("ZP", "图片"), VIDEO("LX", "视频"), AUDIO("LY", "音频");
 
     private String enName;
     private String cnName;

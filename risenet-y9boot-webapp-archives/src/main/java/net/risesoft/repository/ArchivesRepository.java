@@ -11,6 +11,6 @@ import net.risesoft.entity.Archives;
 @Transactional(value = "rsTenantTransactionManager", readOnly = true)
 public interface ArchivesRepository extends JpaRepository<Archives, Long>, JpaSpecificationExecutor<Archives> {
 
-    Page<Archives> findByCategoryId(String categoryId, Pageable pageable);
+    Page<Archives> findByCategoryIdAndFileStatus(String categoryId, Integer fileStatus, Pageable pageable);
 
 }
