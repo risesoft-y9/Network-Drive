@@ -49,6 +49,10 @@ public class MetadataConfig implements Serializable {
     @Column(name = "DATATYPE", length = 50, nullable = false)
     private String dataType;
 
+    @Comment("字段长度")
+    @Column(name = "FIELDLENGTH")
+    private Integer fieldLength;
+
     @Comment("显示名称")
     @Column(name = "DISPLAYNAME", length = 50, nullable = false)
     private String disPlayName;
@@ -86,9 +90,9 @@ public class MetadataConfig implements Serializable {
     @Comment("是否著录")
     private Integer isRecord = 1;
 
-    @Column(name = "ISRECORDNULL")
+    @Column(name = "ISRECORDREQUIRED")
     @Comment("是否著录必填")
-    private Integer isRecordNull = 0;
+    private Integer isRecordRequired = 0;
 
     @Comment("著录输入框类型") // search-带图标前缀的搜索框,input,select,date
     @Column(name = "RE_INPUTBOXTYPE", length = 20)
@@ -97,6 +101,10 @@ public class MetadataConfig implements Serializable {
     @Comment("著录输入框宽度")
     @Column(name = "RE_INPUTBOXWIDTH", length = 50)
     private String re_inputBoxWidth;
+
+    @Column(name = "ISCHECKEDREQUIRED")
+    @Comment("是否检测必填")
+    private Integer isCheckedRequired = 0;
 
     @Comment("是否著录一行显示")
     @Column(name = "RE_ISONELINE", length = 50)
@@ -141,4 +149,8 @@ public class MetadataConfig implements Serializable {
     @Comment("对应数据库表字段id")
     @Column(name = "TABLEFIELDID", length = 50)
     private String tableFieldId;
+
+    @Column(name = "ISHIDE")
+    @Comment("是否隐藏")
+    private Boolean isHide = false;
 }

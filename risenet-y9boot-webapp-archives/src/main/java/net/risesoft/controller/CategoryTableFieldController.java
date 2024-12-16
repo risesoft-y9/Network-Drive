@@ -77,10 +77,10 @@ public class CategoryTableFieldController {
         CategoryTableField field;
         if (StringUtils.isNotBlank(id) && !UtilConsts.NULL.equals(id)) {
             field = categoryTableFieldService.findById(id);
-            if (field != null) {
-                String type = field.getFieldType().substring(0, field.getFieldType().indexOf("("));
-                field.setFieldType(type);
-            }
+            // if (field != null) {
+            // String type = field.getFieldType();
+            // field.setFieldType(type);
+            // }
             map.put("id", id);
             map.put("field", field);
         }

@@ -286,7 +286,7 @@ public class CategoryTableServiceImpl implements CategoryTableService {
             dbColumn.setIsPrimaryKey(fieldTemp.getIsSystemField());
             dbColumn.setPrimaryKey(fieldTemp.getIsSystemField() == 1);
             dbColumn.setNullable(fieldTemp.getIsMayNull() == 1);
-            dbColumn.setTypeName(getFieldType(fieldTemp.getFieldType()));
+            dbColumn.setTypeName(fieldTemp.getFieldType());
             dbColumn.setDataLength(fieldTemp.getFieldLength());
             dbColumn.setComment(fieldTemp.getFieldCnName());
             dbColumn.setColumnNameOld(fieldTemp.getOldFieldName());
@@ -298,7 +298,7 @@ public class CategoryTableServiceImpl implements CategoryTableService {
             dbcs.add(dbColumn);
             categoryTableFieldRepository.save(fieldTemp);
             metadataConfigService.save(optType, viewType, fieldTemp.getId(), fieldTemp.getFieldName(),
-                fieldTemp.getFieldCnName(), fieldTemp.getFieldType(), viewType);
+                fieldTemp.getFieldCnName(), fieldTemp.getFieldType(), fieldTemp.getFieldLength(), viewType);
         }
         // 元数据基础数据
         if ("add".equals(optType)) {

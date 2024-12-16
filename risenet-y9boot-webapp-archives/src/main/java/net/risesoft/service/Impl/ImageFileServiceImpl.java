@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import net.risesoft.entity.ImageFile;
 import net.risesoft.repository.ImageFileRepository;
 import net.risesoft.service.ImageFileService;
-import net.risesoft.util.EntityToMapConverter;
+import net.risesoft.util.EntityOrTableUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +23,7 @@ public class ImageFileServiceImpl implements ImageFileService {
         Map<String, Object> map = new HashMap<>();
         ImageFile imageFile = imageFileRepository.findByDetailId(detailId);
         if (null != imageFile) {
-            map.putAll(EntityToMapConverter.convertToMap(imageFile));
+            map.putAll(EntityOrTableUtils.convertToMap(imageFile));
         }
         return map;
     }

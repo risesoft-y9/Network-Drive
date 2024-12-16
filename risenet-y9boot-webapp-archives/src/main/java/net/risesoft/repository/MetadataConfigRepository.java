@@ -29,11 +29,16 @@ public interface MetadataConfigRepository
 
     MetadataConfig findByViewTypeAndColumnName(String viewType, String columnName);
 
-    Page<MetadataConfig> findByViewType(String viewType, Pageable pageable);
+    Page<MetadataConfig> findByViewTypeAndIsHideFalse(String viewType, Pageable pageable);
 
-    List<MetadataConfig> findByViewTypeAndIsListShowOrderByTabIndex(String viewType, Integer isListShow);
+    List<MetadataConfig> findByViewTypeAndIsListShowAndIsHideFalseOrderByTabIndex(String viewType, Integer isListShow);
 
-    List<MetadataConfig> findByViewTypeOrderByTabIndex(String viewType);
+    List<MetadataConfig> findByViewTypeAndIsHideFalseOrderByTabIndex(String viewType);
+
+    List<MetadataConfig> findByViewTypeAndIsRecordRequiredAndIsHideFalseOrderByTabIndex(String viewType,
+        Integer isRecordRequired);
+
+    List<MetadataConfig> findByViewTypeAndIsCheckedRequiredAndIsHideFalse(String viewType, Integer isCheckedRequired);
 
     @Modifying
     @Transactional(readOnly = false)

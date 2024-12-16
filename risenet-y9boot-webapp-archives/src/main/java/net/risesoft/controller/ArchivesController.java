@@ -40,7 +40,7 @@ import net.risesoft.service.DocumentFileService;
 import net.risesoft.service.ImageFileService;
 import net.risesoft.service.MetadataConfigService;
 import net.risesoft.service.VideoFileService;
-import net.risesoft.util.EntityToMapConverter;
+import net.risesoft.util.EntityOrTableUtils;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.json.Y9JsonUtil;
 import net.risesoft.y9.util.Y9BeanUtil;
@@ -85,16 +85,16 @@ public class ArchivesController {
         List<Map<String, Object>> list_map = new ArrayList<>();
         SearchPage<Archives> searchPage = null;
         if (StringUtils.isBlank(columnNameAndValues)) {
-            searchPage = archivesService.listArchives(categoryId, fileStatus, page, rows);
+            searchPage = archivesService.listArchives(categoryId, fileStatus, false, page, rows);
         } else {
-            searchPage = archivesService.listArchivesByColumnNameAndValues(categoryId, fileStatus, columnNameAndValues,
-                page, rows);
+            searchPage = archivesService.listArchivesByColumnNameAndValues(categoryId, fileStatus, false,
+                columnNameAndValues, page, rows);
         }
         DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
         String customId = dataCatalog.getCustomId();
         for (Archives archives : searchPage.getRows()) {
             Map<String, Object> map = new HashMap<>();
-            map = EntityToMapConverter.convertToMap(archives);
+            map = EntityOrTableUtils.convertToMap(archives);
             if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
                 map.putAll(documentFileService.findByDetailId(archives.getArchivesId()));
             } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
@@ -120,6 +120,12 @@ public class ArchivesController {
         return Y9Page.success(page, searchPage.getTotalpages(), searchPage.getTotal(), list_map, "获取列表成功");
     }
 
+    @GetMapping(value = "/getSelectArchivesList")
+    public Y9Result<List<Archives>> getSelectArchivesList(@RequestParam Long[] archivesId) {
+        List<Archives> list = archivesService.findByArchivesIdIn(archivesId);
+        return Y9Result.success(list, "获取列表成功");
+    }
+
     /**
      * 保存档案著录数据
      *
@@ -140,19 +146,23 @@ public class ArchivesController {
         DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
         String customId = dataCatalog.getCustomId();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
+            String fieldName = entry.getKey();
+            Object value = entry.getValue();
             MetadataConfig metadataConfig =
-                metadataConfigService.findByViewTypeAndColumnName(dataCatalog.getCustomId(), entry.getKey());
+                metadataConfigService.findByViewTypeAndColumnName(dataCatalog.getCustomId(), fieldName);
             if (null != metadataConfig) {
-                String fieldName = entry.getKey();
-                Object value = entry.getValue();
-
-                Date date = null;
                 if (null != value && !value.equals("")) {
-                    if (metadataConfig.getDataType().equals("Integer")) {
+                    if (metadataConfig.getDataType().equals("Integer") || metadataConfig.getDataType().equals("int")) {
                         value = Integer.parseInt(value.toString());
-                    } else if (metadataConfig.getDataType().equals("Long")) {
+                    } else if (metadataConfig.getDataType().equals("Long")
+                        || metadataConfig.getDataType().equals("long")
+                        || metadataConfig.getDataType().equals("bigint")) {
                         value = Long.parseLong(value.toString());
-                    } else if (metadataConfig.getDataType().equals("Date")) {
+                    } else if (metadataConfig.getDataType().equals("Date")
+                        || metadataConfig.getDataType().equals("date")
+                        || metadataConfig.getDataType().equals("datetime")
+                        || metadataConfig.getDataType().equals("timestamp")
+                        || metadataConfig.getDataType().equals("time")) {
                         value = sdf.parse(value.toString());
                     }
                     try {
@@ -180,11 +190,15 @@ public class ArchivesController {
                             field.setAccessible(true);
                             field.set(videoFile, value);
                         }
+
                     } catch (NoSuchFieldException | IllegalAccessException e) {
                         e.printStackTrace();
                     }
                 }
             }
+            // if (fieldName.equals("archivesId") && null != value) {
+            // archives.setArchivesId(Long.parseLong(value.toString()));
+            // }
         }
         if (saveType.equals("add")) {
             archives.setCategoryCode(customId);
@@ -288,8 +302,12 @@ public class ArchivesController {
      * @return
      */
     @PostMapping(value = "/createArchivesNo")
-    public Y9Result<String> createArchivesNo(@RequestParam Long[] ids) {
-        archivesService.recordArchiving(ids);
-        return Y9Result.successMsg("归档成功");
+    public Y9Result<String> createArchivesNo(@RequestParam String categoryId, @RequestParam Long[] ids) {
+        return archivesService.createArchivesNo(categoryId, ids);
+    }
+
+    @PostMapping(value = "/checkArchives")
+    public Y9Result<Map<String, Object>> checkArchives(String processName, @RequestParam Long[] archivesId) {
+        return archivesService.checkArchives(processName, archivesId);
     }
 }

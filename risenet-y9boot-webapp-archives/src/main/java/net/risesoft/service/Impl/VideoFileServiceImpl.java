@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import net.risesoft.entity.VideoFile;
 import net.risesoft.repository.VideoFileRepository;
 import net.risesoft.service.VideoFileService;
-import net.risesoft.util.EntityToMapConverter;
+import net.risesoft.util.EntityOrTableUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +23,7 @@ public class VideoFileServiceImpl implements VideoFileService {
         Map<String, Object> map = new HashMap<>();
         VideoFile videoFile = videoFileRepository.findByDetailId(detailId);
         if (null != videoFile) {
-            map.putAll(EntityToMapConverter.convertToMap(videoFile));
+            map.putAll(EntityOrTableUtils.convertToMap(videoFile));
         }
         return map;
     }

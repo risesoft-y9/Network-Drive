@@ -95,10 +95,16 @@ public class MetadataConfigController {
         return Y9Result.success(metadataFieldList, "获取元数据字段列表成功");
     }
 
-    @RequestMapping(value = "/getMetadataConfigList", method = RequestMethod.GET, produces = "application/json")
-    public Y9Result<List<MetadataConfig>> getMetadataConfigList(String viewType) {
-        List<MetadataConfig> configList = metadataConfigService.getMetadataFieldList(viewType, 1);
-        return Y9Result.success(configList, "获取元数据配置列表成功");
+    /**
+     * 获取元数据著录必填字段配置列表
+     * 
+     * @param viewType
+     * @return
+     */
+    @RequestMapping(value = "/getMetadataRecordConfigList", method = RequestMethod.GET, produces = "application/json")
+    public Y9Result<List<MetadataConfig>> getMetadataRecordConfigList(String viewType) {
+        List<MetadataConfig> configList = metadataConfigService.getMetadataRecordConfigList(viewType);
+        return Y9Result.success(configList, "获取元数据著录必填字段配置列表成功");
     }
 
     @RequestMapping(value = "/saveListFiledShow", method = RequestMethod.POST, produces = "application/json")

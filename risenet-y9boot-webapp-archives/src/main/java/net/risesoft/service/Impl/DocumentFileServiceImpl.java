@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import net.risesoft.entity.DocumentFile;
 import net.risesoft.repository.DocumentFileRepository;
 import net.risesoft.service.DocumentFileService;
-import net.risesoft.util.EntityToMapConverter;
+import net.risesoft.util.EntityOrTableUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +23,7 @@ public class DocumentFileServiceImpl implements DocumentFileService {
         Map<String, Object> map = new HashMap<>();
         DocumentFile documentFile = documentFileRepository.findByDetailId(detailId);
         if (null != documentFile && null != documentFile.getId()) {
-            map.putAll(EntityToMapConverter.convertToMap(documentFile));
+            map.putAll(EntityOrTableUtils.convertToMap(documentFile));
         }
         return map;
     }

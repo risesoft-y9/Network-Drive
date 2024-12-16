@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import net.risesoft.entity.AudioFile;
 import net.risesoft.repository.AudioFileRepository;
 import net.risesoft.service.AudioFileService;
-import net.risesoft.util.EntityToMapConverter;
+import net.risesoft.util.EntityOrTableUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +23,7 @@ public class AudioFileServiceImpl implements AudioFileService {
         Map<String, Object> map = new HashMap<>();
         AudioFile audioFile = audioFileRepository.findByDetailId(detailId);
         if (null != audioFile) {
-            map.putAll(EntityToMapConverter.convertToMap(audioFile));
+            map.putAll(EntityOrTableUtils.convertToMap(audioFile));
         }
         return map;
     }

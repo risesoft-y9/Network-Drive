@@ -1,7 +1,6 @@
 package net.risesoft.service;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.data.domain.Page;
 
@@ -10,10 +9,6 @@ import net.risesoft.entity.MetadataConfig;
 public interface MetadataConfigService {
 
     boolean exitMetadataConfig();
-
-    Map<String, Object> getTableFieldList(Class<?> entityClass);
-
-    List<Map<String, Object>> getEntityFieldList(Class<?> entityClasst);
 
     MetadataConfig saveMetadataConfig(MetadataConfig metadataConfig);
 
@@ -36,7 +31,7 @@ public interface MetadataConfigService {
     void initCustomMetadataConfigByViewType(String viewType);
 
     void save(String saveType, String viewType, String tableField, String columnName, String displayName,
-        String dataType, String fieldOrigin);
+        String dataType, int fieldLength, String fieldOrigin);
 
     MetadataConfig findByViewTypeAndTableField(String viewType, String tableField);
 
@@ -46,5 +41,20 @@ public interface MetadataConfigService {
 
     List<MetadataConfig> getMetadataFieldList(String viewType, Integer isListShow);
 
-    void saveListFiledShow(String[] idAndIsShow);
+    /**
+     * 获取元数据著录必填配置列表
+     * 
+     * @param viewType
+     * @return
+     */
+    List<MetadataConfig> getMetadataRecordConfigList(String viewType);
+
+    /**
+     * 获取元数据检测必填配置列表
+     *
+     * @param viewType
+     * @return
+     */
+    List<MetadataConfig> getMetadataCheckedRequiredConfigList(String viewType);
+
 }
