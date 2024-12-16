@@ -84,12 +84,12 @@ export function getMetadataFieldList(categoryId){
 }
 
 
-export function getMetadataConfigList(viewType){
+export function getMetadataRecordConfigList(viewType){
   const params = {
     viewType: viewType
   };
   return archivesRequest({
-    url: "/vue/metadata/config/getMetadataConfigList",
+    url: "/vue/metadata/config/getMetadataRecordConfigList",
     method: 'get',
     params: params
   });

@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2024-11-06 17:37:56
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2024-11-25 11:40:46
+ * @LastEditTime: 2024-11-27 15:25:57
  * @FilePath: \vue\y9vue-archives\src\api\archives\archives.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -64,13 +64,26 @@ export function saveFormData(saveType,categoryId,formDataJson){
 
   //生成档号
   
-  export function createArchivesNo(ids){
+  export function createArchivesNo(categoryId,ids){
     const params = {
+      categoryId:categoryId,
       ids:ids
     };
     return archivesRequest({
       url: "/vue/archives/createArchivesNo",
       method: 'post',
+      params: params
+    });
+  }
+
+  //获取选择的档案列表
+  export function getSelectArchivesList(archivesId){
+    const params = {
+      archivesId:archivesId
+    };
+    return archivesRequest({
+      url: "/vue/archives/getSelectArchivesList",
+      method: 'get',
       params: params
     });
   }

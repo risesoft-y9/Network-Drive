@@ -210,11 +210,11 @@
       </div>
       <template #footer>
         <div style="text-align: center;margin: 15px 10px 10px;">
-                        <span slot="footer" class="dialog-footer">
-                        <el-button size="small" type="primary" @click="hignSearch">查询</el-button>
-                        <el-button size="small" type="primary" @click="resetHignSearch">重置</el-button>
-                        <el-button size="small" @click="drawer = false">取消</el-button>
-                        </span>
+            <span slot="footer" class="dialog-footer">
+              <el-button size="small" type="primary" @click="hignSearch">查询</el-button>
+              <el-button size="small" type="primary" @click="resetHignSearch">重置</el-button>
+              <el-button size="small" @click="drawer = false">取消</el-button>
+            </span>
         </div>
       </template>
     </el-drawer>
@@ -236,10 +236,11 @@
     </y9Table>
     <y9Dialog v-model:config="dialogConfig">
       <detail v-if="dialogConfig.type == 'addRecord'" ref="detailRef" :formData="formData"
-              :metadataFieldList="metadataFieldList"/>
+              :metadataFieldList="metadataFieldList" :optType="optType"/>
               <Uploader
-                v-if="dialogConfig.type == 'Uploader'" :archivesId="archivesId"
+                v-if="dialogConfig.type == 'Uploader'" :archivesId="archivesId" :reloadTable="getPreArchingList"
             />
+      <archivesTesting v-if="dialogConfig.type == 'archivesTesting'" ref="archivesTestingRef" :archivesIdArr="archivesIdArr"/>
     </y9Dialog>
   </y9Card>
 </template>
@@ -251,6 +252,8 @@ import {getMetadataFieldList, saveListFiledShow} from '@/api/archives/metadata';
 import {deleteData, getArchivesList, saveFormData,createArchivesNo} from '@/api/archives/archives';
 import {getOptionValueList} from '@/api/archives/dictionaryOption';
 import detail from '@/views/common/detail.vue';
+import reportDetail from '@/views/common/report/reportDetail.vue';
+import archivesTesting from './archivesTesting.vue';
 
 const props = defineProps({
   currTreeNodeInfo: {
@@ -333,7 +336,7 @@ const data = reactive({
               offset: 80
             });
             if (res.success) {
-              getRecordList();
+              getPreArchingList();
             }
             resolve();
           } else {
@@ -357,6 +360,7 @@ const data = reactive({
   dropdownIsShowRef: '',
   columnNameAndValues: '',
   archivesId:'',
+  archivesIdArr: [],
 });
 
 let {
@@ -377,37 +381,35 @@ let {
   dropdownIsShowRef,
   columnNameAndValues,
   archivesId,
+  archivesIdArr
 } = toRefs(data);
 
 watch(
     () => props.currTreeNodeInfo,
     (newVal, oldVal) => {
       currInfo.value = $deepAssignObject(currInfo.value, newVal);
-      //getMetadataField();
-      getRecordList();
+    getMetadataFieldCofig();
     },
     {deep: true}
 );
 
-onMounted(() => {
-  getMetadataField();
-});
 
-async function getMetadataField() {
-  dataTableConfig.value.columns = [];
-  dataTableConfig.value.columns = [{
+
+async function getMetadataFieldCofig() {
+  let res = await getMetadataFieldList(props.currTreeNodeInfo.id);
+  if (res.success) {
+    metadataFieldList.value = res.data;
+    dataTableConfig.value.columns = [];
+    dataTableConfig.value.columns.push ({
     type: "selection",
     width: 60,
   },{
       title: computed(() => t('附件')),
       key: 'hasFile',
-      width: '50',
+      width: '60',
       align: 'center',
       slot: 'hasFile'
-    }];
-  let res = await getMetadataFieldList(props.currTreeNodeInfo.id);
-  if (res.success) {
-    metadataFieldList.value = res.data;
+    });
     for (let item of metadataFieldList.value) {
       if (item.isListShow == 1) {
         dataTableConfig.value.columns.push({
@@ -448,9 +450,7 @@ async function getMetadataField() {
       fixed: 'right',
       slot: 'optButton'
     });
-    getRecordList();
-    console.log('searchConf', searchConf.value);
-
+    getPreArchingList();
   }
 }
 
@@ -475,7 +475,7 @@ function handleSelect(id, data) {
   selectData.value = id;
 }
 
-async function getRecordList() {
+async function getPreArchingList() {
   dataTableConfig.value.tableData = [];
   let page = dataTableConfig.value.pageConfig.currentPage;
   let rows = dataTableConfig.value.pageConfig.pageSize;
@@ -487,13 +487,13 @@ async function getRecordList() {
   );
   if (res.success) {
     metadataFieldList.value.forEach((item) => {
-      if (item.dataType == 'Date' || item.re_inputBoxType == 'date' || item.re_inputBoxType == 'dateTime') {
+      if (item.dataType == 'date'|| item.dataType === 'datetime' || item.re_inputBoxType == 'date' || item.re_inputBoxType == 'dateTime') {
         res.rows.forEach((row) => {
           row[item.columnName] = convertTimestamp(row[item.columnName], item.re_inputBoxType);
         });
       }
     })
-    console.log('rowaaa', res.rows);
+    
     dataTableConfig.value.tableData = res.rows;
     dataTableConfig.value.pageConfig.total = res.total;
   }
@@ -508,14 +508,14 @@ function search(){
         columnNameAndValues.value = 'title:'+searchForm.value.title;
     }
     dataTableConfig.value.pageConfig.currentPage = 1;
-    getRecordList();
+    getPreArchingList();
 }
 
 function reset() {
     columnNameAndValues.value = '';
     searchForm.value = {};
     dataTableConfig.value.pageConfig.currentPage = 1;
-    getRecordList();
+    getPreArchingList();
 }
 
 function hignSearch() {
@@ -528,7 +528,7 @@ function hignSearch() {
   columnNameAndValues.value = jsonValue.join(";");
   drawer.value = false;
   dataTableConfig.value.pageConfig.currentPage = 1;
-  getRecordList();
+  getPreArchingList();
 }
 
 function resetHignSearch() {
@@ -536,7 +536,7 @@ function resetHignSearch() {
   columnNameAndValues.value = '';
   drawer.value = false;
   dataTableConfig.value.pageConfig.currentPage = 1;
-  getRecordList();
+  getPreArchingList();
 }
 
 function openHignSearch() {
@@ -545,11 +545,81 @@ function openHignSearch() {
 
 //生成档号
 function buildNo(){
-
+  if (selectData.value.length == 0) {
+    ElNotification({
+      title: '操作提示',
+      message: '请勾选需要操作的数据',
+      type: 'error',
+      duration: 2000,
+      offset: 80
+    });
+    return;
+  }
+  if (selectData.value.length > 10) {
+    ElNotification({
+      title: '操作提示',
+      message: '勾选的数据不能超过10条',
+      type: 'error',
+      duration: 2000,
+      offset: 80
+    });
+    return;
+  }
+  ElMessageBox.confirm('你确定为选择的档案，生成档号吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info'
+  })
+      .then(async () => {
+        let result = {success: false, msg: ''};
+        let ids = [];
+        for (let obj of selectData.value) {
+          ids.push(obj.archivesId);
+        }
+        archivesIdArr.value = ids;
+        result = await createArchivesNo(props.currTreeNodeInfo.id,ids.join(','));
+        ElNotification({
+          title: result.success ? '成功' : '失败',
+          message: result.msg,
+          type: result.success ? 'success' : 'error',
+          duration: 2000,
+          offset: 80
+        });
+        if (result.success) {
+          getPreArchingList();
+        }
+      })
+      .catch(() => {
+        ElMessage({
+          type: 'info',
+          message: '已取消操作',
+          offset: 65
+        });
+      });
 }
 
 //生成档号并归档
 function buildNoAndPlaceOnFile(){
+  if (selectData.value.length == 0) {
+    ElNotification({
+      title: '操作提示',
+      message: '请勾选需要操作的数据',
+      type: 'error',
+      duration: 2000,
+      offset: 80
+    });
+    return;
+  }
+  if (selectData.value.length > 10) {
+    ElNotification({
+      title: '操作提示',
+      message: '勾选的数据不能超过10条',
+      type: 'error',
+      duration: 2000,
+      offset: 80
+    });
+    return;
+  }
   ElMessageBox.confirm('你确定为选择的档案，生成档号并归档吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -561,7 +631,8 @@ function buildNoAndPlaceOnFile(){
         for (let obj of selectData.value) {
           ids.push(obj.archivesId);
         }
-        result = await createArchivesNo(ids.join(','));
+        archivesIdArr.value = ids;
+        result = await createArchivesNo(props.currTreeNodeInfo.id,ids.join(','));
         ElNotification({
           title: result.success ? '成功' : '失败',
           message: result.msg,
@@ -570,13 +641,21 @@ function buildNoAndPlaceOnFile(){
           offset: 80
         });
         if (result.success) {
-          getRecordList();
+          getPreArchingList();
+          Object.assign(dialogConfig.value, {
+            show: true,
+            width: '50%',
+            type: 'archivesTesting',
+            title: '四性检测',
+            showFooter: true,
+            okText:'归档入库',
+          });
         }
       })
       .catch(() => {
         ElMessage({
           type: 'info',
-          message: '已取消删除',
+          message: '已取消操作',
           offset: 65
         });
       });
@@ -602,13 +681,13 @@ function convertTimestamp(timestamp, timeType) {
 //当前页改变时触发
 function onCurrPageChange(currPage) {
   dataTableConfig.value.pageConfig.currentPage = currPage;
-  getRecordList();
+  getPreArchingList();
 }
 
 //每页条数改变时触发
 function onPageSizeChange(pageSize) {
   dataTableConfig.value.pageConfig.pageSize = pageSize;
-  getRecordList();
+  getPreArchingList();
 }
 
 
@@ -621,6 +700,7 @@ function editRecord(row) {
     type: 'addRecord',
     title: '修改文件',
     showFooter: true,
+    okText:'保存',
     margin: '2vh auto'
   });
 }
@@ -632,7 +712,7 @@ function fileManage(row) {
     width: '40%',
     type: 'Uploader',
     title: '上传文件',
-    showFooter: true,
+    showFooter: false,
   });
 }
 
@@ -667,7 +747,7 @@ async function deleteSelect() {
           offset: 80
         });
         if (result.success) {
-          getRecordList();
+          getPreArchingList();
         }
       })
       .catch(() => {
@@ -691,7 +771,7 @@ async function saveChecked() {
   });
   if (res.success) {
     dropdownIsShowRef.value.handleClose();
-    getMetadataField();
+    getMetadataFieldCofig();
   }
 }
 

@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2024-11-07 14:54:27
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2024-11-19 18:30:27
+ * @LastEditTime: 2024-12-13 16:18:25
  * @FilePath: \vue\y9vue-archives\src\views\collect\record\detail.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -161,8 +161,11 @@ import { onMounted, watch } from 'vue';
         if(props.optType=='add'){
             detailForm.value = {};
         }else{
-            detailForm.value = props.formData;
+             Object.assign(detailForm.value,props.formData);
+             console.log('detailFormAtfer', detailForm.value);
+             
         }
+
     });
 
     defineExpose({
@@ -208,21 +211,10 @@ import { onMounted, watch } from 'vue';
             }
         }
         
-        // function initFormData(){
-        //     formFieldList.value.forEach((item) => {
-        //         if(item.re_inputBoxType == 'date' || item.re_inputBoxType == 'dateTime'){
-        //             detailForm.value[item.columnName] = convertTimestamp(detailForm.value[item.columnName],item.re_inputBoxType);
-        //         }
-        //     })
-            
-        //     console.log(detailForm.value);
-            
-        // }
-
     function initRecordRules(){
         formFieldList.value.forEach((item) => {
             detailForm.value[item.columnName] = '';
-            if(item.isRecordNull == 1){
+            if(item.isRecordRequired == 1){
                 addField(item.columnName,true);
             }
         });

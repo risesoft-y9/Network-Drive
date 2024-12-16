@@ -258,14 +258,14 @@
                     fieldCnName: '主键',
                     fieldName: 'id',
                     fieldLength: 38,
-                    fieldType: type + '(' + 38 + ')',
+                    fieldType: type,
                     isMayNull: 0,
                     isSystemField: 1,
                     oldFieldName: '',
                     opt: 'false'
                 };
                 let field1 = {id:"",state:0,tableId:"",fieldCnName:"详情表id",fieldName:"detailId"
-							,fieldLength:50,fieldType:type + "("+50+")",isMayNull:0,isSystemField:1,oldFieldName:"",opt:"false"};
+							,fieldLength:50,fieldType:type ,isMayNull:0,isSystemField:1,oldFieldName:"",opt:"false"};
                 fieldList.value.push(field);
                 fieldList.value.push(field1);
             }

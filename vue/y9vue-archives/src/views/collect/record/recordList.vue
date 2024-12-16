@@ -233,9 +233,9 @@
     </y9Table>
     <y9Dialog v-model:config="dialogConfig">
       <detail v-if="dialogConfig.type == 'addRecord'" ref="detailRef" :formData="formData"
-              :metadataFieldList="metadataFieldList"/>
+              :metadataFieldList="metadataFieldList" :optType="optType"/>
               <Uploader
-                v-if="dialogConfig.type == 'Uploader'" :archivesId="archivesId"
+                v-if="dialogConfig.type == 'Uploader'" :archivesId="archivesId" :reloadTable="getRecordList"
             />
     </y9Dialog>
   </y9Card>
@@ -380,33 +380,27 @@ watch(
     () => props.currTreeNodeInfo,
     (newVal, oldVal) => {
       currInfo.value = $deepAssignObject(currInfo.value, newVal);
-      //getMetadataField();
-      getRecordList();
+      getMetadataField();
     },
     {deep: true}
 );
 
-onMounted(() => {
-    getMetadataField();
-});
-
 async function getMetadataField() {
-  dataTableConfig.value.columns = [];
-  dataTableConfig.value.columns = [{
-    type: "selection",
-    width: 60,
-  },{
-      title: computed(() => t('附件')),
-      key: 'hasFile',
-      width: '50',
-      align: 'center',
-      slot: 'hasFile'
-    }];
   let res = await getMetadataFieldList(props.currTreeNodeInfo.id);
   if (res.success) {
     metadataFieldList.value = res.data;
-    for (let item of metadataFieldList.value) {
-      //if (item.isListShow == 1) {
+    dataTableConfig.value.columns = [];
+    dataTableConfig.value.columns.push({
+      type: "selection",
+      width: 60,
+    },{
+        title: computed(() => t('附件')),
+        key: 'hasFile',
+        width: '60',
+        align: 'center',
+        slot: 'hasFile'
+      });
+    for (let item of res.data) {
         dataTableConfig.value.columns.push({
           title: computed(() => t(item.disPlayName)),
           key: item.columnName,
@@ -414,7 +408,6 @@ async function getMetadataField() {
           sortable: item.isOrder == 1 ? true : false,
           align: item.disPlayAlign
         });
-      //}
       if (item.openSearch == 1) {
         if (item.inputBoxType == 'radio' || item.inputBoxType == 'checkbox' || item.inputBoxType == 'select') {
           if (item.optionClass) {
@@ -482,12 +475,18 @@ async function getRecordList() {
   );
   if (res.success) {
     metadataFieldList.value.forEach((item) => {
-      if (item.dataType == 'Date' || item.re_inputBoxType == 'date' || item.re_inputBoxType == 'dateTime') {
+      if (item.dataType === 'date'|| item.dataType === 'datetime' || item.re_inputBoxType === 'time' || item.re_inputBoxType === 'datetime') {
         res.rows.forEach((row) => {
+          console.log('row', row);
+          console.log('item', item);
+          console.log('itemcolumnName',item.columnName);
+          console.log('rowcol', row[item.columnName]);
+          
           row[item.columnName] = convertTimestamp(row[item.columnName], item.re_inputBoxType);
         });
       }
     })
+
     console.log('rowaaa', res.rows);
     dataTableConfig.value.tableData = res.rows;
     dataTableConfig.value.pageConfig.total = res.total;
@@ -539,6 +538,8 @@ function openHignSearch() {
 }
 
 function convertTimestamp(timestamp, timeType) {
+  console.log('timestamp', timestamp);
+  
   if (timestamp) {
     const date = new Date(Number(timestamp));
     const year = date.getFullYear();
@@ -580,6 +581,8 @@ function addRecord() {
 }
 
 function editRecord(row) {
+  console.log('row', row);
+  
   formData.value = row;
   optType.value = 'edit';
   Object.assign(dialogConfig.value, {
@@ -588,7 +591,8 @@ function editRecord(row) {
     type: 'addRecord',
     title: '修改文件',
     showFooter: true,
-    margin: '2vh auto'
+    margin: '2vh auto',
+    
   });
 }
 
@@ -599,7 +603,8 @@ function fileManage(row) {
     width: '40%',
     type: 'Uploader',
     title: '上传文件',
-    showFooter: true,
+    showFooter: false,
+    
   });
 }
 
@@ -614,6 +619,7 @@ async function deleteSelect() {
     });
     return;
   }
+  
   ElMessageBox.confirm('你确定要删除的选中的数据吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',

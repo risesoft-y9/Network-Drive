@@ -183,7 +183,7 @@
             } else if (props.updateField != null && props.fieldId == '') {
                 //未保存的修改
                 field.value = JSON.parse(JSON.stringify(props.updateField));
-                field.value.fieldType = props.updateField.fieldType.split('(')[0];
+                field.value.fieldType = props.updateField.fieldType;
                 oldfieldName.value = props.updateField.fieldName;
                 title.value = '修改业务表字段';
             } else {
@@ -228,13 +228,13 @@
             field.value.state = 0;
             if (props.updateField != null) {
                 //未保存的修改
-                field.value.fieldType = field.value.fieldType + '(' + field.value.fieldLength + ')';
+                field.value.fieldType = field.value.fieldType;
                 props.pushField(field.value, 'update');
                 return { success: true, msg: '保存成功', type: 'reload' };
             }
             field.value.id = '';
             field.value.opt = 'true';
-            field.value.fieldType = field.value.fieldType + '(' + field.value.fieldLength + ')';
+            field.value.fieldType = field.value.fieldType;
             props.pushField(field.value);
             return { success: true, msg: '保存成功', type: 'reload' };
         } else {

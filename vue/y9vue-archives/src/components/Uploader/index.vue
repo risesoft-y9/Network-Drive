@@ -35,6 +35,7 @@
     const { t } = useI18n();
     const props = defineProps({
         archivesId: String,
+        reloadTable: Function
     });
 
     const data = reactive({
@@ -70,6 +71,7 @@
         }).then(() => {
             deleteArchivesFile(id).then(() => {
                 getFileList();
+                props.reloadTable();
             });
         }).catch(() => {
             ElMessage({ type: "info", message: t("已取消操作"), offset: 65 });
@@ -135,6 +137,7 @@
             .then(function (response) {
                 console.log(response);
                 getFileList();
+                props.reloadTable();
             })
             .catch(function (error) {
                 console.log(error);
@@ -160,11 +163,11 @@
 
 <style>
     .uploader-example {
-        width: 33vw;
-        padding: 15px;
+        width: 35vw;
+        /* padding: 15px; */
         margin: 0px auto 0;
         font-size: 12px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.4); */
     }
     .uploader-drop {
         position: relative;

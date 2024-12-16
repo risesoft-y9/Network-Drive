@@ -38,7 +38,7 @@
 <script lang="ts" setup>
 import {onMounted,reactive,toRefs} from 'vue';
 import { ElForm } from 'element-plus';
-import {getMetadataConfigList} from '@/api/archives/metadata';
+import {getMetadataRecordConfigList} from '@/api/archives/metadata';
 import {getArchivesNumberRules,existRules,saveRules} from '@/api/archives/numberRules';
 
 const props = defineProps({
@@ -97,7 +97,7 @@ async function init(){
     tableConfig.value.tableData = [];
     let result = await getArchivesNumberRules(props.categoryMark);
     if (result.success) {
-        if(result.data){
+        if(result.data.length>0){
             tableConfig.value.tableData = result.data;
             appendStr();
         }else{
@@ -107,7 +107,7 @@ async function init(){
         }
     }
    
-    let res = await getMetadataConfigList(props.categoryMark);
+    let res = await getMetadataRecordConfigList(props.categoryMark);
     if (res.success) {
         metadataFieldList.value = res.data;
     }

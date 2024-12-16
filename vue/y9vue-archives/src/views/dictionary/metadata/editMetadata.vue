@@ -84,7 +84,7 @@
         <el-divider content-position="left">著录设置</el-divider>
         <el-row>
             <el-col :span="12">
-                <el-form-item label="是否著录">
+                <el-form-item label="是否著录" prop="isRecord">
                     <el-switch
                         v-model="metadataForm.isRecord"
                         :active-value="1"
@@ -97,14 +97,15 @@
                 </el-form-item>
             </el-col>
             <el-col :span="12">
-                <el-form-item label="是否著录必填">
+                <el-form-item label="是否著录必填" prop="isRecordRequired">
                     <el-switch
-                        v-model="metadataForm.isRecordNull"
+                        v-model="metadataForm.isRecordRequired"
                         :active-value="1"
                         :inactive-value="0"
                         inline-prompt
                         active-text="是"
                         inactive-text="否"
+                        @change ="switchIsRecordNull"
                     />
                 </el-form-item>
             </el-col>
@@ -136,18 +137,22 @@
                 </el-form-item>
             </el-col>
         </el-row>
-        <!-- <el-row v-if="metadataForm.isRecord == '1'">
+        <!--检测必填设置-->
+        <el-divider content-position="left">归档检测设置</el-divider>
+        <el-row>
             <el-col :span="24">
-                <el-form-item label="著录输入框类型" prop="re_inputBoxType">
-                    <el-select v-model="metadataForm.re_inputBoxType" placeholder="请选择" class="select-input">
-                        <el-option key="input" label="文本输入框" value="input"></el-option>
-                        <el-option key="select" label="下拉框" value="select"></el-option>
-                        <el-option key="date" label="日期" value="date"></el-option>
-                        <el-option key="dateTime" label="日期时间" value="dateTime"></el-option>
-                    </el-select>
+                <el-form-item label="是否为检测必填">
+                    <el-switch
+                        v-model="metadataForm.isCheckedRequired"
+                        :active-value="1"
+                        :inactive-value="0"
+                        active-text="是"
+                        inactive-text="否"
+                        inline-prompt
+                    />
                 </el-form-item>
             </el-col>
-        </el-row> -->
+        </el-row>
 
         <!--查询设置-->
         <el-divider content-position="left">查询设置</el-divider>
@@ -246,17 +251,23 @@ import {  getOptionClassList } from '@/api/archives/dictionaryOption';
         } else {
             rules.value.re_inputBoxType = {};
             rules.value.re_inputBoxWidth = {};
+            metadataForm.value.isRecordRequired = 0;
         }
     }
 
-    function selectOption() {
-        Object.assign(dialogConfig.value, {
-            show: true,
-            width: '30%',
-            title: '字典选择',
-            showFooter: true
-        });
+    function switchIsRecordNull(val){
+        if(metadataForm.value.isRecord == 0 && val == 1){
+            ElNotification({
+                title: '提示',
+                message: '请先选择是否著录',
+                type:  'error',
+                duration: 2000,
+                offset: 80
+            });
+            metadataForm.value.isRecordRequired = 0;
+        }
     }
+    
 </script>
 <style>
     .editMetadata .el-form-item {
