@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1701311373328-1" author="shidaobang">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="Y9_STORAGE_CAPACITY"/>
+            </not>
+        </preConditions>
+        <createTable remarks="存储容量配置表" tableName="Y9_STORAGE_CAPACITY">
+            <column name="ID" remarks="主键id" type="VARCHAR(38)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="CAPACITYOWNERID" remarks="容量所属人id" type="VARCHAR(50)"/>
+            <column name="CAPACITYOWNERNAME" remarks="容量所属人" type="VARCHAR(50)"/>
+            <column name="CAPACITYSIZE" remarks="容量长度" type="BIGINT"/>
+            <column name="CREATETIME" remarks="创建时间" type="datetime"/>
+            <column name="OPERATORID" remarks="操作人id" type="VARCHAR(50)"/>
+            <column name="OPERATORNAME" remarks="操作人" type="VARCHAR(50)"/>
+            <column name="REMAININGLENGTH" remarks="剩余长度" type="BIGINT"/>
+            <column name="UPDATETIME" remarks="更新时间" type="datetime"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1701311373328-2" author="shidaobang">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="Y9_STORAGE_DOWNLOAD_RECORD"/>
+            </not>
+        </preConditions>
+        <createTable remarks="文档下载记录表" tableName="Y9_STORAGE_DOWNLOAD_RECORD">
+            <column name="ID" remarks="主键id" type="VARCHAR(38)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="DOWNLOADMODE" remarks="下载模式" type="VARCHAR(50)"/>
+            <column name="DOWNLOADTIME" remarks="下载时间" type="datetime"/>
+            <column name="DOWNLOADUSERID" remarks="下载人Id" type="VARCHAR(50)"/>
+            <column name="DOWNLOADUSERNAME" remarks="下载人" type="VARCHAR(50)"/>
+            <column name="FILEID" remarks="文件Id" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1701311373328-3" author="shidaobang">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="Y9_STORAGE_NETWORK_FILE"/>
+            </not>
+        </preConditions>
+        <createTable remarks="文件节点表" tableName="Y9_STORAGE_NETWORK_FILE">
+            <column name="ID" remarks="主键id" type="VARCHAR(38)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="COLLECT" remarks="是否收藏" type="BIT(1)"/>
+            <column name="CREATETIME" remarks="创建时间" type="datetime"/>
+            <column name="DELFLAG" remarks="软删除标记" type="BIT(1)"/>
+            <column name="ENCRYPTION" remarks="是否加密" type="BIT(1)"/>
+            <column name="FILEPASSWORD" remarks="文件密码" type="VARCHAR(50)"/>
+            <column name="FILESIZE" remarks="文件长度" type="BIGINT"/>
+            <column name="FILESTOREID" remarks="文件地址Id" type="VARCHAR(50)"/>
+            <column name="FILESUFFIX" remarks="文件类别" type="VARCHAR(10)"/>
+            <column name="FILETYPE" remarks="文件类别" type="INT"/>
+            <column name="LINKPASSWORD" remarks="链接密码" type="VARCHAR(50)"/>
+            <column name="LISTTYPE" remarks="列表类别" type="VARCHAR(255)"/>
+            <column name="NAME" remarks="文件夹名称" type="VARCHAR(100)"/>
+            <column name="ORGID" remarks="组织id" type="VARCHAR(50)"/>
+            <column name="PARENTID" remarks="父文件夹id" type="VARCHAR(50)"/>
+            <column name="TABINDEX" remarks="排序字段" type="INT"/>
+            <column name="UPDATETIME" remarks="更新时间" type="datetime"/>
+            <column name="USERID" remarks="创建人id" type="VARCHAR(38)"/>
+            <column name="USERNAME" remarks="创建人姓名" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1701311373328-4" author="shidaobang">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="Y9_STORAGE_NETWORK_FILECOLLECT"/>
+            </not>
+        </preConditions>
+        <createTable remarks="文件收藏记录表" tableName="Y9_STORAGE_NETWORK_FILECOLLECT">
+            <column name="ID" remarks="主键id" type="VARCHAR(38)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="COLLECTROUTE" remarks="收藏路径" type="VARCHAR(1000)"/>
+            <column name="COLLECTTIME" remarks="收藏时间" type="datetime"/>
+            <column name="COLLECTUSERID" remarks="收藏人Id" type="VARCHAR(50)"/>
+            <column name="FILEID" remarks="文件Id" type="VARCHAR(50)"/>
+            <column name="FILENAME" remarks="文件名称" type="VARCHAR(200)"/>
+            <column name="LISTNAME" remarks="列表名称" type="VARCHAR(50)"/>
+            <column name="PARENTID" remarks="文件父Id" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1701311373328-5" author="shidaobang">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="Y9_STORAGE_NETWORK_FILE_SHARE"/>
+            </not>
+        </preConditions>
+        <createTable remarks="文件夹分享表" tableName="Y9_STORAGE_NETWORK_FILE_SHARE">
+            <column name="ID" remarks="主键id" type="VARCHAR(38)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="CREATE_TIME" remarks="创建时间" type="datetime"/>
+            <column name="FILE_NODE_ID" remarks="文件节点id" type="VARCHAR(38)"/>
+            <column name="FILE_OPT_TYPE" remarks="文件操作类型" type="VARCHAR(38)"/>
+            <column name="PERSON_ID" remarks="分享人Id" type="VARCHAR(255)"/>
+            <column name="PERSON_NAME" remarks="分享人姓名" type="VARCHAR(255)"/>
+            <column name="TO_ORGUNIT_ID" remarks="被分享组织Id" type="VARCHAR(255)"/>
+            <column name="TO_ORGUNIT_NAME" remarks="被分享组织名" type="VARCHAR(255)"/>
+            <column name="UPDATE_TIME" remarks="更新时间" type="datetime"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1701311373328-6" author="shidaobang">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="Y9_STORAGE_CAPACITY" columnNames="CAPACITYOWNERID"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="CAPACITYOWNERID_INDEX" tableName="Y9_STORAGE_CAPACITY">
+            <column name="CAPACITYOWNERID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1701311373328-7" author="shidaobang">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="Y9_STORAGE_DOWNLOAD_RECORD" columnNames="FILEID"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="FILE_FILEID_INDEX" tableName="Y9_STORAGE_DOWNLOAD_RECORD">
+            <column name="FILEID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1701311373328-8" author="shidaobang">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="Y9_STORAGE_NETWORK_FILECOLLECT" columnNames="FILEID"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="FILE_FILEID_INDEX" tableName="Y9_STORAGE_NETWORK_FILECOLLECT">
+            <column name="FILEID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1701311373328-9" author="shidaobang">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="Y9_STORAGE_NETWORK_FILE" columnNames="USERID"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="FILE_USERID_INDEX" tableName="Y9_STORAGE_NETWORK_FILE">
+            <column name="USERID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1701311373328-10" author="shidaobang">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="Y9_STORAGE_NETWORK_FILE_SHARE" columnNames="PERSON_ID"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="PERSON_ID_INDEX" tableName="Y9_STORAGE_NETWORK_FILE_SHARE">
+            <column name="PERSON_ID"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="1701311373328-11" author="shidaobang">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="Y9_STORAGE_NETWORK_FILE_SHARE" columnNames="TO_ORGUNIT_ID"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="TO_ORGUNIT_ID_INDEX" tableName="Y9_STORAGE_NETWORK_FILE_SHARE">
+            <column name="TO_ORGUNIT_ID"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
