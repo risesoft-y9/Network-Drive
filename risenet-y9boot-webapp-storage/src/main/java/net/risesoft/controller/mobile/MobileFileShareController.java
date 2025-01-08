@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,11 +50,11 @@ import y9.client.rest.platform.org.PersonApiClient;
 @RequestMapping("/mobile/fileNodeShare")
 public class MobileFileShareController {
 
-    protected Logger log = LoggerFactory.getLogger(MobileFileShareController.class);
     private final FileNodeService fileNodeService;
     private final FileNodeShareService fileNodeShareService;
     private final PersonApiClient personApiClient;
     private final OrgUnitApi orgUnitApi;
+    protected Logger log = LoggerFactory.getLogger(MobileFileShareController.class);
 
     /**
      * 获取文件共享记录列表

@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.risesoft</groupId>
-        <artifactId>y9-digitalbase</artifactId>
-        <version>v9.6.8-SNAPSHOT</version>
+        <artifactId>y9-digitalbase-parent</artifactId>
+        <version>v9.7.0-SNAPSHOT</version>
         <relativePath/>
     </parent>
     <artifactId>y9-storage</artifactId>
@@ -45,7 +45,7 @@
         <gitee.connection>scm:git:https://gitee.com/risesoft-y9/y9-storage.git</gitee.connection>
         <gitee.developerConnection>scm:git:https://gitee.com/risesoft-y9/y9-storage.git</gitee.developerConnection>
 
-        <revision>v9.6.8-SNAPSHOT</revision>
+        <revision>v9.7.0-SNAPSHOT</revision>
     </properties>
 
     <scm>
@@ -55,6 +55,7 @@
     </scm>
 
     <modules>
+        <module>risenet-y9boot-webapp-archives</module>
         <module>risenet-y9boot-webapp-dataAssets</module>
         <module>risenet-y9boot-webapp-storage</module>
     </modules>

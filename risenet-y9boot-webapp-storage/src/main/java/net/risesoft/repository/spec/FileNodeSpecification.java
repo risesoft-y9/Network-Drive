@@ -3,11 +3,11 @@ package net.risesoft.repository.spec;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
@@ -116,36 +116,36 @@ public class FileNodeSpecification implements Specification<FileNode> {
         return deleted;
     }
 
-    public FileNodeType getFileType() {
-        return fileType;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getParentId() {
-        return parentId;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public FileNodeType getFileType() {
+        return fileType;
     }
 
     public void setFileType(FileNodeType fileType) {
         this.fileType = fileType;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
 
+    public String getParentId() {
+        return parentId;
+    }
+
     public void setParentId(String parentId) {
         this.parentId = parentId;
+    }
+
+    public String getUserId() {
+        return userId;
     }
 
     public void setUserId(String userId) {

@@ -2,11 +2,11 @@ package net.risesoft.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
@@ -25,7 +25,7 @@ import lombok.experimental.Accessors;
 @Data
 @Entity
 @Table(name = "Y9_ARCHIVES_METADATACONFIG")
-@org.hibernate.annotations.Table(comment = "元数据配置表", appliesTo = "Y9_ARCHIVES_METADATACONFIG")
+@Comment("元数据配置表")
 public class MetadataConfig implements Serializable {
 
     private static final long serialVersionUID = 6023418927806462716L;

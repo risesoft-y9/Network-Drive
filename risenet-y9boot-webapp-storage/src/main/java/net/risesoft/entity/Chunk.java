@@ -2,13 +2,13 @@ package net.risesoft.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.GenericGenerator;
@@ -21,8 +21,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table(name = "Y9_STORAGE_NETWORK_FILE_CHUNKS",
-        indexes = {@Index(name = "FILE_NODE_ID_INDEX", columnList = "FILE_NODE_ID")})
-@org.hibernate.annotations.Table(comment = "文件分块记录表", appliesTo = "Y9_STORAGE_NETWORK_FILE_CHUNKS")
+    indexes = {@Index(name = "FILE_NODE_ID_INDEX", columnList = "FILE_NODE_ID")})
+@Comment("文件分块记录表")
 public class Chunk implements Serializable {
 
     private static final long serialVersionUID = -7517930847930358539L;

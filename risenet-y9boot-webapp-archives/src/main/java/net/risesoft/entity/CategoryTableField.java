@@ -2,10 +2,10 @@ package net.risesoft.entity;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Comment;
 
@@ -15,7 +15,7 @@ import lombok.experimental.Accessors;
 
 @Entity
 @Table(name = "Y9_ARCHIVES_TABLE_FIELD")
-@org.hibernate.annotations.Table(comment = "门类表字段定义", appliesTo = "Y9_ARCHIVES_TABLE_FIELD")
+@Comment("门类表字段定义")
 @Accessors(chain = true)
 @NoArgsConstructor
 @Data

@@ -3,14 +3,14 @@ package net.risesoft.entity;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.GenericGenerator;
@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table(name = "Y9_STORAGE_CAPACITY", indexes = {@Index(name = "CAPACITYOWNERID_INDEX", columnList = "CAPACITYOWNERID")})
-@org.hibernate.annotations.Table(comment = "存储容量配置表", appliesTo = "Y9_STORAGE_CAPACITY")
+@Comment("存储容量配置表")
 public class StorageCapacity implements Serializable {
 
     private static final long serialVersionUID = -8226921317846231630L;
