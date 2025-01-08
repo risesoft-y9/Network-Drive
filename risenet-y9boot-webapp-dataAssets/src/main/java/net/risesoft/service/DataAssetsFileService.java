@@ -6,13 +6,13 @@ import net.risesoft.entity.DataAssetsFile;
 
 public interface DataAssetsFileService {
 
-    DataAssetsFile save(DataAssetsFile archivesFile);
+    DataAssetsFile save(DataAssetsFile dataAssetsFile);
 
-    boolean isArchivesFileExists(Long archiveId, String fileName);
+    boolean isArchivesFileExists(Long detailId, String fileName);
 
-    Integer getMaxTabIndex(Long archiveId);
+    Integer getMaxTabIndex(Long detailId);
 
-    List<DataAssetsFile> findByArchivesId(Long archivesId);
+    List<DataAssetsFile> findByDetailId(Long detailId);
 
     void deleteFile(String id);
 

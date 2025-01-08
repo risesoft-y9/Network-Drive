@@ -24,7 +24,7 @@ public class DataAssetsFileServiceImpl implements DataAssetsFileService {
     @Override
     public boolean isArchivesFileExists(Long archiveId, String fileName) {
         DataAssetsFile archivesFile = dataAssetsFileRepository.findByArchivesIdAndFileName(archiveId, fileName);
-        return null != archivesFile && null != archivesFile.getArchivesId();
+        return null != archivesFile && null != archivesFile.getDetailId();
     }
 
     @Override
@@ -33,8 +33,8 @@ public class DataAssetsFileServiceImpl implements DataAssetsFileService {
     }
 
     @Override
-    public List<DataAssetsFile> findByArchivesId(Long archivesId) {
-        return dataAssetsFileRepository.findByArchivesId(archivesId);
+    public List<DataAssetsFile> findByDetailId(Long archivesId) {
+        return dataAssetsFileRepository.findByDetailId(archivesId);
     }
 
     @Override

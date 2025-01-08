@@ -31,9 +31,9 @@ public class DataAssetsFile implements Serializable {
     @GenericGenerator(name = "uuid", strategy = "assigned")
     private String id;
 
-    @Comment("档案关联id")
-    @Column(name = "ARCHIVESID", length = 50)
-    private Long archivesId;
+    @Column(name = "DETAIL_ID", nullable = false)
+    @Comment("详情关联id")
+    private Long detailId;
 
     @Comment("文件仓库Id")
     @Column(name = "FILESTOREID", length = 50)

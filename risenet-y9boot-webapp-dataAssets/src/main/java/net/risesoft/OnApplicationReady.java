@@ -25,7 +25,7 @@ public class OnApplicationReady implements ApplicationListener<ApplicationReadyE
 
     private final CategoryService categoryService;
 
-    @Value("${y9.app.archives.tenantId}")
+    @Value("${y9.app.dataAssets.tenantId}")
     private String tenantId;
 
     private void createCategoryConfig() {

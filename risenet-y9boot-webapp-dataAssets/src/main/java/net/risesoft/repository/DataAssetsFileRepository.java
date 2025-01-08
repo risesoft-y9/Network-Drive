@@ -15,8 +15,8 @@ public interface DataAssetsFileRepository
 
     DataAssetsFile findByArchivesIdAndFileName(Long archiveId, String fileName);
 
-    @Query("SELECT MAX(a.tabIndex) FROM DataAssetsFile a WHERE a.archivesId = ?1")
-    Integer getMaxTabIndex(Long archiveId);
+    @Query("SELECT MAX(a.tabIndex) FROM DataAssetsFile a WHERE a.detailId = ?1")
+    Integer getMaxTabIndex(Long detailId);
 
-    List<DataAssetsFile> findByArchivesId(Long archivesId);
+    List<DataAssetsFile> findByDetailId(Long detailId);
 }
