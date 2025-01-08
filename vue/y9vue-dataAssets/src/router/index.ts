@@ -1,13 +1,20 @@
+/*
+ * @Author: yihong yihong@risesoft.net
+ * @Date: 2024-11-01 17:47:36
+ * @LastEditors: yihong yihong@risesoft.net
+ * @LastEditTime: 2025-01-06 17:47:18
+ * @FilePath: \vue\y9vue-dataAssets\src\router\index.ts
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 import { routerBeforeEach } from '@/router/checkRouter';
 import NProgress from 'nprogress';
 import { createRouter, createWebHistory } from 'vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import homeRouter from './modules/homeRouter';
-import collectRouter from './modules/collectRouter';
-import archivesManageRouter from './modules/archivesManageRouter';
+import libraryRouter from './modules/libraryRouter';
 import utilizeRouter from './modules/utilizeRouter';
-import statisticsRouter from './modules/statisticsRouter';
 import dictionaryRouter from './modules/dictionaryRouter';
+import pretreatmentRouter from './modules/pretreatmentRouter';
 
 //constantRoutes为不需要动态判断权限的路由，如登录、404、500等
 export const constantRoutes: Array<any> = [
@@ -15,7 +22,7 @@ export const constantRoutes: Array<any> = [
         path: '/',
         name: 'index',
         hidden: true,
-        redirect: '/collect',
+        redirect: '/pretreat',
     },
     {
         path: '/401',
@@ -44,10 +51,9 @@ let routes: RouteRecordRaw[] = []
 //asyncRoutes需求动态判断权限并动态添加的页面  这里的路由模块顺序也是菜单显示的顺序（位置：src->router->modules）
 export const asyncRoutes = [
     homeRouter,
-    collectRouter,
-    archivesManageRouter,
+    pretreatmentRouter,
+    libraryRouter,
     utilizeRouter,
-    statisticsRouter,
     dictionaryRouter
     //...routes
     // 引入其他模块路由

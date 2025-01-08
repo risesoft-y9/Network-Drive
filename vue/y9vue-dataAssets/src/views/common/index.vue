@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2024-10-15 17:23:12
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2024-11-22 10:39:06
+ * @LastEditTime: 2025-01-06 17:54:27
  * @FilePath: \vue\y9vue-dataAssets\src\views\collect\recordList.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -18,7 +18,7 @@
 </template>
 <script lang="ts" setup>
     import { ref, reactive } from 'vue';
-    import RecordList from '@/views/collect/record/recordList.vue';
+    import RecordList from '@/views/library/manage/list.vue';
     import PreArchingList from '@/views/collect/beforehand/preArchingList.vue';
     import { getCatelogTree } from '@/api/dataAssets/catalog';
 
