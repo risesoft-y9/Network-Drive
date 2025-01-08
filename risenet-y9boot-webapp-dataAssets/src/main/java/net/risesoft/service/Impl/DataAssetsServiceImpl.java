@@ -69,8 +69,8 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     public SearchPage<DataAssets> listArchives(String categoryId, Integer fileStatus, Boolean isDeleted, int page,
         int rows) {
         Pageable pageable = PageRequest.of(page - 1, rows, Sort.by(Sort.Direction.DESC, "createTime"));
-        Page<DataAssets> pageList =
-            dataAssetsRepository.findByCategoryIdAndStatusAndIsDeleted(categoryId, fileStatus, isDeleted, pageable);
+        Page<DataAssets> pageList = dataAssetsRepository.findByCategoryIdAndAssetsStatusAndIsDeleted(categoryId,
+            fileStatus, isDeleted, pageable);
         List<DataAssets> list = pageList.getContent();
         SearchPage<DataAssets> searchPage = SearchPage.<DataAssets>builder().rows(list).currpage(page).size(rows)
             .totalpages(pageList.getTotalPages()).total(pageList.getTotalElements()).build();

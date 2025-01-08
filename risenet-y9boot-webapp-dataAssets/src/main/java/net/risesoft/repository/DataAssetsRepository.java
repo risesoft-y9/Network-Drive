@@ -13,7 +13,7 @@ import net.risesoft.entity.DataAssets;
 @Transactional(value = "rsTenantTransactionManager", readOnly = true)
 public interface DataAssetsRepository extends JpaRepository<DataAssets, Long>, JpaSpecificationExecutor<DataAssets> {
 
-    Page<DataAssets> findByCategoryIdAndStatusAndIsDeleted(String categoryId, Integer fileStatus, Boolean isDeleted,
+    Page<DataAssets> findByCategoryIdAndAssetsStatusAndIsDeleted(String categoryId, Integer status, Boolean isDeleted,
         Pageable pageable);
 
     List<DataAssets> findByDataAssetsIdIn(Long[] ids);
