@@ -63,7 +63,7 @@ public class DataAssetsFileController {
 
     @GetMapping(value = "/getArchivesFileList")
     public Y9Result<List<DataAssetsFile>> getArchivesFileList(Long archivesId) {
-        List<DataAssetsFile> list = dataAssetsFileService.findByArchivesId(archivesId);
+        List<DataAssetsFile> list = dataAssetsFileService.findByDetailId(archivesId);
         return Y9Result.success(list, "获取列表成功");
     }
 
@@ -218,7 +218,7 @@ public class DataAssetsFileController {
             archivesFile.setPersonId(userId);
             archivesFile.setPersonName(userName);
             archivesFile.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
-            archivesFile.setArchivesId(archivesId);
+            archivesFile.setDetailId(archivesId);
             OrgUnit orgUnit = orgUnitApi.getParent(tenantId, positionId).getData();
             if (null != orgUnit) {
                 archivesFile.setDeptId(orgUnit.getId());
