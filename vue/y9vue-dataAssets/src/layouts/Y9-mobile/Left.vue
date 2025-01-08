@@ -6,7 +6,7 @@
         <div class="indexlayout-left-logo">
             <router-link to="/" class="logo-url">
                 <img alt="y9-logo" src="@/assets/images/yunLogo.png" />
-                <span class="logo-title" v-if="!menuCollapsed">{{ $t('档案管理') }}</span>
+                <span class="logo-title" v-if="!menuCollapsed">{{ $t('数据资产') }}</span>
             </router-link>
         </div>
         <div class="indexlayout-left-menu">

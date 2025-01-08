@@ -66,7 +66,7 @@
 <template>
     <div id="right-top">
         <div class="left">
-            <span>{{ $t('档案管理') }}</span>
+            <span>{{ $t('数据资产') }}</span>
         </div>
         <!-- <div class="center">
 
