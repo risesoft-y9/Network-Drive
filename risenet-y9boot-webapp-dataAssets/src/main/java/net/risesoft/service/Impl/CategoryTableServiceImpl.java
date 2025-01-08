@@ -198,18 +198,18 @@ public class CategoryTableServiceImpl implements CategoryTableService {
             if (StringUtils.isNotBlank(name)) {
                 List<Map<String, String>> list1 = Y9FormDbMetaDataUtil.listAllTables(dataSource, "%" + name + "%");
                 for (Map<String, String> m : list1) {
-                    if (m.get("name").startsWith("y9_archives_") || m.get("name").startsWith("Y9_ARCHIVES_")) {
+                    if (m.get("name").startsWith("y9_dataassets_") || m.get("name").startsWith("Y9_DATAASSETS_")) {
                         list.add(m);
                     }
                 }
             } else {
-                list = Y9FormDbMetaDataUtil.listAllTables(dataSource, "y9_archives_%");
+                list = Y9FormDbMetaDataUtil.listAllTables(dataSource, "y9_dataassets_%");
                 String dialect = Y9FormDbMetaDataUtil.getDatabaseDialectName(dataSource);
                 if (SqlConstants.DBTYPE_ORACLE.equals(dialect)) {
-                    List<Map<String, String>> list1 = Y9FormDbMetaDataUtil.listAllTables(dataSource, "Y9_ARCHIVES_%");
+                    List<Map<String, String>> list1 = Y9FormDbMetaDataUtil.listAllTables(dataSource, "Y9_DATAASSETS_%");
                     list.addAll(list1);
                 } else if (SqlConstants.DBTYPE_DM.equals(dialect)) {
-                    List<Map<String, String>> list1 = Y9FormDbMetaDataUtil.listAllTables(dataSource, "Y9_ARCHIVES_%");
+                    List<Map<String, String>> list1 = Y9FormDbMetaDataUtil.listAllTables(dataSource, "Y9_DATAASSETS_%");
                     list.addAll(list1);
                 }
             }

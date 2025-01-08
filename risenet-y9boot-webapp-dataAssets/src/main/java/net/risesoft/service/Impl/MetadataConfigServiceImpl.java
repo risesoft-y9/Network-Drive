@@ -51,7 +51,7 @@ public class MetadataConfigServiceImpl implements MetadataConfigService {
     private final CategoryTableRepository categoryTableRepository;
     private final CategoryTableFieldService categoryTableFieldService;
     private final String ingoreFields =
-        "id,categoryId,tenantId,tabIndex,detailId,archivesId,ID,CATEGORY_ID,TENANT_ID,TABINDEX,DETAIL_ID,ARCHIVES_ID,FILE_STATUS,FILE_GRADE,IS_DELETED";
+        "id,categoryId,tenantId,tabIndex,detailId,dataAssetsId,ID,CATEGORY_ID,TENANT_ID,TABINDEX,DETAIL_ID,DATAASSETS_ID,FILE_STATUS,FILE_GRADE,IS_DELETED";
 
     public MetadataConfigServiceImpl(@Qualifier("jdbcTemplate4Tenant") JdbcTemplate jdbcTemplate4Tenant,
         MetadataConfigRepository metadataConfigRepository, ManagerApiClient managerApiClient,

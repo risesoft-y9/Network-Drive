@@ -96,24 +96,24 @@ public class DataAssetsController {
             Map<String, Object> map = new HashMap<>();
             map = EntityOrTableUtils.convertToMap(archives);
             if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
-                map.putAll(documentFileService.findByDetailId(archives.getArchivesId()));
+                map.putAll(documentFileService.findByDetailId(archives.getDataAssetsId()));
             } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
-                map.putAll(imageFileService.findByDetailId(archives.getArchivesId()));
+                map.putAll(imageFileService.findByDetailId(archives.getDataAssetsId()));
             } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
-                map.putAll(audioFileService.findByDetailId(archives.getArchivesId()));
+                map.putAll(audioFileService.findByDetailId(archives.getDataAssetsId()));
             } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
-                map.putAll(videoFileService.findByDetailId(archives.getArchivesId()));
+                map.putAll(videoFileService.findByDetailId(archives.getDataAssetsId()));
             } else {
                 CategoryTable categoryTable = categoryTableService.findByCategoryMark(customId);
                 if (null != categoryTable) {
                     List<Map<String, Object>> list_categoryTable = categoryTableService
-                        .getTableData(categoryTable.getTableName(), archives.getArchivesId().toString());
+                        .getTableData(categoryTable.getTableName(), archives.getDataAssetsId().toString());
                     for (Map<String, Object> map_categoryTable : list_categoryTable) {
                         map.putAll(map_categoryTable);
                     }
                 }
             }
-            List<DataAssetsFile> archivesFiles = dataAssetsFileService.findByArchivesId(archives.getArchivesId());
+            List<DataAssetsFile> archivesFiles = dataAssetsFileService.findByArchivesId(archives.getDataAssetsId());
             map.put("hasFile", null != archivesFiles && !archivesFiles.isEmpty());
             list_map.add(map);
         }
@@ -206,23 +206,23 @@ public class DataAssetsController {
             archives.setCreateTime(new Date());
             dataAssetsService.save(archives);
             if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
-                documentFile.setDetailId(archives.getArchivesId());
+                documentFile.setDetailId(archives.getDataAssetsId());
                 documentFileService.save(documentFile);
             } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
-                imageFile.setDetailId(archives.getArchivesId());
+                imageFile.setDetailId(archives.getDataAssetsId());
                 imageFileService.save(imageFile);
             } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
-                audioFile.setDetailId(archives.getArchivesId());
+                audioFile.setDetailId(archives.getDataAssetsId());
                 audioFileService.save(audioFile);
             } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
-                videoFile.setDetailId(archives.getArchivesId());
+                videoFile.setDetailId(archives.getDataAssetsId());
                 videoFileService.save(videoFile);
             } else {
-                categoryTableService.saveTableData("add", customId, archives.getArchivesId().toString(), map);
+                categoryTableService.saveTableData("add", customId, archives.getDataAssetsId().toString(), map);
             }
         } else {
-            if (null != archives.getArchivesId()) {
-                DataAssets oldArchives = dataAssetsService.findByArchives_id(archives.getArchivesId());
+            if (null != archives.getDataAssetsId()) {
+                DataAssets oldArchives = dataAssetsService.findByArchives_id(archives.getDataAssetsId());
                 if (null != oldArchives) {
                     Y9BeanUtil.copyProperties(archives, oldArchives);
                     dataAssetsService.save(oldArchives);
@@ -233,7 +233,7 @@ public class DataAssetsController {
                         Y9BeanUtil.copyProperties(documentFile, oldDocumentFile);
                         documentFileService.save(oldDocumentFile);
                     } else {
-                        documentFile.setDetailId(archives.getArchivesId());
+                        documentFile.setDetailId(archives.getDataAssetsId());
                         documentFileService.save(documentFile);
                     }
                 } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
@@ -242,7 +242,7 @@ public class DataAssetsController {
                         Y9BeanUtil.copyProperties(imageFile, oldImageFile);
                         imageFileService.save(oldImageFile);
                     } else {
-                        imageFile.setDetailId(archives.getArchivesId());
+                        imageFile.setDetailId(archives.getDataAssetsId());
                         imageFileService.save(imageFile);
                     }
                 } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
@@ -251,7 +251,7 @@ public class DataAssetsController {
                         Y9BeanUtil.copyProperties(audioFile, oldAudioFile);
                         audioFileService.save(oldAudioFile);
                     } else {
-                        audioFile.setDetailId(archives.getArchivesId());
+                        audioFile.setDetailId(archives.getDataAssetsId());
                         audioFileService.save(audioFile);
                     }
                 } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
@@ -260,11 +260,11 @@ public class DataAssetsController {
                         Y9BeanUtil.copyProperties(videoFile, oldVideoFile);
                         videoFileService.save(oldVideoFile);
                     } else {
-                        videoFile.setDetailId(archives.getArchivesId());
+                        videoFile.setDetailId(archives.getDataAssetsId());
                         videoFileService.save(videoFile);
                     }
                 } else {
-                    categoryTableService.saveTableData("edit", customId, archives.getArchivesId().toString(), map);
+                    categoryTableService.saveTableData("edit", customId, archives.getDataAssetsId().toString(), map);
                 }
             }
         }
@@ -306,8 +306,4 @@ public class DataAssetsController {
         return dataAssetsService.createArchivesNo(categoryId, ids);
     }
 
-    @PostMapping(value = "/checkArchives")
-    public Y9Result<Map<String, Object>> checkArchives(String processName, @RequestParam Long[] archivesId) {
-        return dataAssetsService.checkArchives(processName, archivesId);
-    }
 }

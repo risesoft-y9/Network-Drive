@@ -1,11 +1,7 @@
 package net.risesoft.service.Impl;
 
 import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -21,11 +17,8 @@ import lombok.RequiredArgsConstructor;
 import net.risesoft.entity.CategoryTable;
 import net.risesoft.entity.DataAssets;
 import net.risesoft.entity.DataAssetsNumberRules;
-import net.risesoft.entity.DataAssetsTestingInfo;
 import net.risesoft.entity.MetadataConfig;
 import net.risesoft.enums.CategoryEnums;
-import net.risesoft.id.IdType;
-import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.model.SearchPage;
 import net.risesoft.model.platform.DataCatalog;
 import net.risesoft.pojo.Y9Result;
@@ -38,7 +31,6 @@ import net.risesoft.repository.MetadataConfigRepository;
 import net.risesoft.repository.VideoFileRepository;
 import net.risesoft.service.CategoryTableService;
 import net.risesoft.service.DataAssetsService;
-import net.risesoft.util.ArchiveDetection;
 import net.risesoft.util.PageUtil;
 import net.risesoft.y9.Y9LoginUserHolder;
 
@@ -78,7 +70,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
         int rows) {
         Pageable pageable = PageRequest.of(page - 1, rows, Sort.by(Sort.Direction.DESC, "createTime"));
         Page<DataAssets> pageList =
-            dataAssetsRepository.findByCategoryIdAndFileStatusAndIsDeleted(categoryId, fileStatus, isDeleted, pageable);
+            dataAssetsRepository.findByCategoryIdAndStatusAndIsDeleted(categoryId, fileStatus, isDeleted, pageable);
         List<DataAssets> list = pageList.getContent();
         SearchPage<DataAssets> searchPage = SearchPage.<DataAssets>builder().rows(list).currpage(page).size(rows)
             .totalpages(pageList.getTotalPages()).total(pageList.getTotalElements()).build();
@@ -118,23 +110,23 @@ public class DataAssetsServiceImpl implements DataAssetsService {
             }
         }
         if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
-            joinSql = "LEFT JOIN Y9_ARCHIVES_DOCUMENT_FILE C ON T.ARCHIVES_ID = C.DETAIL_ID";
+            joinSql = "LEFT JOIN Y9_ARCHIVES_DOCUMENT_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
         } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
-            joinSql = "LEFT JOIN Y9_ARCHIVES_IMAGE_FILE C ON T.ARCHIVES_ID = C.DETAIL_ID";
+            joinSql = "LEFT JOIN Y9_ARCHIVES_IMAGE_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
         } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
-            joinSql = "LEFT JOIN Y9_ARCHIVES_AUDIO_FILE C ON T.ARCHIVES_ID = C.DETAIL_ID";
+            joinSql = "LEFT JOIN Y9_ARCHIVES_AUDIO_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
         } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
-            joinSql = "LEFT JOIN Y9_ARCHIVES_VIDEO_FILE C ON T.ARCHIVES_ID = C.DETAIL_ID";
+            joinSql = "LEFT JOIN Y9_ARCHIVES_VIDEO_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
         } else {
             CategoryTable categoryTable = categoryTableService.findByCategoryMark(customId);
             if (null != categoryTable) {
-                joinSql = "LEFT JOIN " + categoryTable.getTableName() + " C ON T.ARCHIVES_ID = C.DETAIL_ID";
+                joinSql = "LEFT JOIN " + categoryTable.getTableName() + " C ON T.DATAASSETS_ID = C.DETAIL_ID";
             }
         }
         String sql = "SELECT T.* FROM Y9_ARCHIVES_DETAILS T " + joinSql
             + " WHERE T.CATEGORY_ID = ? AND T.FILE_STATUS = ? AND T.IS_DELETED = ? AND " + conditionSql
             + " ORDER BY T.CREATE_TIME DESC";
-        String countSql = "SELECT COUNT(T.ARCHIVES_ID) FROM Y9_ARCHIVES_DETAILS T " + joinSql
+        String countSql = "SELECT COUNT(T.DATAASSETS_ID) FROM Y9_ARCHIVES_DETAILS T " + joinSql
             + " WHERE T.CATEGORY_ID = ? AND T.FILE_STATUS = ? AND T.IS_DELETED = ? AND " + conditionSql;
         System.out.println(sql);
         System.out.println(countSql);
@@ -153,7 +145,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     }
 
     @Override
-    public DataAssets findByArchives_id(Long id) {
+    public DataAssets findById(Long id) {
         return dataAssetsRepository.findById(id).orElse(null);
     }
 
@@ -182,7 +174,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     @Transactional(readOnly = false)
     public void signDelete(String categoryId, Long[] ids) {
         for (Long id : ids) {
-            DataAssets archives = this.findByArchives_id(id);
+            DataAssets archives = this.findById(id);
             if (null != archives) {
                 archives.setIsDeleted(true);
                 this.save(archives);
@@ -194,9 +186,9 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     @Transactional(readOnly = false)
     public void recordArchiving(Long[] ids) {
         for (Long id : ids) {
-            DataAssets archives = this.findByArchives_id(id);
+            DataAssets archives = this.findById(id);
             if (null != archives) {
-                archives.setFileStatus(1);
+                archives.setAssetsStatus(1);
                 this.save(archives);
             }
         }
@@ -204,11 +196,11 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 
     @Override
     @Transactional(readOnly = false)
-    public Y9Result<String> createArchivesNo(String categoryId, Long[] ids) {
+    public Y9Result<String> createAssetsNo(String categoryId, Long[] ids) {
         String tenantId = Y9LoginUserHolder.getTenantId();
         DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
         for (Long id : ids) {
-            DataAssets archives = this.findByArchives_id(id);
+            DataAssets archives = this.findById(id);
             List<DataAssetsNumberRules> rulesList =
                 dataAssetsNumberRulesRepository.findByCategoryMark(dataCatalog.getCustomId());
             if (null != rulesList && rulesList.size() > 0) {
@@ -224,8 +216,8 @@ public class DataAssetsServiceImpl implements DataAssetsService {
                         }
                     }
                 }
-                System.out.println("档案号：" + archiveNo);
-                archives.setArchiveNo(archiveNo);
+                System.out.println("资产编号：" + archiveNo);
+                archives.setAssetsNo(archiveNo);
             } else {
                 return Y9Result.failure("未找到档案号规则");
             }
@@ -235,50 +227,8 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     }
 
     @Override
-    public List<DataAssets> findByArchivesIdIn(Long[] ids) {
-        return dataAssetsRepository.findByArchivesIdIn(ids);
-    }
-
-    @Override
-    public Y9Result<Map<String, Object>> checkArchives(String processName, Long[] archivesId) {
-        String tenantId = Y9LoginUserHolder.getTenantId();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Map<String, Object> map = new HashMap<>();
-        for (Long id : archivesId) {
-            DataAssets archives = this.findByArchives_id(id);
-            if (null != archives) {
-                // 完整性检查（1、档案是否包含完整的文档、图片、音频、视频等附件，2、档案必填字段是否完整，）
-                // 真实性检查（验证档案文件上传时的哈希值和数据库中记录的哈希值是否一致，验证档案文件是否损坏，验证档案是否存在）
-                // 可用性检查（验证档案文件是否存在，文件正常）
-                // 【GD-1-1】档案文件上传人是否存在
-                DataAssetsTestingInfo testingInfo = new DataAssetsTestingInfo();
-                String testingInfoId = Y9IdGenerator.genId(IdType.SNOWFLAKE);
-                testingInfo.setId(testingInfoId);
-                testingInfo.setArchivesId(id);
-                testingInfo.setTestingStep(processName);
-                testingInfo.setTestingTime(sdf.format(new Date()));
-                /*** 关于档案文件 start ******/
-                ArchiveDetection.checkArchivesFile(testingInfoId, archives);
-                /*** 关于档案文件 end ******/
-                /*** 关于档案元数据 start ******/
-                // 1、根据档案检测必填配置，检测数据是否完整
-                ArchiveDetection.checkRequiredMetadata(testingInfoId, archives);
-                // 2、验证数据库表数据的长度是否大于初始建立表的配置长度（防止有人为在数据库修改表字段长度后，数据变长跟初始配置如字段长度和字段类型不一致的情况）
-                // 3、检查元数据是否存在乱码
-                ArchiveDetection.checkDataTable(testingInfoId, archives);
-
-                /*** 关于档案元数据 end ******/
-                // 【GD-1-10、GD-1-14\GD-2-2】查询档案文件的哈希值
-                // 【GD-1-11-1、GD-2-1、】档案是否包含文件
-                // 【GD-1-2、GD-1-3】验证数据库表数据的长度是否大于初始建立表的配置长度（防止在数据库修改表字段长度后，数据变长跟初始配置如字段长度和字段类型不一致的情况）
-                // 【GD-1-4、GD-1-5、GD-1-6、GD-2-11、GD-2-3、GD-2-4、GD-2-6】查询档案元数据的必填值
-                // 【GD-2-5】档案过程信息是否完整（暂时不用）
-                // 【GD-3-1】检查元数据是否存在乱码
-                // 【GD-3-4】验证档案文件下载是否有数据、文件是否有后缀
-
-            }
-        }
-        return Y9Result.success(map, "检测成功");
+    public List<DataAssets> findByDataAssetsIdIn(Long[] ids) {
+        return dataAssetsRepository.findByDataAssetsIdIn(ids);
     }
 
 }

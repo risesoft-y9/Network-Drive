@@ -1,7 +1,6 @@
 package net.risesoft.service;
 
 import java.util.List;
-import java.util.Map;
 
 import net.risesoft.entity.DataAssets;
 import net.risesoft.model.SearchPage;
@@ -16,7 +15,7 @@ public interface DataAssetsService {
 
     DataAssets save(DataAssets archives);
 
-    DataAssets findByArchives_id(Long id);
+    DataAssets findById(Long id);
 
     void delete(String categoryId, Long[] id);
 
@@ -24,9 +23,8 @@ public interface DataAssetsService {
 
     void recordArchiving(Long[] ids);
 
-    Y9Result<String> createArchivesNo(String categoryId, Long[] ids);
+    Y9Result<String> createAssetsNo(String categoryId, Long[] ids);
 
-    List<DataAssets> findByArchivesIdIn(Long[] ids);
+    List<DataAssets> findByDataAssetsIdIn(Long[] ids);
 
-    Y9Result<Map<String, Object>> checkArchives(String processName, Long[] archivesId);
 }
