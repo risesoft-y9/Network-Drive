@@ -113,7 +113,7 @@ public class DataAssetsController {
                     }
                 }
             }
-            List<DataAssetsFile> archivesFiles = dataAssetsFileService.findByArchivesId(archives.getDataAssetsId());
+            List<DataAssetsFile> archivesFiles = dataAssetsFileService.findByDetailId(archives.getDataAssetsId());
             map.put("hasFile", null != archivesFiles && !archivesFiles.isEmpty());
             list_map.add(map);
         }
@@ -122,7 +122,7 @@ public class DataAssetsController {
 
     @GetMapping(value = "/getSelectArchivesList")
     public Y9Result<List<DataAssets>> getSelectArchivesList(@RequestParam Long[] archivesId) {
-        List<DataAssets> list = dataAssetsService.findByArchivesIdIn(archivesId);
+        List<DataAssets> list = dataAssetsService.findByDataAssetsIdIn(archivesId);
         return Y9Result.success(list, "获取列表成功");
     }
 
@@ -222,7 +222,7 @@ public class DataAssetsController {
             }
         } else {
             if (null != archives.getDataAssetsId()) {
-                DataAssets oldArchives = dataAssetsService.findByArchives_id(archives.getDataAssetsId());
+                DataAssets oldArchives = dataAssetsService.findById(archives.getDataAssetsId());
                 if (null != oldArchives) {
                     Y9BeanUtil.copyProperties(archives, oldArchives);
                     dataAssetsService.save(oldArchives);
@@ -303,7 +303,7 @@ public class DataAssetsController {
      */
     @PostMapping(value = "/createArchivesNo")
     public Y9Result<String> createArchivesNo(@RequestParam String categoryId, @RequestParam Long[] ids) {
-        return dataAssetsService.createArchivesNo(categoryId, ids);
+        return dataAssetsService.createAssetsNo(categoryId, ids);
     }
 
 }
