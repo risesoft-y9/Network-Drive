@@ -44,50 +44,32 @@ spring:
             - optional:nacos:dataAssets.yml
             #- optional:nacos:test01.yml?group=group_02
             #- optional:nacos:test02.yml?group=group_03&refreshEnabled=false
+    data:
+        redis:
+            database: 8
+            host: localhost
+            port: 6379
+            username: default
+            password: 'y9i-83204585'
+            ssl:
+                enabled: false
+            lettuce:
+                pool:
+                    max-active: 8
+                    max-idle: 8
+                    max-wait: -1
+                    min-idle: 1
+            repositories:
+                enabled: false
     datasource:
-        type: com.alibaba.druid.pool.DruidDataSource
-        druid:
-            filter:
-                stat:
-                    log-slow-sql: true
-                    slow-sql-millis: 2000
-                wall:
-                    config:
-                        drop-table-allow: false
-                    enabled: true
-            stat-view-servlet:
-                allow: 10.168.18.1/24,10.168.12.1/24
-                enabled: true
-                login-password: '83204585'
-                login-username: y9admin
-                reset-enable: false
-                url-pattern: /druid/*
-            web-stat-filter:
-                enabled: true
-                exclusions: '*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*,/static/*'
-                url-pattern: /*
-            connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+        hikari:
             y9-public:
-                driver-class-name: com.mysql.cj.jdbc.Driver
-                url: jdbc:mysql://localhost:3306/y9_public?serverTimezone=GMT%2B8&nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&rewriteBatchedStatements=true&useCompression=true&useSSL=false
+                driverClassName: com.mysql.cj.jdbc.Driver
+                jdbcUrl: jdbc:mysql://localhost:3306/y9_public?serverTimezone=GMT%2B8&nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&rewriteBatchedStatements=true&useCompression=true&useSSL=false&allowPublicKeyRetrieval=true
                 username: root
-                #driver-class-name: oracle.jdbc.OracleDriver
-                #url: jdbc:oracle:thin:@127.0.0.1:1521:orcl
-                #username: Y9_PUBLIC
-                password: 111111
-                initialSize: 1
-                maxActive: 20
-                maxPoolPreparedStatementPerConnectionSize: 100
-                maxWait: 60000
-                minEvictableIdleTimeMillis: 300000
-                minIdle: 1
-                poolPreparedStatements: true
-                testOnBorrow: false
-                testOnReturn: false
-                testWhileIdle: true
-                timeBetweenEvictionRunsMillis: 60000
-                useGlobalDataSourceStat: true
-                validationQuery: SELECT 1 FROM DUAL
+                password: '111111'
+                maximumPoolSize: 20
+                minimumIdle: 1
     jpa:
         hibernate:
             naming:
@@ -121,20 +103,6 @@ spring:
         multipart:
             max-file-size: 2048MB
             max-request-size: 2048MB
-    redis:
-        database: 8
-        host: 127.0.0.1
-        lettuce:
-            pool:
-                max-active: 8
-                max-idle: 8
-                max-wait: -1
-                min-idle: 0
-            shutdown-timeout: 100ms
-        password: y9i-83204585
-        port: 6379
-        ssl: false
-        timeout: 10000
 y9:
     systemName: dataAssets
     internalIp: 192.168.x.x,10.0.x.x,172.20.x.x
