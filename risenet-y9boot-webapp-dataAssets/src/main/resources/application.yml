@@ -141,7 +141,7 @@ y9:
     app:
         dataAssets:
             fileManagerSystemName: itemAdmin
-            dataAssetsManagerRoleName: 公共文件管理角色
+            managerRoleName: 管理员角色
             productDocument: 95b19opvx9d40458c002dd61c41eb2c
             upload-folder: D:\testPlaceholder\upload
             tenantId: 11111111-1111-1111-1111-111111111113

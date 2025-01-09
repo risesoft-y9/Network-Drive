@@ -8,7 +8,7 @@ public interface DataAssetsFileService {
 
     DataAssetsFile save(DataAssetsFile dataAssetsFile);
 
-    boolean isArchivesFileExists(Long detailId, String fileName);
+    boolean isFileExists(Long detailId, String fileName);
 
     Integer getMaxTabIndex(Long detailId);
 

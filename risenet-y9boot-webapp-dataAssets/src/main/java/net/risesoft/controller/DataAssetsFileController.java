@@ -61,18 +61,18 @@ public class DataAssetsFileController {
     private final DataAssetsFileService dataAssetsFileService;
     private final OrgUnitApi orgUnitApi;
 
-    @GetMapping(value = "/getArchivesFileList")
-    public Y9Result<List<DataAssetsFile>> getArchivesFileList(Long archivesId) {
-        List<DataAssetsFile> list = dataAssetsFileService.findByDetailId(archivesId);
+    @GetMapping(value = "/getFileList")
+    public Y9Result<List<DataAssetsFile>> getFileList(Long detailId) {
+        List<DataAssetsFile> list = dataAssetsFileService.findByDetailId(detailId);
         return Y9Result.success(list, "获取列表成功");
     }
 
     @PostMapping(value = "/deleteFile")
     public Y9Result<String> deleteFile(String id) {
-        DataAssetsFile archivesFile = dataAssetsFileService.findById(id);
-        if (null != archivesFile) {
+        DataAssetsFile file = dataAssetsFileService.findById(id);
+        if (null != file) {
             dataAssetsFileService.deleteFile(id);
-            y9FileStoreService.deleteFile(archivesFile.getFileStoreId());
+            y9FileStoreService.deleteFile(file.getFileStoreId());
         }
         return Y9Result.successMsg("删除成功");
     }
@@ -81,9 +81,9 @@ public class DataAssetsFileController {
     public void downloadFile(@RequestParam(name = "id") String id, HttpServletResponse response,
         HttpServletRequest request) {
         try {
-            DataAssetsFile archivesFile = dataAssetsFileService.findById(id);
-            String filename = archivesFile.getFileName();
-            String filePath = archivesFile.getFileStoreId();
+            DataAssetsFile file = dataAssetsFileService.findById(id);
+            String filename = file.getFileName();
+            String filePath = file.getFileStoreId();
             if (request.getHeader("User-Agent").toLowerCase().indexOf("firefox") > 0) {
                 filename = new String(filename.getBytes(StandardCharsets.UTF_8), "ISO8859-1");// 火狐浏览器
             } else {
@@ -102,7 +102,7 @@ public class DataAssetsFileController {
         }
     }
 
-    public Map<String, Object> mergeMethod(String targetFile, String folder, String fileName, Long archivesId) {
+    public Map<String, Object> mergeMethod(String targetFile, String folder, String fileName, Long detailId) {
         Map<String, Object> map = new HashMap<>();
         map.put("msg", "文件合并失败");
         map.put("success", false);
@@ -135,11 +135,11 @@ public class DataAssetsFileController {
             long fileSize = file.length();
             String fileHash = ArchiveDetection.calculateHash(file);
             String fullPath = Y9FileStore.buildPath(Y9Context.getSystemName(), Y9LoginUserHolder.getTenantId(),
-                userInfo.getPersonId(), archivesId.toString());
+                userInfo.getPersonId(), detailId.toString());
             Y9FileStore y9FileStore = y9FileStoreService.uploadFile(file, fullPath, fileName);
             if (y9FileStore != null) {
                 LOGGER.debug("文件 {} 上传成功, uuid:{}", y9FileStore.getFileName(), y9FileStore.getId());
-                map = saveArchivesFile(archivesId, fileName, fileExtension, fileSize, fileHash, y9FileStore.getId());
+                map = saveFile(detailId, fileName, fileExtension, fileSize, fileHash, y9FileStore.getId());
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -179,27 +179,27 @@ public class DataAssetsFileController {
     }
 
     @PostMapping("/mergeFile")
-    public Y9Result<Map<String, Object>> mergeFile(FileInfo fileInfo, Long archivesId) {
+    public Y9Result<Map<String, Object>> mergeFile(FileInfo fileInfo, Long detailId) {
         Map<String, Object> map = new HashMap<>();
         String fileName = fileInfo.getFilename();
         String chunckPath = Y9Context.getWebRootRealPath() + "upload";
         String file = chunckPath + "/" + fileInfo.getIdentifier() + "/" + fileName;
         String folder = chunckPath + "/" + fileInfo.getIdentifier();
         // 合并文件
-        map = mergeMethod(file, folder, fileName, archivesId);
+        map = mergeMethod(file, folder, fileName, detailId);
         Boolean success = Boolean.valueOf(map.get("success").toString());
         if (success) {
             // 保存文件信息
-            Long archivesFileId = Long.parseLong(map.get("archivesFileId").toString());
+            Long fileId = Long.parseLong(map.get("fileId").toString());
             fileInfo.setLocation(file);
-            fileInfo.setArchiveFileId(archivesFileId);
+            fileInfo.setArchiveFileId(fileId);
             fileInfoService.addFileInfo(fileInfo);
             return Y9Result.success(map, "合并成功");
         }
         return Y9Result.failure(500, "合并失败");
     }
 
-    private Map<String, Object> saveArchivesFile(Long archivesId, String fileName, String fileExtension, long fileSize,
+    private Map<String, Object> saveFile(Long detailId, String fileName, String fileExtension, long fileSize,
         String fileHash, String y9FileStoreId) {
         Map<String, Object> map = new HashMap<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -208,32 +208,32 @@ public class DataAssetsFileController {
             tenantId = Y9LoginUserHolder.getTenantId(), positionId = Y9LoginUserHolder.getPositionId();
         try {
 
-            boolean fileNodeExists = dataAssetsFileService.isArchivesFileExists(archivesId, fileName);
-            DataAssetsFile archivesFile = new DataAssetsFile();
-            archivesFile.setFileType(fileExtension);
-            archivesFile.setFileSize(fileSize);
-            archivesFile.setFileHash(fileHash);
-            archivesFile.setUploadTime(sdf.format(new Date()));
-            archivesFile.setFileStoreId(y9FileStoreId);
-            archivesFile.setPersonId(userId);
-            archivesFile.setPersonName(userName);
-            archivesFile.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
-            archivesFile.setDetailId(archivesId);
+            boolean fileNodeExists = dataAssetsFileService.isFileExists(detailId, fileName);
+            DataAssetsFile file = new DataAssetsFile();
+            file.setFileType(fileExtension);
+            file.setFileSize(fileSize);
+            file.setFileHash(fileHash);
+            file.setUploadTime(sdf.format(new Date()));
+            file.setFileStoreId(y9FileStoreId);
+            file.setPersonId(userId);
+            file.setPersonName(userName);
+            file.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
+            file.setDetailId(detailId);
             OrgUnit orgUnit = orgUnitApi.getParent(tenantId, positionId).getData();
             if (null != orgUnit) {
-                archivesFile.setDeptId(orgUnit.getId());
-                archivesFile.setDeptName(orgUnit.getName());
+                file.setDeptId(orgUnit.getId());
+                file.setDeptName(orgUnit.getName());
             }
-            archivesFile.setPositionId(positionId);
-            Integer tabIndex = dataAssetsFileService.getMaxTabIndex(archivesId);
-            archivesFile.setTabIndex(null == tabIndex ? 1 : tabIndex + 1);
+            file.setPositionId(positionId);
+            Integer tabIndex = dataAssetsFileService.getMaxTabIndex(detailId);
+            file.setTabIndex(null == tabIndex ? 1 : tabIndex + 1);
             if (fileNodeExists) {
                 SimpleDateFormat sdf1 = new SimpleDateFormat("_yyyyMMdd_HHmmss");
                 fileName = FilenameUtils.getBaseName(fileName) + sdf1.format(new Date()) + "." + fileExtension;
             }
-            archivesFile.setFileName(fileName);
-            archivesFile = dataAssetsFileService.save(archivesFile);
-            map.put("archivesFileId", archivesFile.getId());
+            file.setFileName(fileName);
+            file = dataAssetsFileService.save(file);
+            map.put("fileId", file.getId());
             map.put("msg", "文件上传成功");
             map.put("success", true);
         } catch (Exception e) {

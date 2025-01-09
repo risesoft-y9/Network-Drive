@@ -38,7 +38,7 @@ public interface MetadataConfigRepository
     List<MetadataConfig> findByViewTypeAndIsRecordRequiredAndIsHideFalseOrderByTabIndex(String viewType,
         Integer isRecordRequired);
 
-    List<MetadataConfig> findByViewTypeAndIsCheckedRequiredAndIsHideFalse(String viewType, Integer isCheckedRequired);
+    List<MetadataConfig> findByViewTypeOrderByTabIndex(String viewType);
 
     @Modifying
     @Transactional(readOnly = false)

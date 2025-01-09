@@ -16,5 +16,5 @@ public interface DataAssetsRepository extends JpaRepository<DataAssets, Long>, J
     Page<DataAssets> findByCategoryIdAndAssetsStatusAndIsDeleted(String categoryId, Integer status, Boolean isDeleted,
         Pageable pageable);
 
-    List<DataAssets> findByDataAssetsIdIn(Long[] ids);
+    List<DataAssets> findByDataassetsIdIn(Long[] ids);
 }

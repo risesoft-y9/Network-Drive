@@ -17,24 +17,24 @@ public class DataAssetsFileServiceImpl implements DataAssetsFileService {
     private final DataAssetsFileRepository dataAssetsFileRepository;
 
     @Override
-    public DataAssetsFile save(DataAssetsFile archivesFile) {
-        return dataAssetsFileRepository.save(archivesFile);
+    public DataAssetsFile save(DataAssetsFile dataAssetsFile) {
+        return dataAssetsFileRepository.save(dataAssetsFile);
     }
 
     @Override
-    public boolean isArchivesFileExists(Long archiveId, String fileName) {
-        DataAssetsFile archivesFile = dataAssetsFileRepository.findByArchivesIdAndFileName(archiveId, fileName);
-        return null != archivesFile && null != archivesFile.getDetailId();
+    public boolean isFileExists(Long detailId, String fileName) {
+        DataAssetsFile file = dataAssetsFileRepository.findByDetailIdAndFileName(detailId, fileName);
+        return null != file && null != file.getDetailId();
     }
 
     @Override
-    public Integer getMaxTabIndex(Long archiveId) {
-        return dataAssetsFileRepository.getMaxTabIndex(archiveId);
+    public Integer getMaxTabIndex(Long detailId) {
+        return dataAssetsFileRepository.getMaxTabIndex(detailId);
     }
 
     @Override
-    public List<DataAssetsFile> findByDetailId(Long archivesId) {
-        return dataAssetsFileRepository.findByDetailId(archivesId);
+    public List<DataAssetsFile> findByDetailId(Long detailId) {
+        return dataAssetsFileRepository.findByDetailId(detailId);
     }
 
     @Override

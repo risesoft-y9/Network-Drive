@@ -13,7 +13,7 @@ import net.risesoft.entity.DataAssetsFile;
 public interface DataAssetsFileRepository
     extends JpaRepository<DataAssetsFile, String>, JpaSpecificationExecutor<DataAssetsFile> {
 
-    DataAssetsFile findByArchivesIdAndFileName(Long archiveId, String fileName);
+    DataAssetsFile findByDetailIdAndFileName(Long detailId, String fileName);
 
     @Query("SELECT MAX(a.tabIndex) FROM DataAssetsFile a WHERE a.detailId = ?1")
     Integer getMaxTabIndex(Long detailId);

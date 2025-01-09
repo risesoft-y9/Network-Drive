@@ -37,7 +37,7 @@ public class DataAssets implements Serializable {
     @GeneratedValue(generator = "IDGENERATOR")
     @GenericGenerator(name = "IDGENERATOR", strategy = "native")
     @Comment("主键id")
-    private Long dataAssetsId;
+    private Long dataassetsId;
 
     @Column(name = "CATEGORY_ID", length = 50)
     @Comment("门类ID")

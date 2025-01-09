@@ -8,12 +8,12 @@ import net.risesoft.pojo.Y9Result;
 
 public interface DataAssetsService {
 
-    SearchPage<DataAssets> listArchives(String categoryId, Integer fileStatus, Boolean isDeleted, int page, int rows);
+    SearchPage<DataAssets> list(String categoryId, Integer fileStatus, Boolean isDeleted, int page, int rows);
 
-    SearchPage<DataAssets> listArchivesByColumnNameAndValues(String categoryId, Integer fileStatus, Boolean isDeleted,
+    SearchPage<DataAssets> listByColumnNameAndValues(String categoryId, Integer fileStatus, Boolean isDeleted,
         String columnNameAndValues, int page, int rows);
 
-    DataAssets save(DataAssets archives);
+    DataAssets save(DataAssets dataAssets);
 
     DataAssets findById(Long id);
 

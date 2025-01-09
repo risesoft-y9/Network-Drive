@@ -44,17 +44,17 @@ public class AudioFile implements Serializable {
 
     @Column(name = "RECORDIST", length = 100)
     @Comment("录制者")
-    private String recordist;// 本件电子档案的录制者。应著录录制者姓名及其工作单位名称，姓名与单位名称之间用“,”隔开。多个录制者信息之间用“;”隔开。录制者无法考证时以“口口口”代替。
+    private String recordist;// 本件电子资产的录制者。应著录录制者姓名及其工作单位名称，姓名与单位名称之间用“,”隔开。多个录制者信息之间用“;”隔开。录制者无法考证时以“口口口”代替。
 
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIME)
     @Column(name = "RECORDING_TIME", length = 19)
     @Comment("录制时间")
-    private Date recordingTime;// 本件电子档案的录制时间。采用GB/T 7408-2005中5.4.1条的格式，例如“2021-02-24I10:23:14
+    private Date recordingTime;// 本件电子资产的录制时间。采用GB/T 7408-2005中5.4.1条的格式，例如“2021-02-24I10:23:14
 
     @Column(name = "RECORDER", length = 100)
     @Comment("著录者")
-    private String recorder;// 对本件电子档案进行著录的责任人姓名及其工作单位。姓名与单位名称之间用“,”隔开。多个著录者信息之间用“;”隔开。
+    private String recorder;// 对本件电子资产进行著录的责任人姓名及其工作单位。姓名与单位名称之间用“,”隔开。多个著录者信息之间用“;”隔开。
 
     @Column(name = "DURATION", length = 20)
     @Comment("时长")
@@ -86,29 +86,29 @@ public class AudioFile implements Serializable {
 
     @Column(name = "CAPTURE_DEVICE_MAkER", length = 100)
     @Comment("捕获设备制造商")
-    private String captureDeviceMaker;// 创建并形成本件电子档案的硬件设备制造商名称。
+    private String captureDeviceMaker;// 创建并形成本件电子资产的硬件设备制造商名称。
 
     @Column(name = "CAPTURE_DEVICE_MODEL", length = 100)
     @Comment("捕获设备型号")
-    private String captureDeviceModel;// 创建并形成本件电子档案的硬件设备的型号。
+    private String captureDeviceModel;// 创建并形成本件电子资产的硬件设备的型号。
 
     @Column(name = "CAPTURE_DEVICE_SENSOR", length = 100)
     @Comment("捕获设备感光器")
-    private String captureDeviceSensor;// 创建并形成本件电子档案的设备感光器的类型和参数 Not defined,One-chip color area sensor，Two-chip
+    private String captureDeviceSensor;// 创建并形成本件电子资产的设备感光器的类型和参数 Not defined,One-chip color area sensor，Two-chip
                                        // color
                                        // area sensor,Three-chip colorarea sensor,〔其他]
 
     @Column(name = "FILE_FORMAT", length = 10)
     @Comment("文件格式")
-    private String fileFormat;// 本件电子档案的计算机文件格式名称。 JPEG,TIFF,〔其他】
+    private String fileFormat;// 本件电子资产的计算机文件格式名称。 JPEG,TIFF,〔其他】
 
     @Column(name = "FILE_SIZE")
     @Comment("文件大小")
-    private Integer fileSize = 0;// 本件电子档案的字节数。如“3269120”。
+    private Integer fileSize = 0;// 本件电子资产的字节数。如“3269120”。
 
     @Column(name = "SCENE_NUMBER", length = 3)
     @Comment("场景号")
-    private String sceneNumber;// 本场景在该件电子档案内排列的顺序号。如“C01”。若对本场景进行了著录则必须采用。
+    private String sceneNumber;// 本场景在该件电子资产内排列的顺序号。如“C01”。若对本场景进行了著录则必须采用。
 
     @Column(name = "SCENE_TITLE", length = 600)
     @Comment("场景题名")
@@ -121,10 +121,10 @@ public class AudioFile implements Serializable {
 
     @Column(name = "SCENE_START_TIME", length = 20)
     @Comment("场景起始时间")
-    private String sceneStartTime;// 本场景在该件电子档案时间轴上的起点位置。格式为hh:mm:ss,如“00:10:30”。若对本场景进行了著录则必须采用。
+    private String sceneStartTime;// 本场景在该件电子资产时间轴上的起点位置。格式为hh:mm:ss,如“00:10:30”。若对本场景进行了著录则必须采用。
 
     @Column(name = "SCENE_DURATION", length = 20)
     @Comment("场景时长")
-    private String sceneDuration;// 本场景在该件电子档案中的持续时间。格式为hh:mm:ss，如“00:26:18”。若对本场景进行了著录则必须采用
+    private String sceneDuration;// 本场景在该件电子资产中的持续时间。格式为hh:mm:ss，如“00:26:18”。若对本场景进行了著录则必须采用
 
 }
