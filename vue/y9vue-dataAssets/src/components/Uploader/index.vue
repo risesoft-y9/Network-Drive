@@ -2,7 +2,7 @@
     <y9Table :config="tableConfig">
         <template #opt="{row,columns,index}">
             <i class="ri-arrow-down-circle-line" style="font-size: 22px;margin-right: 5px;" title="下载" @click="downloadFile(row.id)"></i>
-            <i class="ri-close-circle-line" style="font-size: 22px;" title="删除" @click="deleteFile(row.id)"></i>
+            <i class="ri-close-circle-line" style="font-size: 22px;" title="删除" @click="deleteFileOpt(row.id)"></i>
         </template>
     </y9Table>
     <uploader
@@ -26,7 +26,7 @@
 <script setup>
     import { nextTick, ref, onMounted, defineProps, defineComponent, toRefs } from 'vue';
     import y9_storage from '@/utils/storage';
-    import { getArchivesFileList,deleteArchivesFile } from '@/api/dataAssets/files';
+    import { getFileList,deleteFile } from '@/api/dataAssets/files';
     import settings from '@/settings';
     import axios from 'axios';
     import qs from 'qs';
@@ -56,21 +56,21 @@
 
     let { tableConfig} = toRefs(data);
 
-    getFileList();
-    function getFileList() {
-        getArchivesFileList(props.archivesId).then(res => {
+    loadFileList();
+    function loadFileList() {
+        getFileList(props.archivesId).then(res => {
             tableConfig.value.tableData = res.data;
         })
     }
 
-    function deleteFile(id){
+    function deleteFileOpt(id){
         ElMessageBox.confirm(t('确认要删除文件吗?'), t('提示'), {
             confirmButtonText: t('确定'),
             cancelButtonText: t('取消'),
             type: 'info'
         }).then(() => {
-            deleteArchivesFile(id).then(() => {
-                getFileList();
+            deleteFile(id).then(() => {
+                loadFileList();
                 props.reloadTable();
             });
         }).catch(() => {
@@ -136,7 +136,7 @@
             )
             .then(function (response) {
                 console.log(response);
-                getFileList();
+                loadFileList();
                 props.reloadTable();
             })
             .catch(function (error) {

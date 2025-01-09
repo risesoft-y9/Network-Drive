@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2024-10-09 10:05:19
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2025-01-07 10:10:44
+ * @LastEditTime: 2025-01-09 11:08:01
  * @FilePath: \vue\y9vue-dataAssets\src\router\modules\libraryRouter.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -21,6 +21,9 @@ const libraryRouter = {
                 path: '/library/managed',
                 component: () => import('@/views/common/index.vue'),
                 name: 'library_manageIndex',
+                props: route => ({
+                    menuType: 'manage',
+                }),
                 meta: {
                     title: '资产管理',
                     icon: 'ri-folder-user-line',
@@ -37,7 +40,7 @@ const libraryRouter = {
             },
             {
                 path: '/library/labelled',
-                component: () => import('@/views/library/index.vue'),
+                component: () => import('@/views/library/index3.vue'),
                 name: 'labelled',
                 props: route => ({menuType: 'labelled'}),
                 meta: {
@@ -47,7 +50,7 @@ const libraryRouter = {
             },
             {
                 path: '/library/upDownShelf',
-                component: () => import('@/views/library/index.vue'),
+                component: () => import('@/views/library/index3.vue'),
                 name: 'upDownShelf',
                 props: route => ({menuType: 'upDownShelf'}),
                 meta: {

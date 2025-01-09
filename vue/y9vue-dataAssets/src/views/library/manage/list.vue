@@ -135,6 +135,13 @@
                         @click="deleteSelect"
                     ><i class="ri-delete-bin-2-line"></i>{{ $t('批量删除') }}</span>
               </el-dropdown-item>
+              <el-dropdown-item >
+                    <span
+                        :size="fontSizeObj.buttonSize"
+                        :style="{ fontSize: fontSizeObj.baseFontSize }"
+                        @click="buildNo"
+                    ><i class="ri-list-ordered"></i>{{ $t('生成档号') }}</span>
+              </el-dropdown-item>
               <el-dropdown-item style="width: 100px;">
                     <span
                         :size="fontSizeObj.buttonSize"
@@ -245,7 +252,7 @@
 import {$deepAssignObject} from '@/utils/object.ts';
 import {useSettingStore} from '@/store/modules/settingStore';
 import {getMetadataFieldList, saveListFiledShow} from '@/api/dataAssets/metadata';
-import {deleteData, getArchivesList, saveFormData,recordArchiving} from '@/api/dataAssets/dataAssets';
+import {deleteData, getDataAssetsList, saveFormData,recordArchiving,createAssetsNo} from '@/api/dataAssets/dataAssets';
 import {getOptionValueList} from '@/api/dataAssets/dictionaryOption';
 import detail from '@/views/common/detail.vue';
 
@@ -354,6 +361,7 @@ const data = reactive({
   dropdownIsShowRef: '',
   columnNameAndValues: '',
   archivesId:'',
+  archivesIdArr: [],
 });
 
 let {
@@ -374,6 +382,7 @@ let {
   dropdownIsShowRef,
   columnNameAndValues,
   archivesId,
+  archivesIdArr,
 } = toRefs(data);
 
 watch(
@@ -401,32 +410,34 @@ async function getMetadataField() {
         slot: 'hasFile'
       });
     for (let item of res.data) {
-        dataTableConfig.value.columns.push({
-          title: computed(() => t(item.disPlayName)),
-          key: item.columnName,
-          width: item.disPlayWidth,
-          sortable: item.isOrder == 1 ? true : false,
-          align: item.disPlayAlign
-        });
-      if (item.openSearch == 1) {
-        if (item.inputBoxType == 'radio' || item.inputBoxType == 'checkbox' || item.inputBoxType == 'select') {
-          if (item.optionClass) {
-            getOptionValueList(item.optionClass).then((res) => {
-              if (res.success) {
-                let data = res.data;
-                let option = []; //选项
-                for (let obj of data) {
-                  let optionObj = {};
-                  optionObj.value = obj.code;
-                  optionObj.label = obj.name;
-                  option.push(optionObj);
+      if(item.isListShow == 1){
+          dataTableConfig.value.columns.push({
+            title: computed(() => t(item.disPlayName)),
+            key: item.columnName,
+            width: item.disPlayWidth,
+            sortable: item.isOrder == 1 ? true : false,
+            align: item.disPlayAlign
+          });
+        if (item.openSearch == 1) {
+          if (item.inputBoxType == 'radio' || item.inputBoxType == 'checkbox' || item.inputBoxType == 'select') {
+            if (item.optionClass) {
+              getOptionValueList(item.optionClass).then((res) => {
+                if (res.success) {
+                  let data = res.data;
+                  let option = []; //选项
+                  for (let obj of data) {
+                    let optionObj = {};
+                    optionObj.value = obj.code;
+                    optionObj.label = obj.name;
+                    option.push(optionObj);
+                  }
+                  item.optionClass = option;
                 }
-                item.optionClass = option;
-              }
-            });
+              });
+            }
           }
+          searchConf.value.push(item);
         }
-        searchConf.value.push(item);
       }
     }
 
@@ -467,7 +478,7 @@ async function getRecordList() {
   dataTableConfig.value.tableData = [];
   let page = dataTableConfig.value.pageConfig.currentPage;
   let rows = dataTableConfig.value.pageConfig.pageSize;
-  let res = await getArchivesList(
+  let res = await getDataAssetsList(
       props.currTreeNodeInfo.id,
       columnNameAndValues.value,0,
       page,
@@ -531,6 +542,60 @@ function resetHignSearch() {
   drawer.value = false;
   dataTableConfig.value.pageConfig.currentPage = 1;
   getRecordList();
+}
+
+function buildNo(){
+  if (selectData.value.length == 0) {
+    ElNotification({
+      title: '操作提示',
+      message: '请勾选需要操作的数据',
+      type: 'error',
+      duration: 2000,
+      offset: 80
+    });
+    return;
+  }
+  if (selectData.value.length > 10) {
+    ElNotification({
+      title: '操作提示',
+      message: '勾选的数据不能超过10条',
+      type: 'error',
+      duration: 2000,
+      offset: 80
+    });
+    return;
+  }
+  ElMessageBox.confirm('你确定为选择的档案，生成档号吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info'
+  })
+      .then(async () => {
+        let result = {success: false, msg: ''};
+        let ids = [];
+        for (let obj of selectData.value) {
+          ids.push(obj.archivesId);
+        }
+        archivesIdArr.value = ids;
+        result = await createAssetsNo(props.currTreeNodeInfo.id,ids.join(','));
+        ElNotification({
+          title: result.success ? '成功' : '失败',
+          message: result.msg,
+          type: result.success ? 'success' : 'error',
+          duration: 2000,
+          offset: 80
+        });
+        if (result.success) {
+          getPreArchingList();
+        }
+      })
+      .catch(() => {
+        ElMessage({
+          type: 'info',
+          message: '已取消操作',
+          offset: 65
+        });
+      });
 }
 
 function openHignSearch() {
