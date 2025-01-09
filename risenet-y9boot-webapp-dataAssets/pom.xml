@@ -126,44 +126,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- jodconverter -->
-        <dependency>
-            <groupId>com.artofsolving</groupId>
-            <artifactId>jodconverter</artifactId>
-            <version>2.2.1</version>
-        </dependency>
-
-        <!-- openoffice -->
-        <dependency>
-            <groupId>org.openoffice</groupId>
-            <artifactId>ridl</artifactId>
-            <version>4.1.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jxls</groupId>
-            <artifactId>jxls-jdk1.6</artifactId>
-            <version>2.2.9</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jxls</groupId>
-            <artifactId>jxls-poi-jdk1.6</artifactId>
-            <version>1.0.8</version>
-        </dependency>
-
-        <dependency>
-            <groupId>net.sf.jxls</groupId>
-            <artifactId>jxls-core</artifactId>
-            <version>1.0.5</version>
-        </dependency>
-
-        <dependency>
-            <groupId>DBstep</groupId>
-            <artifactId>DBstep</artifactId>
-            <version>1.0</version>
-        </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
