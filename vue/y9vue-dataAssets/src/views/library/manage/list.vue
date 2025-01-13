@@ -140,15 +140,15 @@
                         :size="fontSizeObj.buttonSize"
                         :style="{ fontSize: fontSizeObj.baseFontSize }"
                         @click="buildNo"
-                    ><i class="ri-list-ordered"></i>{{ $t('生成档号') }}</span>
+                    ><i class="ri-list-ordered"></i>{{ $t('生成编号') }}</span>
               </el-dropdown-item>
-              <el-dropdown-item style="width: 100px;">
+              <!-- <el-dropdown-item style="width: 100px;">
                     <span
                         :size="fontSizeObj.buttonSize"
                         :style="{ fontSize: fontSizeObj.baseFontSize }"
                         @click="batchArchiving"
                     ><i class="ri-clockwise-2-line"></i>{{ $t('批量归档') }}</span>
-              </el-dropdown-item>
+              </el-dropdown-item> -->
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -480,7 +480,7 @@ async function getRecordList() {
   let rows = dataTableConfig.value.pageConfig.pageSize;
   let res = await getDataAssetsList(
       props.currTreeNodeInfo.id,
-      columnNameAndValues.value,0,
+      columnNameAndValues.value,
       page,
       rows
   );
@@ -639,7 +639,7 @@ function addRecord() {
     show: true,
     width: '50%',
     type: 'addRecord',
-    title: '新增文件',
+    title: '新增',
     showFooter: true,
     margin: '2vh auto'
   });
@@ -654,7 +654,7 @@ function editRecord(row) {
     show: true,
     width: '50%',
     type: 'addRecord',
-    title: '修改文件',
+    title: '修改',
     showFooter: true,
     margin: '2vh auto',
     

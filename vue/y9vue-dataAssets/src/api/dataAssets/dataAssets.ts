@@ -11,11 +11,10 @@ import qs from "qs";
 
 var archivesRequest = new Request();
 //获取门类管理列表
-export function getDataAssetsList(categoryId,columnNameAndValues,fileStatus,page,rows){
+export function getDataAssetsList(categoryId,columnNameAndValues,page,rows){
   const params = {
     categoryId:categoryId,
     columnNameAndValues:columnNameAndValues,
-    fileStatus:fileStatus,
     page:page,
     rows:rows
   };
