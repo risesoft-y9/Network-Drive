@@ -90,7 +90,7 @@ public class MetadataConfigController {
     public Y9Result<List<MetadataConfig>> getMetadataFieldList(String categoryId) {
         String tenantId = Y9LoginUserHolder.getTenantId();
         DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
-        List<MetadataConfig> metadataFieldList = metadataConfigService.findByViewType(dataCatalog.getCustomId());
+        List<MetadataConfig> metadataFieldList = metadataConfigService.listByViewType(dataCatalog.getCustomId());
         return Y9Result.success(metadataFieldList, "获取元数据字段列表成功");
     }
 

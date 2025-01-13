@@ -76,8 +76,8 @@ public class DataAssetsController {
      */
     @GetMapping(value = "/getDataAssetsList")
     public Y9Page<Map<String, Object>> getDataAssetsList(@RequestParam String categoryId,
-        @RequestParam(required = false) String columnNameAndValues, @RequestParam Integer fileStatus,
-        @RequestParam Integer page, @RequestParam Integer rows) {
+        @RequestParam(required = false) String columnNameAndValues, @RequestParam Integer page,
+        @RequestParam Integer rows) {
         if (page < 1) {
             page = 1;
         }
@@ -85,10 +85,10 @@ public class DataAssetsController {
         List<Map<String, Object>> list_map = new ArrayList<>();
         SearchPage<DataAssets> searchPage = null;
         if (StringUtils.isBlank(columnNameAndValues)) {
-            searchPage = dataAssetsService.list(categoryId, fileStatus, false, page, rows);
+            searchPage = dataAssetsService.list(categoryId, false, page, rows);
         } else {
-            searchPage = dataAssetsService.listByColumnNameAndValues(categoryId, fileStatus, false, columnNameAndValues,
-                page, rows);
+            searchPage =
+                dataAssetsService.listByColumnNameAndValues(categoryId, false, columnNameAndValues, page, rows);
         }
         DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
         String customId = dataCatalog.getCustomId();

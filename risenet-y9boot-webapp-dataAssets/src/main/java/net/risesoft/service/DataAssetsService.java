@@ -8,10 +8,10 @@ import net.risesoft.pojo.Y9Result;
 
 public interface DataAssetsService {
 
-    SearchPage<DataAssets> list(String categoryId, Integer fileStatus, Boolean isDeleted, int page, int rows);
+    SearchPage<DataAssets> list(String categoryId, Boolean isDeleted, int page, int rows);
 
-    SearchPage<DataAssets> listByColumnNameAndValues(String categoryId, Integer fileStatus, Boolean isDeleted,
-        String columnNameAndValues, int page, int rows);
+    SearchPage<DataAssets> listByColumnNameAndValues(String categoryId, Boolean isDeleted, String columnNameAndValues,
+        int page, int rows);
 
     DataAssets save(DataAssets dataAssets);
 

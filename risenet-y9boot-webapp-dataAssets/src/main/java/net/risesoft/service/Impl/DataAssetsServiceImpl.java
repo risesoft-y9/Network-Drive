@@ -66,10 +66,9 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     }
 
     @Override
-    public SearchPage<DataAssets> list(String categoryId, Integer fileStatus, Boolean isDeleted, int page, int rows) {
+    public SearchPage<DataAssets> list(String categoryId, Boolean isDeleted, int page, int rows) {
         Pageable pageable = PageRequest.of(page - 1, rows, Sort.by(Sort.Direction.DESC, "createTime"));
-        Page<DataAssets> pageList = dataAssetsRepository.findByCategoryIdAndAssetsStatusAndIsDeleted(categoryId,
-            fileStatus, isDeleted, pageable);
+        Page<DataAssets> pageList = dataAssetsRepository.findByCategoryIdAndIsDeleted(categoryId, isDeleted, pageable);
         List<DataAssets> list = pageList.getContent();
         SearchPage<DataAssets> searchPage = SearchPage.<DataAssets>builder().rows(list).currpage(page).size(rows)
             .totalpages(pageList.getTotalPages()).total(pageList.getTotalElements()).build();
@@ -77,7 +76,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     }
 
     @Override
-    public SearchPage<DataAssets> listByColumnNameAndValues(String categoryId, Integer fileStatus, Boolean isDeleted,
+    public SearchPage<DataAssets> listByColumnNameAndValues(String categoryId, Boolean isDeleted,
         String columnNameAndValues, int page, int rows) {
         String tenantId = Y9LoginUserHolder.getTenantId();
         DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
@@ -123,16 +122,14 @@ public class DataAssetsServiceImpl implements DataAssetsService {
             }
         }
         String sql = "SELECT T.* FROM Y9_DATAASSETS_DETAILS T " + joinSql
-            + " WHERE T.CATEGORY_ID = ? AND T.ASSETS_STATUS = ? AND T.IS_DELETED = ? AND " + conditionSql
-            + " ORDER BY T.CREATE_TIME DESC";
+            + " WHERE T.CATEGORY_ID = ? AND T.IS_DELETED = ? AND " + conditionSql + " ORDER BY T.CREATE_TIME DESC";
         String countSql = "SELECT COUNT(T.DATAASSETS_ID) FROM Y9_DATAASSETS_DETAILS T " + joinSql
-            + " WHERE T.CATEGORY_ID = ? AND T.ASSETS_STATUS = ? AND T.IS_DELETED = ? AND " + conditionSql;
+            + " WHERE T.CATEGORY_ID = ? AND T.IS_DELETED = ? AND " + conditionSql;
         System.out.println(sql);
         System.out.println(countSql);
-        Object[] args = new Object[3];
+        Object[] args = new Object[2];
         args[0] = categoryId;
-        args[1] = fileStatus;
-        args[2] = isDeleted;
+        args[1] = isDeleted;
         SearchPage<DataAssets> searchPage =
             pageUtil.page(sql, args, new BeanPropertyRowMapper<>(DataAssets.class), countSql, args, page, rows);
         return searchPage;
