@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2024-11-06 17:37:56
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2024-11-27 15:25:57
+ * @LastEditTime: 2025-01-08 17:16:02
  * @FilePath: \vue\y9vue-dataAssets\src\api\dataAssets\dataAssets.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,16 +11,15 @@ import qs from "qs";
 
 var archivesRequest = new Request();
 //获取门类管理列表
-export function getArchivesList(categoryId,columnNameAndValues,fileStatus,page,rows){
+export function getDataAssetsList(categoryId,columnNameAndValues,page,rows){
   const params = {
     categoryId:categoryId,
     columnNameAndValues:columnNameAndValues,
-    fileStatus:fileStatus,
     page:page,
     rows:rows
   };
   return archivesRequest({
-    url: "/vue/dataAssets/getArchivesList",
+    url: "/vue/detail/getDataAssetsList",
     method: 'get',
     params: params
   });
@@ -32,7 +31,7 @@ export function saveFormData(saveType,categoryId,formDataJson){
     data.append("categoryId", categoryId);
     data.append("formDataJson", formDataJson);
     return archivesRequest({
-      url: "/vue/dataAssets/saveOrUpdate",
+      url: "/vue/detail/saveOrUpdate",
       method: 'post',
       data: data
     });
@@ -44,7 +43,7 @@ export function saveFormData(saveType,categoryId,formDataJson){
       ids:ids
     };
     return archivesRequest({
-      url: "/vue/dataAssets/delete",
+      url: "/vue/detail/delete",
       method: 'post',
       params: params
     });
@@ -56,34 +55,22 @@ export function saveFormData(saveType,categoryId,formDataJson){
       ids:ids
     };
     return archivesRequest({
-      url: "/vue/dataAssets/recordArchiving",
+      url: "/vue/detail/recordArchiving",
       method: 'post',
       params: params
     });
   }
 
-  //生成档号
+  //生成资产编号
   
-  export function createArchivesNo(categoryId,ids){
+  export function createAssetsNo(categoryId,ids){
     const params = {
       categoryId:categoryId,
       ids:ids
     };
     return archivesRequest({
-      url: "/vue/dataAssets/createArchivesNo",
+      url: "/vue/detail/createAssetsNo",
       method: 'post',
-      params: params
-    });
-  }
-
-  //获取选择的档案列表
-  export function getSelectArchivesList(archivesId){
-    const params = {
-      archivesId:archivesId
-    };
-    return archivesRequest({
-      url: "/vue/dataAssets/getSelectArchivesList",
-      method: 'get',
       params: params
     });
   }
