@@ -77,9 +77,9 @@ public class DataAssets implements Serializable {
     private String tag;
 
     @Lob
-    @Column(name = "EXCERPT")
+    @Column(name = "ASSETS_EXCERPT")
     @Comment("数据资产摘要")
-    private String excerpt;
+    private String assetsExcerpt;
 
     @Column(name = "SHARE_TYPE", length = 40)
     @Comment("共享类型")
@@ -117,7 +117,7 @@ public class DataAssets implements Serializable {
 
     @Column(name = "ASSETS_STATUS", length = 50)
     @Comment("资产状态")
-    private Integer assetsStatus;
+    private Integer assetsStatus = 0;// 1-上架 0-下架
 
     @Column(name = "ASSETS_SCORE", length = 50)
     @Comment("资产评分")

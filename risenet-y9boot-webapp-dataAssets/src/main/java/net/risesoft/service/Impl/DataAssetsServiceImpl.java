@@ -36,7 +36,7 @@ import net.risesoft.y9.Y9LoginUserHolder;
 
 import y9.client.rest.platform.resource.DataCatalogApiClient;
 
-@Service("archivesService")
+@Service
 @RequiredArgsConstructor
 public class DataAssetsServiceImpl implements DataAssetsService {
 
@@ -66,11 +66,9 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     }
 
     @Override
-    public SearchPage<DataAssets> listArchives(String categoryId, Integer fileStatus, Boolean isDeleted, int page,
-        int rows) {
+    public SearchPage<DataAssets> list(String categoryId, Boolean isDeleted, int page, int rows) {
         Pageable pageable = PageRequest.of(page - 1, rows, Sort.by(Sort.Direction.DESC, "createTime"));
-        Page<DataAssets> pageList = dataAssetsRepository.findByCategoryIdAndAssetsStatusAndIsDeleted(categoryId,
-            fileStatus, isDeleted, pageable);
+        Page<DataAssets> pageList = dataAssetsRepository.findByCategoryIdAndIsDeleted(categoryId, isDeleted, pageable);
         List<DataAssets> list = pageList.getContent();
         SearchPage<DataAssets> searchPage = SearchPage.<DataAssets>builder().rows(list).currpage(page).size(rows)
             .totalpages(pageList.getTotalPages()).total(pageList.getTotalElements()).build();
@@ -78,8 +76,8 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     }
 
     @Override
-    public SearchPage<DataAssets> listArchivesByColumnNameAndValues(String categoryId, Integer fileStatus,
-        Boolean isDeleted, String columnNameAndValues, int page, int rows) {
+    public SearchPage<DataAssets> listByColumnNameAndValues(String categoryId, Boolean isDeleted,
+        String columnNameAndValues, int page, int rows) {
         String tenantId = Y9LoginUserHolder.getTenantId();
         DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
         String customId = dataCatalog.getCustomId();
@@ -95,7 +93,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
                     metadataConfigRepository.findByViewTypeAndColumnName(customId, columnNameStr);
                 String sign = "";
                 if (null != metadataConfig) {
-                    if (metadataConfig.getFieldOrigin().equals("archives")) {
+                    if (metadataConfig.getFieldOrigin().equals("baseInfo")) {
                         sign = "T";
                     } else {
                         sign = "C";
@@ -110,38 +108,36 @@ public class DataAssetsServiceImpl implements DataAssetsService {
             }
         }
         if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
-            joinSql = "LEFT JOIN Y9_ARCHIVES_DOCUMENT_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
+            joinSql = "LEFT JOIN Y9_DATAASSETS_DOCUMENT_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
         } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
-            joinSql = "LEFT JOIN Y9_ARCHIVES_IMAGE_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
+            joinSql = "LEFT JOIN Y9_DATAASSETS_IMAGE_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
         } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
-            joinSql = "LEFT JOIN Y9_ARCHIVES_AUDIO_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
+            joinSql = "LEFT JOIN Y9_DATAASSETS_AUDIO_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
         } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
-            joinSql = "LEFT JOIN Y9_ARCHIVES_VIDEO_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
+            joinSql = "LEFT JOIN Y9_DATAASSETS_VIDEO_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
         } else {
             CategoryTable categoryTable = categoryTableService.findByCategoryMark(customId);
             if (null != categoryTable) {
                 joinSql = "LEFT JOIN " + categoryTable.getTableName() + " C ON T.DATAASSETS_ID = C.DETAIL_ID";
             }
         }
-        String sql = "SELECT T.* FROM Y9_ARCHIVES_DETAILS T " + joinSql
-            + " WHERE T.CATEGORY_ID = ? AND T.FILE_STATUS = ? AND T.IS_DELETED = ? AND " + conditionSql
-            + " ORDER BY T.CREATE_TIME DESC";
-        String countSql = "SELECT COUNT(T.DATAASSETS_ID) FROM Y9_ARCHIVES_DETAILS T " + joinSql
-            + " WHERE T.CATEGORY_ID = ? AND T.FILE_STATUS = ? AND T.IS_DELETED = ? AND " + conditionSql;
+        String sql = "SELECT T.* FROM Y9_DATAASSETS_DETAILS T " + joinSql
+            + " WHERE T.CATEGORY_ID = ? AND T.IS_DELETED = ? AND " + conditionSql + " ORDER BY T.CREATE_TIME DESC";
+        String countSql = "SELECT COUNT(T.DATAASSETS_ID) FROM Y9_DATAASSETS_DETAILS T " + joinSql
+            + " WHERE T.CATEGORY_ID = ? AND T.IS_DELETED = ? AND " + conditionSql;
         System.out.println(sql);
         System.out.println(countSql);
-        Object[] args = new Object[3];
+        Object[] args = new Object[2];
         args[0] = categoryId;
-        args[1] = fileStatus;
-        args[2] = isDeleted;
+        args[1] = isDeleted;
         SearchPage<DataAssets> searchPage =
             pageUtil.page(sql, args, new BeanPropertyRowMapper<>(DataAssets.class), countSql, args, page, rows);
         return searchPage;
     }
 
     @Override
-    public DataAssets save(DataAssets archives) {
-        return dataAssetsRepository.save(archives);
+    public DataAssets save(DataAssets dataAssets) {
+        return dataAssetsRepository.save(dataAssets);
     }
 
     @Override
@@ -174,10 +170,10 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     @Transactional(readOnly = false)
     public void signDelete(String categoryId, Long[] ids) {
         for (Long id : ids) {
-            DataAssets archives = this.findById(id);
-            if (null != archives) {
-                archives.setIsDeleted(true);
-                this.save(archives);
+            DataAssets dataAssets = this.findById(id);
+            if (null != dataAssets) {
+                dataAssets.setIsDeleted(true);
+                this.save(dataAssets);
             }
         }
     }
@@ -186,10 +182,10 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     @Transactional(readOnly = false)
     public void recordArchiving(Long[] ids) {
         for (Long id : ids) {
-            DataAssets archives = this.findById(id);
-            if (null != archives) {
-                archives.setAssetsStatus(1);
-                this.save(archives);
+            DataAssets dataAssets = this.findById(id);
+            if (null != dataAssets) {
+                dataAssets.setAssetsStatus(1);
+                this.save(dataAssets);
             }
         }
     }
@@ -200,14 +196,14 @@ public class DataAssetsServiceImpl implements DataAssetsService {
         String tenantId = Y9LoginUserHolder.getTenantId();
         DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
         for (Long id : ids) {
-            DataAssets archives = this.findById(id);
+            DataAssets dataAssets = this.findById(id);
             List<DataAssetsNumberRules> rulesList =
                 dataAssetsNumberRulesRepository.findByCategoryMark(dataCatalog.getCustomId());
             if (null != rulesList && rulesList.size() > 0) {
                 String archiveNo = "";
                 for (DataAssetsNumberRules rules : rulesList) {
-                    // TODO 根据规则生成档案号
-                    Object fieldValue = getFieldValue(archives, rules.getFieldName()).toString();
+                    // TODO 根据规则生成资产号
+                    Object fieldValue = getFieldValue(dataAssets, rules.getFieldName()).toString();
                     if (null != fieldValue) {
                         if (StringUtils.isNotBlank(archiveNo) && StringUtils.isNotBlank(rules.getConnectorSymbol())) {
                             archiveNo += rules.getConnectorSymbol() + fieldValue;
@@ -217,18 +213,18 @@ public class DataAssetsServiceImpl implements DataAssetsService {
                     }
                 }
                 System.out.println("资产编号：" + archiveNo);
-                archives.setAssetsNo(archiveNo);
+                dataAssets.setAssetsNo(archiveNo);
             } else {
-                return Y9Result.failure("未找到档案号规则");
+                return Y9Result.failure("未找到资产号规则");
             }
-            this.save(archives);
+            this.save(dataAssets);
         }
-        return Y9Result.success("创建档案号成功");
+        return Y9Result.success("创建资产号成功");
     }
 
     @Override
     public List<DataAssets> findByDataAssetsIdIn(Long[] ids) {
-        return dataAssetsRepository.findByDataAssetsIdIn(ids);
+        return dataAssetsRepository.findByDataassetsIdIn(ids);
     }
 
 }

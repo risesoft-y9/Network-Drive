@@ -54,7 +54,7 @@ import y9.client.rest.platform.resource.DataCatalogApiClient;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = "/vue/dataAssets", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/vue/detail", produces = MediaType.APPLICATION_JSON_VALUE)
 public class DataAssetsController {
 
     private final DataAssetsService dataAssetsService;
@@ -68,16 +68,16 @@ public class DataAssetsController {
     private final DataCatalogApiClient dataCatalogApiClient;
 
     /**
-     * 获取档案著录数据列表
+     * 获取资产数据列表
      *
      * @param page 页码
      * @param rows 条数
      * @return
      */
-    @GetMapping(value = "/getArchivesList")
-    public Y9Page<Map<String, Object>> getArchivesList(@RequestParam String categoryId,
-        @RequestParam(required = false) String columnNameAndValues, @RequestParam Integer fileStatus,
-        @RequestParam Integer page, @RequestParam Integer rows) {
+    @GetMapping(value = "/getDataAssetsList")
+    public Y9Page<Map<String, Object>> getDataAssetsList(@RequestParam String categoryId,
+        @RequestParam(required = false) String columnNameAndValues, @RequestParam Integer page,
+        @RequestParam Integer rows) {
         if (page < 1) {
             page = 1;
         }
@@ -85,49 +85,43 @@ public class DataAssetsController {
         List<Map<String, Object>> list_map = new ArrayList<>();
         SearchPage<DataAssets> searchPage = null;
         if (StringUtils.isBlank(columnNameAndValues)) {
-            searchPage = dataAssetsService.listArchives(categoryId, fileStatus, false, page, rows);
+            searchPage = dataAssetsService.list(categoryId, false, page, rows);
         } else {
-            searchPage = dataAssetsService.listArchivesByColumnNameAndValues(categoryId, fileStatus, false,
-                columnNameAndValues, page, rows);
+            searchPage =
+                dataAssetsService.listByColumnNameAndValues(categoryId, false, columnNameAndValues, page, rows);
         }
         DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
         String customId = dataCatalog.getCustomId();
-        for (DataAssets archives : searchPage.getRows()) {
+        for (DataAssets dataAssets : searchPage.getRows()) {
             Map<String, Object> map = new HashMap<>();
-            map = EntityOrTableUtils.convertToMap(archives);
+            map = EntityOrTableUtils.convertToMap(dataAssets);
             if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
-                map.putAll(documentFileService.findByDetailId(archives.getDataAssetsId()));
+                map.putAll(documentFileService.findByDetailId(dataAssets.getDataassetsId()));
             } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
-                map.putAll(imageFileService.findByDetailId(archives.getDataAssetsId()));
+                map.putAll(imageFileService.findByDetailId(dataAssets.getDataassetsId()));
             } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
-                map.putAll(audioFileService.findByDetailId(archives.getDataAssetsId()));
+                map.putAll(audioFileService.findByDetailId(dataAssets.getDataassetsId()));
             } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
-                map.putAll(videoFileService.findByDetailId(archives.getDataAssetsId()));
+                map.putAll(videoFileService.findByDetailId(dataAssets.getDataassetsId()));
             } else {
                 CategoryTable categoryTable = categoryTableService.findByCategoryMark(customId);
                 if (null != categoryTable) {
                     List<Map<String, Object>> list_categoryTable = categoryTableService
-                        .getTableData(categoryTable.getTableName(), archives.getDataAssetsId().toString());
+                        .getTableData(categoryTable.getTableName(), dataAssets.getDataassetsId().toString());
                     for (Map<String, Object> map_categoryTable : list_categoryTable) {
                         map.putAll(map_categoryTable);
                     }
                 }
             }
-            List<DataAssetsFile> archivesFiles = dataAssetsFileService.findByDetailId(archives.getDataAssetsId());
-            map.put("hasFile", null != archivesFiles && !archivesFiles.isEmpty());
+            List<DataAssetsFile> files = dataAssetsFileService.findByDetailId(dataAssets.getDataassetsId());
+            map.put("hasFile", null != files && !files.isEmpty());
             list_map.add(map);
         }
         return Y9Page.success(page, searchPage.getTotalpages(), searchPage.getTotal(), list_map, "获取列表成功");
     }
 
-    @GetMapping(value = "/getSelectArchivesList")
-    public Y9Result<List<DataAssets>> getSelectArchivesList(@RequestParam Long[] archivesId) {
-        List<DataAssets> list = dataAssetsService.findByDataAssetsIdIn(archivesId);
-        return Y9Result.success(list, "获取列表成功");
-    }
-
     /**
-     * 保存档案著录数据
+     * 保存资产数据
      *
      * @param formDataJson 表单数据
      * @return
@@ -138,7 +132,7 @@ public class DataAssetsController {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Map<String, Object> map = Y9JsonUtil.readHashMap(formDataJson, String.class, Object.class);
         String tenantId = Y9LoginUserHolder.getTenantId();
-        DataAssets archives = new DataAssets();
+        DataAssets dataAssets = new DataAssets();
         DocumentFile documentFile = new DocumentFile();
         ImageFile imageFile = new ImageFile();
         AudioFile audioFile = new AudioFile();
@@ -166,13 +160,13 @@ public class DataAssetsController {
                         value = sdf.parse(value.toString());
                     }
                     try {
-                        if (metadataConfig.getFieldOrigin().equals("archives")) {
+                        if (metadataConfig.getFieldOrigin().equals("baseInfo")) {
                             // 获取字段
                             Field field = DataAssets.class.getDeclaredField(fieldName);
                             // 设置字段可访问
                             field.setAccessible(true);
                             // 给字段赋值
-                            field.set(archives, value);
+                            field.set(dataAssets, value);
                         } else if (metadataConfig.getFieldOrigin().equals(CategoryEnums.DOCUMENT.getEnName())) {
                             Field field = DocumentFile.class.getDeclaredField(fieldName);
                             field.setAccessible(true);
@@ -196,36 +190,33 @@ public class DataAssetsController {
                     }
                 }
             }
-            // if (fieldName.equals("archivesId") && null != value) {
-            // archives.setArchivesId(Long.parseLong(value.toString()));
-            // }
         }
         if (saveType.equals("add")) {
-            archives.setCategoryCode(customId);
-            archives.setCategoryId(categoryId);
-            archives.setCreateTime(new Date());
-            dataAssetsService.save(archives);
+            dataAssets.setCategoryCode(customId);
+            dataAssets.setCategoryId(categoryId);
+            dataAssets.setCreateTime(new Date());
+            dataAssetsService.save(dataAssets);
             if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
-                documentFile.setDetailId(archives.getDataAssetsId());
+                documentFile.setDetailId(dataAssets.getDataassetsId());
                 documentFileService.save(documentFile);
             } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
-                imageFile.setDetailId(archives.getDataAssetsId());
+                imageFile.setDetailId(dataAssets.getDataassetsId());
                 imageFileService.save(imageFile);
             } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
-                audioFile.setDetailId(archives.getDataAssetsId());
+                audioFile.setDetailId(dataAssets.getDataassetsId());
                 audioFileService.save(audioFile);
             } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
-                videoFile.setDetailId(archives.getDataAssetsId());
+                videoFile.setDetailId(dataAssets.getDataassetsId());
                 videoFileService.save(videoFile);
             } else {
-                categoryTableService.saveTableData("add", customId, archives.getDataAssetsId().toString(), map);
+                categoryTableService.saveTableData("add", customId, dataAssets.getDataassetsId().toString(), map);
             }
         } else {
-            if (null != archives.getDataAssetsId()) {
-                DataAssets oldArchives = dataAssetsService.findById(archives.getDataAssetsId());
-                if (null != oldArchives) {
-                    Y9BeanUtil.copyProperties(archives, oldArchives);
-                    dataAssetsService.save(oldArchives);
+            if (null != dataAssets.getDataassetsId()) {
+                DataAssets oldDataAssets = dataAssetsService.findById(dataAssets.getDataassetsId());
+                if (null != oldDataAssets) {
+                    Y9BeanUtil.copyProperties(dataAssets, oldDataAssets);
+                    dataAssetsService.save(oldDataAssets);
                 }
                 if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
                     if (null != documentFile.getId()) {
@@ -233,7 +224,7 @@ public class DataAssetsController {
                         Y9BeanUtil.copyProperties(documentFile, oldDocumentFile);
                         documentFileService.save(oldDocumentFile);
                     } else {
-                        documentFile.setDetailId(archives.getDataAssetsId());
+                        documentFile.setDetailId(dataAssets.getDataassetsId());
                         documentFileService.save(documentFile);
                     }
                 } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
@@ -242,7 +233,7 @@ public class DataAssetsController {
                         Y9BeanUtil.copyProperties(imageFile, oldImageFile);
                         imageFileService.save(oldImageFile);
                     } else {
-                        imageFile.setDetailId(archives.getDataAssetsId());
+                        imageFile.setDetailId(dataAssets.getDataassetsId());
                         imageFileService.save(imageFile);
                     }
                 } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
@@ -251,7 +242,7 @@ public class DataAssetsController {
                         Y9BeanUtil.copyProperties(audioFile, oldAudioFile);
                         audioFileService.save(oldAudioFile);
                     } else {
-                        audioFile.setDetailId(archives.getDataAssetsId());
+                        audioFile.setDetailId(dataAssets.getDataassetsId());
                         audioFileService.save(audioFile);
                     }
                 } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
@@ -260,11 +251,11 @@ public class DataAssetsController {
                         Y9BeanUtil.copyProperties(videoFile, oldVideoFile);
                         videoFileService.save(oldVideoFile);
                     } else {
-                        videoFile.setDetailId(archives.getDataAssetsId());
+                        videoFile.setDetailId(dataAssets.getDataassetsId());
                         videoFileService.save(videoFile);
                     }
                 } else {
-                    categoryTableService.saveTableData("edit", customId, archives.getDataAssetsId().toString(), map);
+                    categoryTableService.saveTableData("edit", customId, dataAssets.getDataassetsId().toString(), map);
                 }
             }
         }
@@ -272,7 +263,7 @@ public class DataAssetsController {
     }
 
     /**
-     * 删除档案著录数据
+     * 删除资产著录数据
      *
      * @param ids
      * @return
@@ -284,7 +275,7 @@ public class DataAssetsController {
     }
 
     /**
-     * 档案著录数据预归档
+     * 资产著录数据预归档
      *
      * @param ids
      * @return
@@ -296,13 +287,13 @@ public class DataAssetsController {
     }
 
     /**
-     * 档案数据生成档号
+     * 资产数据生成档号
      *
      * @param ids
      * @return
      */
-    @PostMapping(value = "/createArchivesNo")
-    public Y9Result<String> createArchivesNo(@RequestParam String categoryId, @RequestParam Long[] ids) {
+    @PostMapping(value = "/createAssetsNo")
+    public Y9Result<String> createAssetsNo(@RequestParam String categoryId, @RequestParam Long[] ids) {
         return dataAssetsService.createAssetsNo(categoryId, ids);
     }
 
