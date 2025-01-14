@@ -11,7 +11,7 @@ import net.risesoft.entity.DataAssetsNumberRules;
 import net.risesoft.repository.DataAssetsNumberRulesRepository;
 import net.risesoft.service.DataAssetsNumberRulesService;
 
-@Service("archivesNumberRulesService")
+@Service
 @RequiredArgsConstructor
 public class DataAssetsNumberRulesServiceImpl implements DataAssetsNumberRulesService {
 

@@ -21,8 +21,6 @@ import com.google.common.collect.Lists;
 
 import net.risesoft.consts.PunctuationConsts;
 import net.risesoft.entity.AudioFile;
-import net.risesoft.entity.CategoryTable;
-import net.risesoft.entity.CategoryTableField;
 import net.risesoft.entity.DataAssets;
 import net.risesoft.entity.DocumentFile;
 import net.risesoft.entity.ImageFile;
@@ -51,7 +49,7 @@ public class MetadataConfigServiceImpl implements MetadataConfigService {
     private final CategoryTableRepository categoryTableRepository;
     private final CategoryTableFieldService categoryTableFieldService;
     private final String ingoreFields =
-        "id,categoryId,tenantId,tabIndex,detailId,dataAssetsId,ID,CATEGORY_ID,TENANT_ID,TABINDEX,DETAIL_ID,DATAASSETS_ID,FILE_STATUS,FILE_GRADE,IS_DELETED";
+        "id,categoryId,tenantId,tabIndex,detailId,dataassetsId,ID,CATEGORY_ID,TENANT_ID,TABINDEX,DETAIL_ID,DATAASSETS_ID,FILE_STATUS,FILE_GRADE,IS_DELETED";
 
     public MetadataConfigServiceImpl(@Qualifier("jdbcTemplate4Tenant") JdbcTemplate jdbcTemplate4Tenant,
         MetadataConfigRepository metadataConfigRepository, ManagerApiClient managerApiClient,
@@ -117,6 +115,11 @@ public class MetadataConfigServiceImpl implements MetadataConfigService {
     }
 
     @Override
+    public List<MetadataConfig> findByViewType(String viewType) {
+        return metadataConfigRepository.findByViewTypeOrderByTabIndex(viewType);
+    }
+
+    @Override
     public void saveOrder(String[] idAndTabIndexs) {
         List<String> list = Lists.newArrayList(idAndTabIndexs);
         try {
@@ -140,7 +143,7 @@ public class MetadataConfigServiceImpl implements MetadataConfigService {
             int i = 0;
             List<Map<String, Object>> fieldList = new ArrayList<>();
             // 初始化基础标准字段配置
-            initBaseConfig(categoryEnums.getEnName(), manager.getId(), manager.getName(), "archives");
+            initBaseConfig(categoryEnums.getEnName(), manager.getId(), manager.getName(), "baseInfo");
             if (categoryEnums.getEnName().equals("WS")) {
                 fieldList.addAll(EntityOrTableUtils.getTableFieldList(DocumentFile.class, ""));
             } else if (categoryEnums.getEnName().equals("ZP")) {
@@ -205,20 +208,6 @@ public class MetadataConfigServiceImpl implements MetadataConfigService {
     }
 
     @Override
-    public void initCustomMetadataConfigByViewType(String viewType) {
-        CategoryTable categoryTable = categoryTableRepository.findByCategoryMark(viewType);
-        if (null != categoryTable) {
-            List<CategoryTableField> categoryTableFieldList =
-                categoryTableFieldService.listByTableId(categoryTable.getId());
-            for (CategoryTableField categoryTableField : categoryTableFieldList) {
-                this.save("add", viewType, categoryTableField.getId(), categoryTableField.getFieldName(),
-                    categoryTableField.getFieldCnName(), categoryTableField.getFieldType(),
-                    categoryTableField.getFieldLength(), viewType);
-            }
-        }
-    }
-
-    @Override
     public MetadataConfig findByViewTypeAndTableField(String viewType, String tableField) {
         return metadataConfigRepository.findByViewTypeAndTableFieldId(viewType, tableField);
     }
@@ -239,7 +228,7 @@ public class MetadataConfigServiceImpl implements MetadataConfigService {
             String comment = (String)field.get("comment");
             int fieldLength = (int)field.get("fieldLength");
             fieldName = EntityOrTableUtils.toCamelCase(fieldName);
-            initData(viewType, fieldName, fieldType, fieldLength, comment, userId, userName, "archives");
+            initData(viewType, fieldName, fieldType, fieldLength, comment, userId, userName, "baseInfo");
         }
     }
 
@@ -251,11 +240,6 @@ public class MetadataConfigServiceImpl implements MetadataConfigService {
     @Override
     public List<MetadataConfig> getMetadataRecordConfigList(String viewType) {
         return metadataConfigRepository.findByViewTypeAndIsRecordRequiredAndIsHideFalseOrderByTabIndex(viewType, 1);
-    }
-
-    @Override
-    public List<MetadataConfig> getMetadataCheckedRequiredConfigList(String viewType) {
-        return metadataConfigRepository.findByViewTypeAndIsCheckedRequiredAndIsHideFalse(viewType, 1);
     }
 
     @Override

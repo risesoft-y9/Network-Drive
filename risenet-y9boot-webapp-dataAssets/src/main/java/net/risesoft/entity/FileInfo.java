@@ -33,7 +33,7 @@ public class FileInfo implements Serializable {
     private Long id;
 
     @Column(name = "ARCHIVEFILEID")
-    @Comment("档案文件id")
+    @Comment("资产文件id")
     private Long archiveFileId;
 
     @Column(nullable = false)

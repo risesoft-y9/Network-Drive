@@ -22,13 +22,23 @@ public interface MetadataConfigService {
 
     List<MetadataConfig> listByViewType(String viewType);
 
+    List<MetadataConfig> findByViewType(String viewType);
+
+    List<MetadataConfig> getMetadataFieldList(String viewType, Integer isListShow);
+
+    /**
+     * 获取元数据著录必填配置列表
+     *
+     * @param viewType
+     * @return
+     */
+    List<MetadataConfig> getMetadataRecordConfigList(String viewType);
+
     void saveOrder(String[] idAndTabIndexs);
 
     void initMetadataConfig();
 
     void initMetadataConfigByViewType(String viewType);
-
-    void initCustomMetadataConfigByViewType(String viewType);
 
     void save(String saveType, String viewType, String tableField, String columnName, String displayName,
         String dataType, int fieldLength, String fieldOrigin);
@@ -38,23 +48,5 @@ public interface MetadataConfigService {
     MetadataConfig findByViewTypeAndColumnName(String viewType, String columnName);
 
     void initBaseMetadataConfig(String viewType);
-
-    List<MetadataConfig> getMetadataFieldList(String viewType, Integer isListShow);
-
-    /**
-     * 获取元数据著录必填配置列表
-     * 
-     * @param viewType
-     * @return
-     */
-    List<MetadataConfig> getMetadataRecordConfigList(String viewType);
-
-    /**
-     * 获取元数据检测必填配置列表
-     *
-     * @param viewType
-     * @return
-     */
-    List<MetadataConfig> getMetadataCheckedRequiredConfigList(String viewType);
 
 }

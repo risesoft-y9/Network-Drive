@@ -57,11 +57,11 @@ public class OrgController {
         Map<String, Object> res_map = new HashMap<String, Object>();
         String tenantId = Y9LoginUserHolder.getTenantId();
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
-        String archivesManagerRoleName = Y9Context.getProperty("y9.app.archives.archivesManagerRoleName");
-        // boolean archivesManager = personRoleApi
-        // .hasRole(tenantId, Y9Context.getSystemName(), "", archivesManagerRoleName, userInfo.getPersonId())
+        String managerRoleName = Y9Context.getProperty("y9.app.dataAssets.managerRoleName");
+        // boolean manager = personRoleApi
+        // .hasRole(tenantId, Y9Context.getSystemName(), "", managerRoleName, userInfo.getPersonId())
         // .getData();
-        // res_map.put("archivesManager", archivesManager);
+        // res_map.put("dataAssetsManager", manager);
         return Y9Result.success(res_map);
     }
 

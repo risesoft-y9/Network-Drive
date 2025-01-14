@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table(name = "Y9_DATAASSETS_DOCUMENT_FILE")
-@org.hibernate.annotations.Table(comment = "文书类文件表", appliesTo = "Y9_DATAASSETS_DOCUMENT_FILE")
+@Comment("文书类文件表")
 public class DocumentFile implements Serializable {
 
     private static final long serialVersionUID = 2194298990968114325L;
@@ -48,15 +48,15 @@ public class DocumentFile implements Serializable {
 
     @Column(name = "KEY_WORD", length = 100)
     @Comment("关键词")
-    private String keyWord;// 用以表达本件电子档案的主题并具有检索意义的词或词组
+    private String keyWord;// 用以表达本件电子资产的主题并具有检索意义的词或词组
 
     @Column(name = "PERSON_NAME", length = 200)
     @Comment("人名")
-    private String personName;// 本件电子档案中涉及的具有检索意义的人物姓名。
+    private String personName;// 本件电子资产中涉及的具有检索意义的人物姓名。
 
     @Column(name = "EXCERPT", length = 1200)
     @Comment("摘要")
-    private String excerpt;// 对本件电子档案核心内容的简短描述
+    private String excerpt;// 对本件电子资产核心内容的简短描述
 
     @Column(name = "DOCUMENT_NUMBER", length = 50)
     @Comment("文号")
@@ -94,11 +94,11 @@ public class DocumentFile implements Serializable {
 
     @Column(name = "PAGE_NUMBER")
     @Comment("页数")
-    private Integer pageNumber = 0;// 本件电子档案包含的总页数。如33”
+    private Integer pageNumber = 0;// 本件电子资产包含的总页数。如33”
 
     @Column(name = "MICRO_NUMBER", length = 50)
     @Comment("缩微号")
-    private String microNumber;// 与本件电子档案对应的缩微胶片的编号。若本件电子档案有对应的缩微胶片则必须采用。
+    private String microNumber;// 与本件电子资产对应的缩微胶片的编号。若本件电子资产有对应的缩微胶片则必须采用。
 
     @Column(name = "DRAFTER", length = 50)
     @Comment("拟稿人")
@@ -199,7 +199,7 @@ public class DocumentFile implements Serializable {
 
     @Column(name = "COMPONENT_NUMBER", length = 3)
     @Comment("组件号")
-    private String componentNumber;// 本组件在该件电子档案内排列的顺序号。如“D01”
+    private String componentNumber;// 本组件在该件电子资产内排列的顺序号。如“D01”
 
     @Column(name = "COMPONENT_CATEGORY", length = 20)
     @Comment("组件类别")

@@ -18,7 +18,7 @@ import net.risesoft.y9.Y9LoginUserHolder;
 import y9.client.rest.platform.resource.DataCatalogApiClient;
 
 /**
- * 档案目录管理、权限接口
+ * 资产目录管理、权限接口
  *
  * @author yihong
  *

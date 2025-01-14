@@ -45,7 +45,7 @@ public class OnApplicationReady implements ApplicationListener<ApplicationReadyE
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        LOGGER.info("archives-service ApplicationReady...");
+        LOGGER.info("DataAssets service ApplicationReady...");
         Y9LoginUserHolder.setTenantId(tenantId);
         createCategoryConfig();
         createMetadataConfig();
