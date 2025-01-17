@@ -26,3 +26,10 @@ dependencies {
 }
 
 description = "risenet-y9boot-webapp-storage"
+
+val finalName = "storage"
+jib.container.appRoot = "/usr/local/tomcat/webapps/${finalName}"
+
+tasks.bootWar {
+    archiveFileName.set("${finalName}.${archiveExtension.get()}")
+}

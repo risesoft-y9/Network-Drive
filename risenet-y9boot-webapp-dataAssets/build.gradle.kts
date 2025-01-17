@@ -28,3 +28,10 @@ dependencies {
 }
 
 description = "risenet-y9boot-webapp-dataAssets"
+
+val finalName = "dataAssets"
+jib.container.appRoot = "/usr/local/tomcat/webapps/${finalName}"
+
+tasks.bootWar {
+    archiveFileName.set("${finalName}.${archiveExtension.get()}")
+}

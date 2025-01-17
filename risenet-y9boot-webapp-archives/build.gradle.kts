@@ -28,3 +28,10 @@ dependencies {
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
 }
 description = "risenet-y9boot-webapp-archives"
+
+val finalName = "archives"
+jib.container.appRoot = "/usr/local/tomcat/webapps/${finalName}"
+
+tasks.bootWar {
+    archiveFileName.set("${finalName}.${archiveExtension.get()}")
+}
