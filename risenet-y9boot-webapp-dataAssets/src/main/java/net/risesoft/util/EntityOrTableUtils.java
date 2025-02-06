@@ -23,7 +23,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import net.risesoft.consts.SqlConstants;
@@ -242,10 +242,10 @@ public class EntityOrTableUtils {
     public static String convertSnakeToCamel(String jsonString) {
         try {
             ObjectMapper snakeCaseMapper = new ObjectMapper();
-            snakeCaseMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+            snakeCaseMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
             ObjectMapper camelCaseMapper = new ObjectMapper();
-            camelCaseMapper.setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE);
+            camelCaseMapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE);
 
             ObjectNode jsonNode = (ObjectNode)snakeCaseMapper.readTree(jsonString);
             return camelCaseMapper.writeValueAsString(jsonNode);
