@@ -36,7 +36,7 @@
       <el-footer></el-footer>
     </el-container> -->
     <div class="acss-header" id="zpre3Nn3">
-    <div class="header-title">
+    <!-- <div class="header-title">
         <el-row>
             <el-col :span="11">
                 <div class="acss_banner"></div>
@@ -45,7 +45,7 @@
                 <div><span style="font-size:4vh;line-height: 50px;color: var(--el-color-primary);">{{ $t('网络硬盘') }}</span></div>
             </el-col>
         </el-row>
-    </div>
+    </div> -->
     <div class="verify-form">
         <form action="" class="clearfix" name="accessForm" onsubmit="return false">
             <div class="CMxQsC">
@@ -85,7 +85,7 @@
                             </el-col>
                             <el-col :span="5">
                                 <el-button :size="fontSizeObj.buttonSize"
-                                           :style="{ fontSize: fontSizeObj.baseFontSize }" class="global-btn-main" type="primary" @click="download">{{ $t('下载文件') }}</el-button>
+                                           :style="{ fontSize: fontSizeObj.baseFontSize }" class="global-btn-main" type="primary" @click="download">{{ $t('下载') }}</el-button>
                             </el-col>
                         </el-row>
                     </dd>
