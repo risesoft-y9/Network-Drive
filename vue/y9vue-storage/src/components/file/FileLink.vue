@@ -108,7 +108,7 @@ function changePwd(val){
     }else{
         props.fileObject.fileUrl = linkUrl.value;
         file.value.linkPassword = '';
-        submitPwd('clear');
+        //submitPwd('clear');
     }
 }
 
