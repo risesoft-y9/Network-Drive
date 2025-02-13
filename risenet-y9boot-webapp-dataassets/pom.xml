@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <!-- <groupId>net.risesoft</groupId> -->
-    <artifactId>risenet-y9boot-webapp-dataAssets</artifactId>
+    <artifactId>risenet-y9boot-webapp-dataassets</artifactId>
     <version>${revision}</version>
     <packaging>war</packaging>
 
