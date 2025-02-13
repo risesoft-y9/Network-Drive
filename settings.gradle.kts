@@ -26,4 +26,3 @@ dependencyResolutionManagement {
 rootProject.name = "y9-storage"
 include(":risenet-y9boot-webapp-storage")
 include(":risenet-y9boot-webapp-dataassets")
-include(":risenet-y9boot-webapp-archives")
