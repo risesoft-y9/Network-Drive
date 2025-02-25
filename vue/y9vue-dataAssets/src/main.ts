@@ -11,6 +11,7 @@ import { setupStore } from '@/store'
 import 'animate.css'
 import 'normalize.css' // 样式初始化
 import 'remixicon/fonts/remixicon.css'
+import 'jsoneditor/dist/jsoneditor.min.css';
 import { createApp } from 'vue'
 import sso from "y9plugin-sso"
 import y9pluginComponents from "y9plugin-Components"

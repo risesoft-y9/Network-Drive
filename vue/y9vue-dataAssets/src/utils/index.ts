@@ -131,3 +131,52 @@ export function getConcreteSize(fontSize: string, actualValue: number) {
             break;
     }
 }
+
+import y9_storage from '@/utils/storage';
+// 分页组件，设置记忆性的时候，设置的分页对象的值与存储的值对应
+export function getStoragePageSize(uniqueId, defaultNum) {
+    let uniquePageSize = y9_storage.getObjectItem('uniquePageSize', uniqueId);
+    if (uniquePageSize) {
+        return uniquePageSize;
+    } else {
+        return defaultNum;
+    }
+}
+
+// 分页组件，设置记忆性的时候，设置的分页对象的值与存储的值对应
+export function getStorageCurrPage(uniqueId, defaultNum) {
+    let uniqueCurrPage = y9_storage.getObjectItem('uniqueCurrPage', uniqueId);
+    if (uniqueCurrPage) {
+        return uniqueCurrPage;
+    } else {
+        return defaultNum;
+    }
+}
+
+export function base64ImgtoFile(dataurl: any, filename = 'file') {
+    const arr = dataurl.split(',');
+
+    const mime = arr[0].match(/:(.*?);/)[1];
+
+    const suffix = mime.split('/')[1];
+
+    const bstr = atob(arr[1]);
+
+    let n = bstr.length;
+
+    const u8arr = new Uint8Array(n);
+
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+
+    return new File([u8arr], `${filename}.${suffix}`, {
+        type: mime
+    });
+}
+
+export function base64ToUrl(base64) {
+    const file = base64ImgtoFile(base64);
+    const url = window.webkitURL.createObjectURL(file) || window.URL.createObjectURL(file);
+    return url;
+}

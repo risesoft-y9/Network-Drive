@@ -1,15 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2021-12-22 15:41:55
- * @LastEditTime: 2024-11-04 10:55:42
- * @LastEditors: yihong yihong@risesoft.net
+ * @LastEditTime: 2022-01-20 17:08:18
+ * @LastEditors: Please set LastEditors
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- * @FilePath: /sz-team-frontend-9.5.x/y9vue-dataAssets/src/router/checkRole.js
+ * @FilePath: /sz-team-frontend-9.5.x/y9vue-home/src/router/checkRole.js
  */
 import router, { asyncRoutes } from "@/router";
 import { useRouterStore } from "@/store/modules/routerStore";
-import { useArchivesStore } from '@/store/modules/archivesStore';
-import OrgApi from '@/api/dataAssets/org';
+
 
 /**
  * 根据 meta.role 判断当前用户是否有权限
@@ -65,48 +64,10 @@ export function getPermissionRoutes(rolesArr = ['systemAdmin']) {
 export async function checkRole(rolesArr = ['systemAdmin']) {
     // 获取权限路由
     const permissionRoutes = getPermissionRoutes(rolesArr);
-    const archivesStore = useArchivesStore();
     if (permissionRoutes.length !== 0) {
         await permissionRoutes.map((route) => {
             router.addRoute(route);
         });
-
-        //岗位处理
-        let positionId = sessionStorage.getItem('positionId');
-        console.log('***********************positionId:' + positionId);
-        if (positionId == null || positionId == 'null') {
-            let pres = await OrgApi.getPositionList();
-            if (pres.success) {
-                archivesStore.$patch({
-                    positionList: pres.data.positionList,
-                    currentPositionId: pres.data.positionList.length > 0 ? pres.data.positionList[0].id : '',
-                    currentPositionName: archivesStore.positionList.length > 0 ? archivesStore.positionList[0].name : 0,
-                    tenantId: pres.data.tenantId
-                });
-                sessionStorage.setItem(
-                    'positionId',
-                    archivesStore.positionList.length > 0 ? archivesStore.positionList[0].id : ''
-                );
-                sessionStorage.setItem(
-                    'positionName',
-                    archivesStore.positionList.length > 0 ? archivesStore.positionList[0].name : ''
-                );
-                sessionStorage.setItem(
-                    'tenantId',
-                    pres.data.tenantId
-                );
-            }
-        } else if (archivesStore.positionList.length == 0) {
-            let pres = await OrgApi.getPositionList();
-            if (pres.success) {
-                archivesStore.$patch({
-                    positionList: pres.data.positionList,
-                    currentPositionId: positionId,
-                    tenantId: pres.data.tenantId
-                });
-            }
-        }
-        //岗位处理
         return permissionRoutes;
 
     } else {

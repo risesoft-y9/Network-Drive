@@ -37,7 +37,10 @@ function y9Request(baseUrl = '') {
             if (config.cType) {
                 config.headers['userLoginName'] = config.data.userLoginName;
             }
-            config.headers['positionId'] = sessionStorage.getItem('positionId');
+            if (config.JSON) {
+                config.headers['Content-Type'] = 'application/json';
+            }
+            //config.headers['positionId'] = sessionStorage.getItem('positionId');
             const access_token = y9_storage.getObjectItem(settings.siteTokenKey, 'access_token');
             if (access_token) {
                 // console.log("access_token = ",access_token);

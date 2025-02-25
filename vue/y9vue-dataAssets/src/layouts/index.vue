@@ -131,43 +131,11 @@
                 getBreadcrumbRoutes(routeItem.value, routeParentPaths.value, menuData)
             );
 
-            onBeforeMount(() => {
-                getAllPositionList();
-            });
-
             // 挂载组件后初始化网站设置
             onMounted(() => {
                 // 初始化主题
                 document.getElementsByTagName('html')[0].className = theme.value;
             });
-
-            const getAllPositionList = () => {
-                OrgApi.getPositionList()
-                    .then((res) => {
-                        if (res.success) {
-                            let positionId = sessionStorage.getItem('positionId')!;
-                            let currentName = '';
-
-                            res.data.positionList.forEach((item, index) => {
-                                if (item.id == positionId) {
-                                    currentName = item.name;
-                                }
-                            });
-                            archivesStore.$patch({
-                                positionList: res.data.positionList,
-                                currentPositionName: currentName,
-                                tenantId: res.data.tenantId
-                            });
-                            console.log(archivesStore.positionList);
-                            sessionStorage.setItem('positionId', positionId);
-                            sessionStorage.setItem('positionName', currentName);
-                            sessionStorage.setItem('tenantId', res.data.tenantId);
-                        }
-                    })
-                    .catch(() => {
-                        ElMessage({ type: 'info', message: '数据加载失败' });
-                    });
-            };
 
             // 国际语言切换 仍有bug
             const webLanguage = computed(() => settingStore.getWebLanguage);
@@ -184,8 +152,7 @@
                 belongTopMenu,
                 defaultActive,
                 breadCrumbs,
-                routeItem,
-                getAllPositionList
+                routeItem
             };
         }
     };
