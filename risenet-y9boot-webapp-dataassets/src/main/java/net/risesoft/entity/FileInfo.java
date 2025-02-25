@@ -1,7 +1,5 @@
 package net.risesoft.entity;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,14 +12,15 @@ import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.risesoft.base.BaseEntity;
 
 @Data
 @NoArgsConstructor
 @Entity
 @Table(name = "Y9_DATAASSETS_FILE_INFO",
-    indexes = {@Index(name = "DATAASSETSFILEID_INDEX", columnList = "ARCHIVEFILEID")})
-@org.hibernate.annotations.Table(comment = "文件信息表", appliesTo = "Y9_DATAASSETS_FILE_INFO")
-public class FileInfo implements Serializable {
+    indexes = {@Index(name = "DATAASSETSFILEID_INDEX", columnList = "ASSETSID")})
+@org.hibernate.annotations.Table(comment = "资产挂接信息表", appliesTo = "Y9_DATAASSETS_FILE_INFO")
+public class FileInfo extends BaseEntity {
 
     private static final long serialVersionUID = 2887873103562809956L;
 
@@ -32,28 +31,28 @@ public class FileInfo implements Serializable {
     @Comment("主键id")
     private Long id;
 
-    @Column(name = "ARCHIVEFILEID")
-    @Comment("资产文件id")
-    private Long archiveFileId;
+    @Column(name = "ASSETSID")
+    @Comment("关联资产id")
+    private Long assetsId;
 
-    @Column(nullable = false)
-    @Comment("文件名称")
-    private String filename;
+    @Column(name = "NAME")
+    @Comment("名称")
+    private String name;
 
-    @Column(nullable = false)
-    @Comment("文件标识")
+    @Column(name = "IDENTIFIER")
+    @Comment("标识")
     private String identifier;
 
-    @Column(nullable = false)
-    @Comment("总大小")
-    private Long totalSize;
+    @Column(name = "FILESIZE")
+    @Comment("大小")
+    private String fileSize;
 
-    @Column(nullable = false)
+    @Column(name = "FILETYPE")
     @Comment("类型")
-    private String type;
+    private String fileType;
 
-    @Column(nullable = false)
-    @Comment("文件位置")
-    private String location;
+    @Column(name = "FILEPATH")
+    @Comment("位置")
+    private String filePath;
 
 }

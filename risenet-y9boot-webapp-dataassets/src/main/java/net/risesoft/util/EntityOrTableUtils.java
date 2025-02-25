@@ -144,7 +144,7 @@ public class EntityOrTableUtils {
             if (list == null || list.size() == 0) {
                 return list_map;
             }
-            sql = "Select * from " + tableName + " limit 0,0";
+            sql = "Select * from " + tableName + " limit 0,1";
 
             if (SqlConstants.DBTYPE_ORACLE.equalsIgnoreCase(dbType) || SqlConstants.DBTYPE_DM.equalsIgnoreCase(dbType)
                 || SqlConstants.DBTYPE_KINGBASE.equalsIgnoreCase(dbType)) {

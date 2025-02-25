@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.enums.platform.AuthorityEnum;
 import net.risesoft.model.platform.DataCatalog;
@@ -18,13 +17,12 @@ import net.risesoft.y9.Y9LoginUserHolder;
 import y9.client.rest.platform.resource.DataCatalogApiClient;
 
 /**
- * 资产目录管理、权限接口
+ * 资产目录管理接口
  *
  * @author yihong
  *
  */
 @RequiredArgsConstructor
-@Slf4j
 @RestController
 @RequestMapping(value = "/vue/catalog")
 public class DataAssetsCatalogController {
@@ -32,7 +30,7 @@ public class DataAssetsCatalogController {
     private final DataCatalogApiClient dataCatalogApiClient;
 
     /**
-     * 根据id或name获取组织架构树
+     * 获取数据底座-数据资产的数据目录
      * 
      * @param parentId
      * @return
@@ -40,7 +38,18 @@ public class DataAssetsCatalogController {
     @GetMapping("/getCatelogTree")
     public Y9Result<List<DataCatalog>> getCatelogTree(@RequestParam(required = false) String parentId) {
         String tenantId = Y9LoginUserHolder.getTenantId(), userId = Y9LoginUserHolder.getUserInfo().getPersonId();
-        return dataCatalogApiClient.getTree("normal", parentId, false, tenantId, userId, AuthorityEnum.BROWSE);
+        return dataCatalogApiClient.getTree("asset", parentId, false, tenantId, userId, AuthorityEnum.BROWSE);
+    }
+    
+    /**
+     * 搜索树
+     * @param name
+     * @return
+     */
+    @GetMapping("/searchCatelogTree")
+    public Y9Result<List<DataCatalog>> searchCatelogTree(@RequestParam(required = false) String name) {
+        String tenantId = Y9LoginUserHolder.getTenantId(), userId = Y9LoginUserHolder.getUserInfo().getPersonId();
+        return dataCatalogApiClient.treeSearch("asset", name, tenantId, userId, AuthorityEnum.BROWSE);
     }
 
 }

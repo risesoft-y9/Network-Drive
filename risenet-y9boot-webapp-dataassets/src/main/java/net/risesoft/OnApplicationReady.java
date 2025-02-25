@@ -2,9 +2,12 @@ package net.risesoft;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -49,6 +52,16 @@ public class OnApplicationReady implements ApplicationListener<ApplicationReadyE
         Y9LoginUserHolder.setTenantId(tenantId);
         createCategoryConfig();
         createMetadataConfig();
+    }
+    
+    private final Environment environment;
+
+    @PostConstruct
+    public void init() {
+        IdCode.init(environment.getProperty("idCode.api_code"), environment.getProperty("idCode.api_key"),
+            environment.getProperty("idCode.idCode_url"), environment.getProperty("idCode.main_code"),
+            environment.getProperty("idCode.analyze_url"), environment.getProperty("idCode.goto_url"),
+            environment.getProperty("idCode.sample_url"));
     }
 
 }
