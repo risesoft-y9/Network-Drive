@@ -178,26 +178,26 @@ public class DataAssetsFileController {
         return Y9Result.success(chunk);
     }
 
-    @PostMapping("/mergeFile")
-    public Y9Result<Map<String, Object>> mergeFile(FileInfo fileInfo, Long detailId) {
-        Map<String, Object> map = new HashMap<>();
-        String fileName = fileInfo.getFilename();
-        String chunckPath = Y9Context.getWebRootRealPath() + "upload";
-        String file = chunckPath + "/" + fileInfo.getIdentifier() + "/" + fileName;
-        String folder = chunckPath + "/" + fileInfo.getIdentifier();
-        // 合并文件
-        map = mergeMethod(file, folder, fileName, detailId);
-        Boolean success = Boolean.valueOf(map.get("success").toString());
-        if (success) {
-            // 保存文件信息
-            Long fileId = Long.parseLong(map.get("fileId").toString());
-            fileInfo.setLocation(file);
-            fileInfo.setArchiveFileId(fileId);
-            fileInfoService.addFileInfo(fileInfo);
-            return Y9Result.success(map, "合并成功");
-        }
-        return Y9Result.failure(500, "合并失败");
-    }
+//    @PostMapping("/mergeFile")
+//    public Y9Result<Map<String, Object>> mergeFile(FileInfo fileInfo, Long detailId) {
+//        Map<String, Object> map = new HashMap<>();
+//        String fileName = fileInfo.getFilename();
+//        String chunckPath = Y9Context.getWebRootRealPath() + "upload";
+//        String file = chunckPath + "/" + fileInfo.getIdentifier() + "/" + fileName;
+//        String folder = chunckPath + "/" + fileInfo.getIdentifier();
+//        // 合并文件
+//        map = mergeMethod(file, folder, fileName, detailId);
+//        Boolean success = Boolean.valueOf(map.get("success").toString());
+//        if (success) {
+//            // 保存文件信息
+//            Long fileId = Long.parseLong(map.get("fileId").toString());
+//            fileInfo.setLocation(file);
+//            fileInfo.setArchiveFileId(fileId);
+//            fileInfoService.addFileInfo(fileInfo);
+//            return Y9Result.success(map, "合并成功");
+//        }
+//        return Y9Result.failure(500, "合并失败");
+//    }
 
     private Map<String, Object> saveFile(Long detailId, String fileName, String fileExtension, long fileSize,
         String fileHash, String y9FileStoreId) {

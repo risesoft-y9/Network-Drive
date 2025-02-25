@@ -4,18 +4,23 @@ import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,10 +29,14 @@ import net.risesoft.entity.CategoryTable;
 import net.risesoft.entity.DataAssets;
 import net.risesoft.entity.DataAssetsFile;
 import net.risesoft.entity.DocumentFile;
+import net.risesoft.entity.FileInfo;
 import net.risesoft.entity.ImageFile;
 import net.risesoft.entity.MetadataConfig;
 import net.risesoft.entity.VideoFile;
 import net.risesoft.enums.CategoryEnums;
+import net.risesoft.log.LogLevelEnum;
+import net.risesoft.log.OperationTypeEnum;
+import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.SearchPage;
 import net.risesoft.model.platform.DataCatalog;
 import net.risesoft.pojo.Y9Page;
@@ -41,10 +50,10 @@ import net.risesoft.service.ImageFileService;
 import net.risesoft.service.MetadataConfigService;
 import net.risesoft.service.VideoFileService;
 import net.risesoft.util.EntityOrTableUtils;
+import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.json.Y9JsonUtil;
 import net.risesoft.y9.util.Y9BeanUtil;
-
 import y9.client.rest.platform.resource.DataCatalogApiClient;
 
 /**
@@ -96,24 +105,24 @@ public class DataAssetsController {
             Map<String, Object> map = new HashMap<>();
             map = EntityOrTableUtils.convertToMap(dataAssets);
             if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
-                map.putAll(documentFileService.findByDetailId(dataAssets.getDataassetsId()));
+                map.putAll(documentFileService.findByDetailId(dataAssets.getId()));
             } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
-                map.putAll(imageFileService.findByDetailId(dataAssets.getDataassetsId()));
+                map.putAll(imageFileService.findByDetailId(dataAssets.getId()));
             } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
-                map.putAll(audioFileService.findByDetailId(dataAssets.getDataassetsId()));
+                map.putAll(audioFileService.findByDetailId(dataAssets.getId()));
             } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
-                map.putAll(videoFileService.findByDetailId(dataAssets.getDataassetsId()));
+                map.putAll(videoFileService.findByDetailId(dataAssets.getId()));
             } else {
                 CategoryTable categoryTable = categoryTableService.findByCategoryMark(customId);
                 if (null != categoryTable) {
                     List<Map<String, Object>> list_categoryTable = categoryTableService
-                        .getTableData(categoryTable.getTableName(), dataAssets.getDataassetsId().toString());
+                        .getTableData(categoryTable.getTableName(), dataAssets.getId().toString());
                     for (Map<String, Object> map_categoryTable : list_categoryTable) {
                         map.putAll(map_categoryTable);
                     }
                 }
             }
-            List<DataAssetsFile> files = dataAssetsFileService.findByDetailId(dataAssets.getDataassetsId());
+            List<DataAssetsFile> files = dataAssetsFileService.findByDetailId(dataAssets.getId());
             map.put("hasFile", null != files && !files.isEmpty());
             list_map.add(map);
         }
@@ -192,28 +201,26 @@ public class DataAssetsController {
             }
         }
         if (saveType.equals("add")) {
-            dataAssets.setCategoryCode(customId);
             dataAssets.setCategoryId(categoryId);
-            dataAssets.setCreateTime(new Date());
             dataAssetsService.save(dataAssets);
             if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
-                documentFile.setDetailId(dataAssets.getDataassetsId());
+                documentFile.setDetailId(dataAssets.getId());
                 documentFileService.save(documentFile);
             } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
-                imageFile.setDetailId(dataAssets.getDataassetsId());
+                imageFile.setDetailId(dataAssets.getId());
                 imageFileService.save(imageFile);
             } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
-                audioFile.setDetailId(dataAssets.getDataassetsId());
+                audioFile.setDetailId(dataAssets.getId());
                 audioFileService.save(audioFile);
             } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
-                videoFile.setDetailId(dataAssets.getDataassetsId());
+                videoFile.setDetailId(dataAssets.getId());
                 videoFileService.save(videoFile);
             } else {
-                categoryTableService.saveTableData("add", customId, dataAssets.getDataassetsId().toString(), map);
+                categoryTableService.saveTableData("add", customId, dataAssets.getId().toString(), map);
             }
         } else {
-            if (null != dataAssets.getDataassetsId()) {
-                DataAssets oldDataAssets = dataAssetsService.findById(dataAssets.getDataassetsId());
+            if (null != dataAssets.getId()) {
+                DataAssets oldDataAssets = dataAssetsService.findById(dataAssets.getId());
                 if (null != oldDataAssets) {
                     Y9BeanUtil.copyProperties(dataAssets, oldDataAssets);
                     dataAssetsService.save(oldDataAssets);
@@ -224,7 +231,7 @@ public class DataAssetsController {
                         Y9BeanUtil.copyProperties(documentFile, oldDocumentFile);
                         documentFileService.save(oldDocumentFile);
                     } else {
-                        documentFile.setDetailId(dataAssets.getDataassetsId());
+                        documentFile.setDetailId(dataAssets.getId());
                         documentFileService.save(documentFile);
                     }
                 } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
@@ -233,7 +240,7 @@ public class DataAssetsController {
                         Y9BeanUtil.copyProperties(imageFile, oldImageFile);
                         imageFileService.save(oldImageFile);
                     } else {
-                        imageFile.setDetailId(dataAssets.getDataassetsId());
+                        imageFile.setDetailId(dataAssets.getId());
                         imageFileService.save(imageFile);
                     }
                 } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
@@ -242,7 +249,7 @@ public class DataAssetsController {
                         Y9BeanUtil.copyProperties(audioFile, oldAudioFile);
                         audioFileService.save(oldAudioFile);
                     } else {
-                        audioFile.setDetailId(dataAssets.getDataassetsId());
+                        audioFile.setDetailId(dataAssets.getId());
                         audioFileService.save(audioFile);
                     }
                 } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
@@ -251,11 +258,11 @@ public class DataAssetsController {
                         Y9BeanUtil.copyProperties(videoFile, oldVideoFile);
                         videoFileService.save(oldVideoFile);
                     } else {
-                        videoFile.setDetailId(dataAssets.getDataassetsId());
+                        videoFile.setDetailId(dataAssets.getId());
                         videoFileService.save(videoFile);
                     }
                 } else {
-                    categoryTableService.saveTableData("edit", customId, dataAssets.getDataassetsId().toString(), map);
+                    categoryTableService.saveTableData("edit", customId, dataAssets.getId().toString(), map);
                 }
             }
         }
@@ -295,6 +302,80 @@ public class DataAssetsController {
     @PostMapping(value = "/createAssetsNo")
     public Y9Result<String> createAssetsNo(@RequestParam String categoryId, @RequestParam Long[] ids) {
         return dataAssetsService.createAssetsNo(categoryId, ids);
+    }
+    
+    @RiseLog(operationType = OperationTypeEnum.ADD, operationName = "保存数据资产信息", logLevel = LogLevelEnum.RSLOG)
+	@PostMapping(value = "/saveDataAssets")
+	public Y9Result<String> saveDataAssets(DataAssets dataAssets) {
+		return dataAssetsService.saveDataAssets(dataAssets);
+	}
+    
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取资产数据列表", logLevel = LogLevelEnum.RSLOG, enable = false)
+	@GetMapping("/searchPage")
+	public Y9Page<DataAssets> searchPage(String name, String code, String categoryId, Integer page, Integer size) {
+		Page<DataAssets> pageList = dataAssetsService.searchPage(categoryId, name, code, page, size);
+		pageList.stream().map((item) -> {
+			if(StringUtils.isNotBlank(item.getPicture())) {
+				item.setPicture(Y9Context.getProperty("y9.common.dataAssetsBaseUrl") + item.getPicture());
+			}
+            return item;
+        }).collect(Collectors.toList());
+        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(), "获取数据成功");
+    }
+    
+    @RiseLog(operationType = OperationTypeEnum.DELETE, operationName = "删除数据资产信息", logLevel = LogLevelEnum.RSLOG)
+	@PostMapping(value = "/deleteDataAssets")
+	public Y9Result<String> deleteDataAssets(Long id) {
+		return dataAssetsService.deleteDataAssets(id);
+	}
+    
+    @RiseLog(operationType = OperationTypeEnum.ADD, operationName = "上传文件", logLevel = LogLevelEnum.RSLOG)
+	@PostMapping("/fileUpload")
+    public Y9Result<String> fileUpload(@RequestParam MultipartFile file, @RequestParam Long assetsId) {
+        return dataAssetsService.fileUpload(file, assetsId);
+    }
+    
+    @RiseLog(operationType = OperationTypeEnum.MODIFY, operationName = "上下架数据资产", logLevel = LogLevelEnum.RSLOG)
+	@PostMapping(value = "/updownData")
+	public Y9Result<String> updownData(Long id) {
+		return dataAssetsService.updownData(id);
+	}
+    
+    @RiseLog(operationType = OperationTypeEnum.ADD, operationName = "数据资产赋码", logLevel = LogLevelEnum.RSLOG)
+	@PostMapping(value = "/genQr")
+	public Y9Result<String> genQr(Long id) {
+		return dataAssetsService.genQr(id);
+	}
+    
+    @RiseLog(operationType = OperationTypeEnum.ADD, operationName = "生成数据资产编码", logLevel = LogLevelEnum.RSLOG)
+    @GetMapping(value = "/genCode")
+	public Y9Result<String> genCode(String categoryId, String pCode) {
+		return dataAssetsService.genCode(categoryId, pCode);
+	}
+    
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取资产数据挂接文件列表", logLevel = LogLevelEnum.RSLOG, enable = false)
+	@GetMapping("/getFilePage")
+	public Y9Page<FileInfo> getFilePage(String name, Long id, Integer page, Integer size) {
+		Page<FileInfo> pageList = dataAssetsService.getFilePage(id, name, page, size);
+        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(), "获取数据成功");
+    }
+    
+    @RiseLog(operationType = OperationTypeEnum.SEND, operationName = "下载文件", logLevel = LogLevelEnum.RSLOG)
+	@GetMapping("/fileDownload")
+	public void fileDownload(Long id, HttpServletResponse response, HttpServletRequest request) {
+    	dataAssetsService.fileDownload(id, response, request);
+    }
+    
+    @RiseLog(operationType = OperationTypeEnum.ADD, operationName = "上传资产图片", logLevel = LogLevelEnum.RSLOG)
+	@PostMapping("/uploadPicture")
+    public Y9Result<String> uploadPicture(@RequestParam MultipartFile file, @RequestParam Long assetsId) {
+        return dataAssetsService.uploadPicture(file, assetsId);
+    }
+    
+    @RiseLog(operationType = OperationTypeEnum.ADD, operationName = "资产挂接接口", logLevel = LogLevelEnum.RSLOG)
+	@PostMapping("/saveAssetsInterface")
+    public Y9Result<String> saveAssetsInterface(String ids, Long assetsId) {
+        return dataAssetsService.saveAssetsInterface(ids, assetsId);
     }
 
 }
