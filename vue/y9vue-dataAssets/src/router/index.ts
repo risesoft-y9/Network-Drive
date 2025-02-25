@@ -15,6 +15,7 @@ import libraryRouter from './modules/libraryRouter';
 import utilizeRouter from './modules/utilizeRouter';
 import dictionaryRouter from './modules/dictionaryRouter';
 import pretreatmentRouter from './modules/pretreatmentRouter';
+import sourceRouter from './modules/sourceRouter';
 
 //constantRoutes为不需要动态判断权限的路由，如登录、404、500等
 export const constantRoutes: Array<any> = [
@@ -54,7 +55,8 @@ export const asyncRoutes = [
     pretreatmentRouter,
     libraryRouter,
     utilizeRouter,
-    dictionaryRouter
+    dictionaryRouter,
+    sourceRouter
     //...routes
     // 引入其他模块路由
 

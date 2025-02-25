@@ -22,7 +22,7 @@ const dictionaryRouter = {
                 component: () => import('@/views/dictionary/category/index.vue'),
                 name: 'categoryIndex',
                 meta: {
-                    title: '门类管理',
+                    title: '目录管理',
                     icon: 'ri-archive-stack-line',
                 },
             },

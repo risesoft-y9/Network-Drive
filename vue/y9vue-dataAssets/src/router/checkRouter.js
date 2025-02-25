@@ -1,11 +1,3 @@
-/*
- * @Author: your name
- * @Date: 2021-12-22 14:38:02
- * @LastEditTime: 2024-10-10 17:32:55
- * @LastEditors: yihong yihong@risesoft.net
- * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- * @FilePath: /sz-team-frontend-9.5.x/y9vue-storage/src/router/checkRouter.js
- */
 import '@/assets/css/nprogress.css'; // progress bar style
 import router from '@/router';
 import { checkRole } from '@/router/checkRole';
@@ -15,10 +7,8 @@ import y9_storage from '@/utils/storage';
 import NProgress from 'nprogress'; // progress bar
 import { $y9_SSO } from '@/main';
 import { getLoginInfo } from './getInitData';
-import OrgApi from '@/api/dataAssets/org';
 
 NProgress.configure({ showSpinner: false, easing: 'ease', speed: 1000 });
-
 
 // 路由白名单过滤
 function routerWriteList(array, path) {
@@ -69,17 +59,13 @@ async function check() {
         return false;
     }
 
-    const y9UserInfo = JSON.parse(sessionStorage.getItem('ssoUserInfo'));
-    let result = await OrgApi.checkManager();
+    //const y9UserInfo = JSON.parse(sessionStorage.getItem('ssoUserInfo'));
     // if (y9UserInfo.managerLevel === 0) {
     //     userRole = ['user'];
     // }
     // if (y9UserInfo.managerLevel === 1) {
     //     userRole = ['systemAdmin'];
     // }
-    if (result.data.archivesManager) {
-        userRole.push('archivesManager');
-    }
     
     isRoleValid = (await checkRole(userRole)) ? true : false;
     // 根据角色权限获取路由
@@ -112,17 +98,6 @@ async function check() {
         }
         return false;
     }
-}
-
-// 修复刷新bug
-function isFresh(role, path) {
-    let fresh = true;
-    // authRouter.map((item) => {
-    //     if (item.meta.roles[0] === role && item.redirect === path) {
-    //         fresh = false;
-    //     }
-    // });
-    return fresh;
 }
 
 // 所有路由上带的参数塞到一个对象里
