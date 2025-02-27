@@ -85,7 +85,7 @@
     const initFormModels = {
         baseFormModel: {
             baseType: 'postgresql',
-            baseName: '',
+            name: '',
             driver: '',
             username: '',
             password: '',
@@ -118,7 +118,7 @@
         //表单验证规则
         rules: {
             baseType: [{ required: true, message: computed(() => t('请选择数据源类型')), trigger: 'change' }],
-            baseName: [{ required: true, message: computed(() => t('请输入数据源名称')), trigger: 'blur' }],
+            name: [{ required: true, message: computed(() => t('请输入数据源名称')), trigger: 'blur' }],
             username: [{ required: true, message: computed(() => t('请输入用户名')), trigger: 'blur' }],
             password: [{ required: true, message: computed(() => t('请输入密码')), trigger: 'blur' }],
             runType: [{ required: true, message: computed(() => t('请选择连接模式')), trigger: 'change' }],
@@ -127,12 +127,12 @@
         },
         rule: {
             baseType: [{ required: true, message: computed(() => t('请选择数据源类型')), trigger: 'change' }],
-            baseName: [{ required: true, message: computed(() => t('请输入数据源名称')), trigger: 'blur' }],
+            name: [{ required: true, message: computed(() => t('请输入数据源名称')), trigger: 'blur' }],
             url: [{ required: true, message: computed(() => t('请输入连接地址')), trigger: 'blur' }]
         },
         oldRule: {
             baseType: [{ required: true, message: computed(() => t('请选择数据源类型')), trigger: 'change' }],
-            baseName: [{ required: true, message: computed(() => t('请输入数据源名称')), trigger: 'blur' }],
+            name: [{ required: true, message: computed(() => t('请输入数据源名称')), trigger: 'blur' }],
             username: [{ required: true, message: computed(() => t('请输入用户名')), trigger: 'blur' }],
             password: [{ required: true, message: computed(() => t('请输入密码')), trigger: 'blur' }],
             runType: [{ required: true, message: computed(() => t('请选择连接模式')), trigger: 'change' }],
@@ -171,7 +171,7 @@
                 type: 'input',
                 type1: 'input',
                 type2: 'text',
-                prop: 'baseName',
+                prop: 'name',
                 label: computed(() => t('数据源名称')),
                 required: true,
                 span: 2,
@@ -247,7 +247,7 @@
                 type: 'input',
                 type1: 'input',
                 type2: 'text',
-                prop: 'baseName',
+                prop: 'name',
                 label: computed(() => t('数据源名称')),
                 required: true,
                 span: 2,

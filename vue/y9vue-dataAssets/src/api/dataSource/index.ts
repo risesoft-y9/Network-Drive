@@ -31,6 +31,60 @@ export const getDataSourceByType = async (params) => {
 };
 
 /**
+ * 三级接口 根据数据源id获取数据库表
+ * @param params 
+ * @returns 
+ */
+export const getTablesByBaseType = async (params) => {
+    return await platformRequest({
+        url: 'vue/source/findTablesByBaseType',
+        method: 'GET',
+        cType: false,
+        params: params
+    });
+};
+
+/**
+ * 获取表对应的字段信息
+ * @param dataSourceId 
+ * @param tableName 
+ * @returns 
+ */
+export const getTableColumns = async (dataSourceId,tableName) => {
+    return await platformRequest({
+        url: 'vue/source/findTableColumnsByTableName',
+        method: 'GET',
+        cType: false,
+        params: {
+            dataSourceId: dataSourceId,
+            tableName: tableName
+        }
+    });
+};
+
+/**
+ * 获取表数据
+ * @param dataSourceId 
+ * @param tableName 
+ * @param page 
+ * @param row 
+ * @returns 
+ */
+export const getTableData = async (dataSourceId,tableName,page,rows) => {
+    return await platformRequest({
+        url: 'vue/source/findTableDataByTableName',
+        method: 'GET',
+        cType: false,
+        params: {
+            dataSourceId: dataSourceId,
+            tableName: tableName,
+            page: page,
+            rows: rows
+        }
+    });
+};
+
+/**
  * 搜索数据源
  * @param params
  * @returns
