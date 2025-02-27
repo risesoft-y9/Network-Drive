@@ -2,6 +2,7 @@ package net.risesoft.util;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,16 +11,135 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.consts.SqlConstants;
+import net.risesoft.pojo.Y9Page;
 import net.risesoft.y9.sqlddl.DbMetaDataUtil;
 
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Y9FormDbMetaDataUtil extends DbMetaDataUtil {
+
+    public static DataSource createDataSource(String url, String driverClassName, String username, String password) {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setUrl(url);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+        dataSource.setDriverClassName(driverClassName);
+        return dataSource;
+    }
+
+    /**
+     * 返回所有的业务表
+     */
+    public static List<Map<String, Object>> listAllTables(DataSource dataSource) throws Exception {
+        List<Map<String, Object>> tableNames = new ArrayList<>();
+
+        ResultSet rs = null;
+        String sql = "show tables";
+        try (Connection connection = dataSource.getConnection(); Statement stmt = connection.createStatement()) {
+
+            String dialect = getDatabaseDialectNameByConnection(connection);
+            switch (dialect) {
+                case SqlConstants.DBTYPE_ORACLE:
+                    sql = "SELECT table_name FROM all_tables";
+                    break;
+                case SqlConstants.DBTYPE_DM:
+                    sql = "SELECT table_name FROM all_tables";
+                    break;
+                case SqlConstants.DBTYPE_KINGBASE:
+                    sql = "SELECT table_name FROM all_tables";
+                    break;
+                default:
+                    sql = "show tables";
+                    break;
+            }
+            rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                String tableName = rs.getString(1);
+                // mysql中不处理视图
+                Map<String, Object> al = new HashMap<>(16);
+                al.put("name", tableName);
+                tableNames.add(al);
+            }
+        } catch (Exception ex) {
+            LOGGER.error("查询所有的业务表失败", ex);
+            throw ex;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+        }
+        return tableNames;
+    }
+
+    /**
+     * 返回表数据
+     */
+    public static Y9Page<Map<String, Object>> listTableData(DataSource dataSource, String tableName, int pageNum,
+        int pageSize) throws Exception {
+        List<Map<String, Object>> tableDataList = new ArrayList<>();
+        int totalRecords = 0;
+        int totalPages = 0;
+        ResultSet rs = null;
+        StringBuilder sqlStr = new StringBuilder();
+        try (Connection connection = dataSource.getConnection(); Statement stmt = connection.createStatement()) {
+            int offset = (pageNum - 1) * pageSize;
+            String dialect = getDatabaseDialectNameByConnection(connection);
+            if (SqlConstants.DBTYPE_ORACLE.equals(dialect) || SqlConstants.DBTYPE_DM.equals(dialect)
+                || SqlConstants.DBTYPE_KINGBASE.equals(dialect)) {
+                // sqlStr.append("SELECT * FROM (SELECT a.*, ROWNUM rnum FROM (SELECT * FROM \"").append(tableName)
+                // .append("\" ) a ");
+                // sqlStr.append("WHERE ROWNUM <= ").append(offset + pageSize).append(") ");
+                // sqlStr.append("WHERE rnum > ").append(offset);
+                sqlStr = new StringBuilder("SELECT * FROM \"" + tableName + "\" ");
+                // 添加Oracle特定的分页逻辑
+                sqlStr.append("WHERE ROWNUM BETWEEN ").append((pageNum - 1) * pageSize + 1).append(" AND ")
+                    .append(pageNum * pageSize);
+            } else if (SqlConstants.DBTYPE_MYSQL.equals(dialect)) {
+                sqlStr.append("SELECT * FROM ").append(tableName).append(" LIMIT ").append(offset).append(", ")
+                    .append(pageSize);
+            } else {
+                throw new UnsupportedOperationException("不支持的数据库类型");
+            }
+
+            rs = stmt.executeQuery(sqlStr.toString());
+            ResultSetMetaData metaData = rs.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            while (rs.next()) {
+                Map<String, Object> rowMap = new HashMap<>();
+                for (int i = 1; i <= columnCount; i++) {
+                    String columnName = metaData.getColumnName(i);
+                    Object columnValue = rs.getObject(i);
+                    rowMap.put(columnName, columnValue);
+                }
+                tableDataList.add(rowMap);
+            }
+            // 获取总记录数
+            String countSql = "SELECT COUNT(*) FROM " + tableName;
+            try (Statement countStmt = connection.createStatement();
+                ResultSet countRs = countStmt.executeQuery(countSql)) {
+                if (countRs.next()) {
+                    totalRecords = countRs.getInt(1);
+                }
+            }
+            // 计算总页数
+            totalPages = (int)Math.ceil((double)totalRecords / pageSize);
+        } catch (Exception ex) {
+            LOGGER.error("查询表数据失败", ex);
+            throw ex;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+        }
+        return Y9Page.success(pageNum, totalPages, totalRecords, tableDataList, "获取数据成功");
+    }
 
     /**
      * 返回所有的业务表
