@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Data
 @Entity
 @Table(name = "Y9_DATAASSETS_NUMBER_RULES")
-@Comment("档号规则表")
+@Comment("资产编号规则表")
 public class DataAssetsNumberRules implements Serializable {
 
     private static final long serialVersionUID = -687877807119334107L;
