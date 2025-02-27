@@ -116,6 +116,11 @@
             //是否显示删除icon
             type: Boolean,
             default: true
+        },
+        showNodeAdd: {
+            //是否显示删除icon
+            type: Boolean,
+            default: true
         }
     });
 
@@ -156,7 +161,7 @@
         for (let i = 0; i < data.length; i++) {
             const item = data[i];
             item.delete_icon = props.showNodeDelete; //是否显示删除icon
-
+            item.add_icon = props.showNodeAdd;
             const flag = props.treeApiObj?.flag;
 
             if (flag == 'libraryTableType' && isTopLevel && item.name == 'ftp') {
@@ -169,7 +174,6 @@
                     item.add_icon = true;
                     item.$level = 1;
                 } else {
-                    item.name = item.baseName;
                     item.isLeaf = true;
                     item.$level = 2;
                 }
@@ -216,6 +220,11 @@
             if (node.children && node.children.length > 0) {
                 //如果有传入的数据就取传入的数据
                 data = node.children;
+                for (let i = 0; i < data.length; i++) {
+                    if(data[i].type == 3){
+                        data[i].$level = 3;
+                    }
+                }
             } else {
                 //如果没有则取接口数据
                 //整合参数

@@ -383,7 +383,7 @@
             // console.log('newNode', newNode);
             if (!props.isAdd) {
                 formConfig.value.model = pick(newNode, Object.keys(formConfig.value.model));
-                console.log('formConfig.value.model==', formConfig.value.model);
+                //console.log('formConfig.value.model==', formConfig.value.model);
                 onShow();
             }
         },

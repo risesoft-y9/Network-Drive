@@ -99,7 +99,7 @@
         },
         search: {
             api: searchDataSource,
-            searchKeyName: 'baseName'
+            searchKeyName: 'name'
         },
         flag: 'dataSource'
     });
