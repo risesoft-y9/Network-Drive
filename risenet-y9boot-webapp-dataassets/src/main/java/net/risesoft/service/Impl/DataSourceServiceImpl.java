@@ -45,7 +45,7 @@ public class DataSourceServiceImpl implements DataSourceService {
         }
         Pageable pageable = PageRequest.of(page - 1, rows, Sort.by(Sort.Direction.DESC, "createTime"));
         if (StringUtils.isNotBlank(baseName)) {
-            return datasourceRepository.findByBaseNameContainingAndTenantId(baseName, Y9LoginUserHolder.getTenantId(),
+            return datasourceRepository.findByNameContainingAndTenantId(baseName, Y9LoginUserHolder.getTenantId(),
                 pageable);
         }
         return datasourceRepository.findAll(pageable);
@@ -104,7 +104,7 @@ public class DataSourceServiceImpl implements DataSourceService {
 
     @Override
     public DataSourceEntity findByBaseName(String lookupName) {
-        return datasourceRepository.findByBaseNameAndTenantId(lookupName, Y9LoginUserHolder.getTenantId());
+        return datasourceRepository.findByNameAndTenantId(lookupName, Y9LoginUserHolder.getTenantId());
     }
 
     @Override
@@ -210,7 +210,7 @@ public class DataSourceServiceImpl implements DataSourceService {
         List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
         List<DataSourceTypeEntity> list = dataSourceTypeRepository.findAll();
         for (DataSourceTypeEntity category : list) {
-            List<DataSourceEntity> sourceList = datasourceRepository.findByBaseNameContainingAndBaseTypeAndTenantId(
+            List<DataSourceEntity> sourceList = datasourceRepository.findByNameContainingAndBaseTypeAndTenantId(
                 baseName, category.getName(), Y9LoginUserHolder.getTenantId());
             if (sourceList.size() == 0) {
                 continue;
