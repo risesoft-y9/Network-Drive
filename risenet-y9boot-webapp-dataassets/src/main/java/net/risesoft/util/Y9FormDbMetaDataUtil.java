@@ -11,6 +11,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import lombok.AccessLevel;
@@ -81,29 +82,57 @@ public class Y9FormDbMetaDataUtil extends DbMetaDataUtil {
     /**
      * 返回表数据
      */
-    public static Y9Page<Map<String, Object>> listTableData(DataSource dataSource, String tableName, int pageNum,
-        int pageSize) throws Exception {
+    public static Y9Page<Map<String, Object>> listTableData(DataSource dataSource, String columnNameAndValues,
+        String tableName, int pageNum, int pageSize) throws Exception {
         List<Map<String, Object>> tableDataList = new ArrayList<>();
         int totalRecords = 0;
         int totalPages = 0;
         ResultSet rs = null;
         StringBuilder sqlStr = new StringBuilder();
+
         try (Connection connection = dataSource.getConnection(); Statement stmt = connection.createStatement()) {
             int offset = (pageNum - 1) * pageSize;
             String dialect = getDatabaseDialectNameByConnection(connection);
+            String conditionSql = "";
+            if (StringUtils.isNotBlank(columnNameAndValues)) {
+                String[] arr = columnNameAndValues.split(";");
+
+                for (int i = 0; i < arr.length; i++) {
+                    String[] arrTemp = arr[i].split(":");
+                    if (arrTemp.length == 2) {
+                        String value = arrTemp[1];
+                        String columnName = arrTemp[0].toUpperCase();
+                        if (StringUtils.isBlank(conditionSql)) {
+                            conditionSql += "INSTR(T." + columnName + ",'" + value + "') > 0 ";
+                        } else {
+                            conditionSql += " AND INSTR(T." + columnName + ",'" + value + "') > 0 ";
+                        }
+                    }
+                }
+            }
+
             if (SqlConstants.DBTYPE_ORACLE.equals(dialect) || SqlConstants.DBTYPE_DM.equals(dialect)
                 || SqlConstants.DBTYPE_KINGBASE.equals(dialect)) {
                 // sqlStr.append("SELECT * FROM (SELECT a.*, ROWNUM rnum FROM (SELECT * FROM \"").append(tableName)
                 // .append("\" ) a ");
                 // sqlStr.append("WHERE ROWNUM <= ").append(offset + pageSize).append(") ");
                 // sqlStr.append("WHERE rnum > ").append(offset);
-                sqlStr = new StringBuilder("SELECT * FROM \"" + tableName + "\" ");
+                sqlStr = new StringBuilder("SELECT * FROM \"" + tableName + "\"  T WHERE ");
+                if (StringUtils.isNotBlank(conditionSql)) {
+                    sqlStr.append(conditionSql).append(" AND ");
+                }
+                sqlStr.append(" ROWNUM BETWEEN " + (offset + 1) + " AND " + (offset + pageSize));
                 // 添加Oracle特定的分页逻辑
-                sqlStr.append("WHERE ROWNUM BETWEEN ").append((pageNum - 1) * pageSize + 1).append(" AND ")
-                    .append(pageNum * pageSize);
+                // sqlStr.append("WHERE ROWNUM BETWEEN ").append((pageNum - 1) * pageSize + 1).append(" AND ")
+                // .append(pageNum * pageSize).append(" AND ").append(conditionSql);
             } else if (SqlConstants.DBTYPE_MYSQL.equals(dialect)) {
-                sqlStr.append("SELECT * FROM ").append(tableName).append(" LIMIT ").append(offset).append(", ")
-                    .append(pageSize);
+                sqlStr = new StringBuilder("SELECT * FROM " + tableName + "  T ");
+                if (StringUtils.isNotBlank(conditionSql)) {
+                    sqlStr.append("WHERE ").append(conditionSql);
+                }
+                sqlStr.append(" LIMIT ").append(offset).append(",").append(pageSize);
+                // sqlStr.append("SELECT * FROM ").append(tableName).append(" T LIMIT ").append(offset).append(", ")
+                // .append(pageSize).append(" AND ").append(conditionSql);
             } else {
                 throw new UnsupportedOperationException("不支持的数据库类型");
             }
@@ -121,7 +150,8 @@ public class Y9FormDbMetaDataUtil extends DbMetaDataUtil {
                 tableDataList.add(rowMap);
             }
             // 获取总记录数
-            String countSql = "SELECT COUNT(*) FROM " + tableName;
+            String countSql = "SELECT COUNT(*) FROM " + tableName + " T "
+                + (StringUtils.isNotBlank(conditionSql) ? " WHERE " + conditionSql : "");
             try (Statement countStmt = connection.createStatement();
                 ResultSet countRs = countStmt.executeQuery(countSql)) {
                 if (countRs.next()) {

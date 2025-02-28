@@ -157,13 +157,15 @@ public class SourceController {
         enable = false)
     @GetMapping(value = "/findTableDataByTableName")
     public Y9Page<Map<String, Object>> findTableDataByTableName(String dataSourceId, String tableName,
-        @RequestParam Integer page, @RequestParam Integer rows) {
+        @RequestParam(required = false) String columnNameAndValues, @RequestParam Integer page,
+        @RequestParam Integer rows) {
         try {
             DataSourceEntity item = dataSourceService.getDataSourceById(dataSourceId);
             if (null != item) {
                 DataSource dataSource = Y9FormDbMetaDataUtil.createDataSource(item.getUrl(), item.getDriver(),
                     item.getUsername(), item.getPassword());
-                return Y9FormDbMetaDataUtil.listTableData(Objects.requireNonNull(dataSource), tableName, page, rows);
+                return Y9FormDbMetaDataUtil.listTableData(Objects.requireNonNull(dataSource), columnNameAndValues,
+                    tableName, page, rows);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
