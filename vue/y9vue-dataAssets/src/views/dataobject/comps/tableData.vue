@@ -1,42 +1,61 @@
 <template>
     <div class="tableDataCss">
-    <y9Table
-        :config="tableConfig"
-        :filterConfig="filterConfig"
-        @on-curr-page-change="onCurrPageChange"
-        @on-page-size-change="onPageSizeChange"
-    >
-        <template #addBtn>
-            <el-button class="global-btn-main" type="primary" @click="searchData"
-                ><i class="ri-search-line"></i>条件查询
-            </el-button>
-        </template>
-    </y9Table>
-    <el-drawer
-        v-model="drawer"
-        :append-to-body="false"
-        :modal="false"
-        :with-header="false"
-        class="drawerSearch"
-        direction="ttb"
-        size="30%"
-        title="">
-        <y9Table
-        :config="serachConfig">
-            <template #columnValue="{row,column,index}">
-                <el-input v-model="serachConfig.tableData[index].columnValue" clearable></el-input>
-            </template>
-    </y9Table>
-    </el-drawer>
+        <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
+            <el-tab-pane label="字段属性" name="first">
+                <y9Table
+                    :config="propsTableConfig"
+                >
+                   
+                </y9Table>
+            </el-tab-pane>
+            <el-tab-pane label="数据" name="second">
+                <y9Table
+                    :config="tableConfig"
+                    :filterConfig="filterConfig"
+                    @on-curr-page-change="onCurrPageChange"
+                    @on-page-size-change="onPageSizeChange"
+                >
+                    <template #addBtn>
+                        <el-button class="global-btn-main" type="primary" @click="openSearch"
+                            ><i class="ri-search-line"></i>条件查询
+                        </el-button>
+                    </template>
+                </y9Table>
+                <el-drawer
+                    v-model="drawer"
+                    :append-to-body="false"
+                    :modal="false"
+                    :with-header="false"
+                    class="drawerSearch"
+                    direction="ttb"
+                    size="30%"
+                    title=""
+                    >
+                        <p style="color: red;padding-bottom: 5px;">温馨提示：请先勾选要查询的字段，然后再字段的后输入查询的值。</p>
+                    <y9Table
+                    :config="serachConfig"
+                    @select="handleSelect">
+                        <template #columnValue="{row,column,index}">
+                            <el-input v-model="row.columnValue" clearable></el-input>
+                        </template>
+                    </y9Table>
+                    <template #footer>
+                    <div style="flex: auto">
+                        <el-button type="primary" @click="searchData">查询</el-button>
+                        <el-button @click="closeDrawer">取消</el-button>
+                    </div>
+                    </template>
+                </el-drawer>
+            </el-tab-pane>
+        </el-tabs>
+    
 </div>
 </template>
 <script lang="ts" setup>
     import { reactive, ref } from 'vue';
     import type { ElLoading, ElMessage } from 'element-plus';
     import { useSettingStore } from '@/store/modules/settingStore';
-    import { remove, saveOrUpdate, getCategoryList } from '@/api/dataAssets/category';
     import { getTableColumns ,getTableData} from '@/api/dataSource/index';
-import { column } from 'element-plus/es/components/table-v2/src/common';
 
     const props = defineProps({
         currNode: {
@@ -48,16 +67,81 @@ import { column } from 'element-plus/es/components/table-v2/src/common';
     });
     const {t} = useI18n();
     //调整表格高度适应屏幕
-    const tableHeight = ref(useSettingStore().getWindowHeight - 373);
 
+    const tableHeight = ref(useSettingStore().getWindowHeight - 395);
+    const propsTableHeight = ref(useSettingStore().getWindowHeight - 323);
     window.onresize = () => {
         return (() => {
-            tableHeight.value = useSettingStore().getWindowHeight - 373;
+            propsTableHeight.value = useSettingStore().getWindowHeight - 323;
+            tableHeight.value = useSettingStore().getWindowHeight - 395;
         })();
     };
     
     const data = reactive({
+        activeName: 'first',
         drawer: false,
+        propsTableConfig: {
+            columns: [
+                {
+                    title: '序号',
+                    type: "index",
+                    width: "60",
+                    align: "center"
+                },
+                {
+                    title: '列名',
+                    key: 'columnName',
+                    width: "auto",
+                    align: "center"
+                },
+                {
+                    title: '类型',
+                    key: 'typeName',
+                    width: "150",
+                    align: "center",
+                },{
+                    title: '长度',
+                    key: 'dataLength',
+                    width: "100",
+                    align: "center",
+                },{
+                    title: '非空',
+                    key: 'nullable',
+                    width: "100",
+                    align: "center",
+                    render: (row, column, index) => {
+                        if(row.nullable){
+                            return '-';
+                        }else{
+                            return '是';
+                        }
+                    }
+                },{
+                    title: '主键',
+                    key: 'primaryKey',
+                    width: "100",
+                    align: "center",
+                    render: (row, column, index) => {
+                        if(row.primaryKey){
+                            return '是';
+                        }else{
+                            return '-';
+                        }
+                    }
+                },
+                {
+                    title: '注释',
+                    key:'comment',
+                    width: "200",
+                    align: "center"
+                },
+            ],
+            border: true,
+            tableData: [],
+            pageConfig: false,
+            height: propsTableHeight.value,
+
+        },
         tableConfig: {
             columns: [],
             border: true,
@@ -68,7 +152,8 @@ import { column } from 'element-plus/es/components/table-v2/src/common';
                 pageSize: 15, //每页显示条目个数，支持 v-model 双向绑定
                 total: 0 //总条目数
             },
-            height: tableHeight.value
+            height: tableHeight.value,
+
         },
         filterConfig: {
             //过滤配置
@@ -99,16 +184,18 @@ import { column } from 'element-plus/es/components/table-v2/src/common';
                     sortable: true,
                     align: "center",
                     slot: 'columnValue'
-                }
+                },
             ],
             border: true,
             tableData: [],
             pageConfig: false,
-            height: 400
+            height: 400,
         },
+        selectData: [],
+        columnNameAndValues:''
     });
 
-    let { filterConfig, tableConfig, drawer,serachConfig } = toRefs(data);
+    let { activeName,propsTableConfig,filterConfig, tableConfig, drawer,serachConfig ,selectData,columnNameAndValues} = toRefs(data);
 
     watch(
         () => props.currNode,
@@ -133,6 +220,7 @@ import { column } from 'element-plus/es/components/table-v2/src/common';
                 });
                 serachConfig.value.tableData.push({columnName:item.columnName,columnValue:''});
             }
+            propsTableConfig.value.tableData = res.data;
             getTableDataList();
         }
     }
@@ -140,14 +228,38 @@ import { column } from 'element-plus/es/components/table-v2/src/common';
     async function getTableDataList() {
         let page = tableConfig.value.pageConfig.currentPage;
         let rows = tableConfig.value.pageConfig.pageSize;
-        let res = await getTableData(props.currNode.url, props.currNode.name,page,rows);
+        let res = await getTableData(props.currNode.url, props.currNode.name,columnNameAndValues.value,page,rows);
         tableConfig.value.tableData = res.rows;
         tableConfig.value.pageConfig.total = res.total;
     }
 
-    function searchData(){
-        drawer.value = true
+    function openSearch(){
+        drawer.value = true;
         
+    }
+
+    function handleSelect(id, data) {
+        selectData.value = id;
+        console.log('seeeeeeeeeeess',selectData.value);
+        
+    }
+    function searchData(){
+        console.log('vvvvvvv',selectData.value);
+        let jsonValue = [];
+        selectData.value.forEach((item, index) => {
+            if (item) {
+            jsonValue[index] = `${item.columnName}:${item.columnValue}`;
+            }
+        });
+        columnNameAndValues.value = jsonValue.join(";");
+        console.log('columnNameAndValues',columnNameAndValues.value);
+        tableConfig.value.pageConfig.currentPage = 1;
+        getTableDataList();
+        drawer.value = false;
+    }
+
+    function closeDrawer(){
+        drawer.value = false;
     }
 
     //当前页改变时触发

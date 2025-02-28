@@ -70,7 +70,7 @@ export const getTableColumns = async (dataSourceId,tableName) => {
  * @param row 
  * @returns 
  */
-export const getTableData = async (dataSourceId,tableName,page,rows) => {
+export const getTableData = async (dataSourceId,tableName,columnNameAndValues,page,rows) => {
     return await platformRequest({
         url: 'vue/source/findTableDataByTableName',
         method: 'GET',
@@ -78,6 +78,7 @@ export const getTableData = async (dataSourceId,tableName,page,rows) => {
         params: {
             dataSourceId: dataSourceId,
             tableName: tableName,
+            columnNameAndValues:columnNameAndValues,
             page: page,
             rows: rows
         }
