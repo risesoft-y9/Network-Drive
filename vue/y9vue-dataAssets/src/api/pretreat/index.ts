@@ -121,3 +121,25 @@ export const saveAssetsInterface = async (ids, assetsId) => {
         data: formData
     });
 };
+
+// 获取挂接的表列表
+export const getTableSelectTree = async () => {
+    return await dataRequest({
+        url: '/vue/source/getTableSelectTree',
+        method: 'GET',
+        cType: false
+    });
+};
+
+// 资产挂接数据表
+export const saveAssetsTable = async (ids, assetsId) => {
+    let formData = new FormData();
+    formData.append("ids", ids);
+    formData.append("assetsId", assetsId);
+    return await dataRequest({
+        url: '/vue/detail/saveAssetsTable',
+        method: 'post',
+        cType: false,
+        data: formData
+    });
+};

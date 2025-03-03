@@ -70,6 +70,17 @@
         />
         <el-button class="ml-4" type="primary" @click="submitSave">提交</el-button>
     </y9Dialog>
+    <y9Dialog v-model:config="dialogConfig4">
+        <el-tree-select
+            v-model="checkTableData"
+            :data="tableTreeData"
+            multiple
+            filterable
+            check-strictly
+            :render-after-expand="false"
+        />
+        <el-button class="ml-4" type="primary" @click="submitSave2">提交</el-button>
+    </y9Dialog>
 </template>
 
 <script lang="ts" setup>
@@ -79,7 +90,7 @@
     import { useSettingStore } from '@/store/modules/settingStore';
     import y9_storage from '@/utils/storage';
     import { getStoragePageSize } from '@/utils';
-    import { getSelectTree, saveAssetsInterface, searchPage } from '@/api/pretreat';
+    import { getSelectTree, getTableSelectTree, saveAssetsInterface, saveAssetsTable, searchPage } from '@/api/pretreat';
     import type { UploadInstance } from 'element-plus';
     import settings from '@/settings';
     import router from '@/router';
@@ -170,6 +181,10 @@
             show: false,
             title: ''
         },
+        dialogConfig4: {
+            show: false,
+            title: ''
+        },
     });
 
     let {
@@ -179,7 +194,8 @@
         formLine,
         dialogConfig,
         dialogConfig2,
-        dialogConfig3
+        dialogConfig3,
+        dialogConfig4
     } = toRefs(state);
 
     onMounted(() => {
@@ -210,9 +226,9 @@
 
     let assetsId = ref('');
     const handle = (row, type) => {
+        assetsId.value = row.id;
         if(type == 3) {
             initTreeData();
-            assetsId.value = row.id;
             Object.assign(dialogConfig3.value, {
                 show: true,
                 width: '30%',
@@ -220,11 +236,18 @@
                 showFooter: false
             });
         } else if(type == 2) {
-            assetsId.value = row.id;
             Object.assign(dialogConfig2.value, {
                 show: true,
                 width: '40%',
                 title: computed(() => t('文件上传')),
+                showFooter: false
+            });
+        } else if(type == 1) {
+            initTableTreeData();
+            Object.assign(dialogConfig4.value, {
+                show: true,
+                width: '30%',
+                title: computed(() => t('数据列表')),
                 showFooter: false
             });
         }
@@ -304,6 +327,35 @@
         saveAssetsInterface(checkInterfaceData.value, assetsId.value).then((res) => {
             if(res.success) {
                 dialogConfig3.value.show = false;
+                searchData();
+            }
+            ElNotification({
+                title: res.success ? t('成功') : t('失败'),
+                message: res.msg,
+                type: res.success ? 'success' : 'error',
+                duration: 2000,
+                offset: 80
+            });
+        });
+    }
+
+    // 获取数据表列表
+    let checkTableData = ref('');
+    let tableTreeData = ref([]);
+    async function initTableTreeData() {
+        checkTableData.value = '';
+        tableTreeData.value = [];
+        await getTableSelectTree().then((res) => {
+            if(res.success) {
+                tableTreeData.value = res.data;
+            }
+        });
+    }
+
+    const submitSave2 = () => {
+        saveAssetsTable(checkTableData.value, assetsId.value).then((res) => {
+            if(res.success) {
+                dialogConfig4.value.show = false;
                 searchData();
             }
             ElNotification({

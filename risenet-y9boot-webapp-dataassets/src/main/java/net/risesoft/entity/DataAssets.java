@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
@@ -50,7 +51,7 @@ public class DataAssets extends BaseEntity {
     @Column(name = "CODE", length = 200)
     @Comment(value = "数据资产编码")
     private String code;
-
+    
     @Column(name = "PICTURE")
     @Comment(value = "资产图片")
     private String picture;
@@ -171,9 +172,12 @@ public class DataAssets extends BaseEntity {
     @Column(name = "DATA_SERVICE_URL", length = 100)
     @Comment(value = "数据服务URL")
     private String dataServiceUrl;
-
+    
     @Column(name = "MOUNTTYPE", length = 20)
     @Comment(value = "挂接类型：文件/数据/接口/地址")
     private String mountType;
+
+    @Transient
+    private String labelData;// 标注信息
 
 }

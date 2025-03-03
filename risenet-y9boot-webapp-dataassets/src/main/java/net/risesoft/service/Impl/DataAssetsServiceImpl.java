@@ -30,6 +30,7 @@ import net.risesoft.entity.CategoryTable;
 import net.risesoft.entity.DataApiOnlineEntity;
 import net.risesoft.entity.DataAssets;
 import net.risesoft.entity.DataAssetsNumberRules;
+import net.risesoft.entity.DataSourceEntity;
 import net.risesoft.entity.FileInfo;
 import net.risesoft.entity.MetadataConfig;
 import net.risesoft.enums.CategoryEnums;
@@ -55,6 +56,7 @@ import net.risesoft.repository.VideoFileRepository;
 import net.risesoft.repository.spec.DataAssetsSpecification;
 import net.risesoft.service.CategoryTableService;
 import net.risesoft.service.DataAssetsService;
+import net.risesoft.service.DataSourceService;
 import net.risesoft.util.Config;
 import net.risesoft.util.FileDataUtil;
 import net.risesoft.util.PageUtil;
@@ -83,6 +85,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     private final FileInfoRepository fileInfoRepository;
     private final Y9FileStoreService y9FileStoreService;
     private final DataApiOnlineRepository dataApiOnlineRepository;
+    private final DataSourceService dataSourceService;
 
     public static Object getFieldValue(Object entity, String fieldName) {
         try {
@@ -292,12 +295,12 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 	}
 
 	@Override
-	public Page<DataAssets> searchPage(String categoryId, String name, String code, int page, int size) {
+	public Page<DataAssets> searchPage(String categoryId, String name, String code, Integer status, int page, int size) {
 		if (page < 0) {
             page = 1;
         }
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "createTime"));
-        DataAssetsSpecification spec = new DataAssetsSpecification(categoryId, name, Y9LoginUserHolder.getTenantId(), code, false, null);
+        DataAssetsSpecification spec = new DataAssetsSpecification(categoryId, name, Y9LoginUserHolder.getTenantId(), code, false, status);
 		return dataAssetsRepository.findAll(spec, pageable);
 	}
 
@@ -526,12 +529,47 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 				info.setIdentifier(dataApiOnlineEntity.getId());
 				info.setFileType("接口");
 				fileInfoRepository.save(info);
-				
-				DataAssets dataAssets = findById(assetsId);
-				if(dataAssets != null) {
-					dataAssets.setMountType("接口");
-					dataAssetsRepository.save(dataAssets);
+			}
+			DataAssets dataAssets = findById(assetsId);
+			if(dataAssets != null) {
+				dataAssets.setMountType("接口");
+				dataAssetsRepository.save(dataAssets);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Y9Result.failure("保存失败：" + e.getMessage());
+		}
+		return Y9Result.successMsg("保存成功");
+	}
+
+	@Override
+	public Y9Result<String> saveAssetsTable(String ids, Long assetsId) {
+		try {
+			String[] interfaceIds = ids.split(",");
+			for(String id : interfaceIds) {
+				if(id.startsWith("s-")) {// 数据库
+					DataSourceEntity dataSourceEntity = dataSourceService.getDataSourceById(id.split("-")[1]);
+					FileInfo info = new FileInfo();
+					info.setName(dataSourceEntity.getName());
+					info.setAssetsId(assetsId);
+					info.setIdentifier(dataSourceEntity.getId());
+					info.setFileType("数据库");
+					fileInfoRepository.save(info);
+				}else if(id.startsWith("t-")) {// 数据表
+					String[] obj = id.split("-");
+					DataSourceEntity dataSourceEntity = dataSourceService.getDataSourceById(obj[1]);
+					FileInfo info = new FileInfo();
+					info.setName(obj[2]);
+					info.setAssetsId(assetsId);
+					info.setIdentifier(dataSourceEntity.getId());
+					info.setFileType("数据表");
+					fileInfoRepository.save(info);
 				}
+			}
+			DataAssets dataAssets = findById(assetsId);
+			if(dataAssets != null) {
+				dataAssets.setMountType("数据");
+				dataAssetsRepository.save(dataAssets);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

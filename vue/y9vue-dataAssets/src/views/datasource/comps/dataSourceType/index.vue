@@ -50,6 +50,7 @@
     import { base64ToUrl, base64ImgtoFile } from '@/utils/index';
     import { equalObjectKey } from '@/utils/object';
     import { useI18n } from 'vue-i18n';
+    import { ElMessage, ElNotification } from 'element-plus';
     const { t } = useI18n();
 
     // 注入 字体变量
@@ -98,7 +99,10 @@
         },
         flxedTree: {
             type: Object
-        }
+        },
+        isLook: {
+            type: Boolean
+        },
     });
 
     //表单实例
@@ -325,44 +329,6 @@
                 offset: 65
             });
         }
-
-        // let formData = {}; //记录表单数据
-        // let checkPassCount = 0; //记录表单校验通过数量
-        // for (let i = 0; i < y9FormRef.value.length; i++) {
-        //     const itemRef = y9FormRef.value[i];
-        //     //逐个校验表单
-        //     const validResult = await itemRef.elFormRef.validate(() => {});
-        //     //校验通过，提取表单数据
-        //     if (validResult) {
-        //         Object.assign(formData, itemRef.model);
-        //         checkPassCount++;
-        //     }
-        // }
-        // //所有表单校验通过，提交数据
-        // if (checkPassCount === formList.value.length) {
-        //     props.changeLoading && props.changeLoading(true);
-        //     //模拟接口请求，将数据提交给后端
-        //     console.log('提交给后端的数据：', formData);
-        //     //请求接口
-        //     let result = await saveDataConnectInfo(formData);
-        //     props.changeLoading && props.changeLoading(false);
-        //     ElNotification({
-        //         title: result.success ? t('保存成功') : t('保存失败'),
-        //         message: result.msg,
-        //         type: result.success ? 'success' : 'error',
-        //         duration: 2000,
-        //         offset: 80
-        //     });
-        //     onShow();
-        //     // 刷新树
-        //     props.flxedTree?.onRefreshTree();
-        // } else {
-        //     ElMessage({
-        //         type: 'error',
-        //         message: t('校验不通过，请检查'),
-        //         offset: 65
-        //     });
-        // }
     };
     //编辑按钮触发
     const onEdit = () => {
@@ -381,7 +347,7 @@
         () => props.currNode,
         (newNode) => {
             // console.log('newNode', newNode);
-            if (!props.isAdd) {
+            if (!props.isAdd || props.isLook) {
                 formConfig.value.model = pick(newNode, Object.keys(formConfig.value.model));
                 //console.log('formConfig.value.model==', formConfig.value.model);
                 onShow();
