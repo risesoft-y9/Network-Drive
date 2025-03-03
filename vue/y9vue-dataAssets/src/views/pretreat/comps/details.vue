@@ -22,7 +22,7 @@
                 </template>
                 <template #opt_button="{ row, column, index }">
                     <span @click="downloadFile(row.id)" v-if="row.fileType == '文件'"><i class="ri-arrow-down-circle-line"></i>下载</span>
-                    <span @click="showPage(row.identifier)" v-else><i class="ri-eye-line"></i>查看</span>
+                    <span @click="showPage(row)" v-else><i class="ri-eye-line"></i>查看</span>
                 </template>
             </y9Table>
         </el-tab-pane>
@@ -32,6 +32,12 @@
             v-if="dialogConfig.show"
             :identifier="identifier"
         ></ApiDetail>
+    </y9Dialog>
+    <y9Dialog v-model:config="dialogConfig2">
+        <TableData 
+            v-if="dialogConfig2.show"
+            :currNode="currNode"
+        ></TableData>
     </y9Dialog>
 </template>
 <script lang="ts" setup>
@@ -44,6 +50,8 @@ import y9_storage from '@/utils/storage';
 import settings from '@/settings';
 import FormData from '../comps/FormData.vue';
 import ApiDetail from '@/views/test/detail.vue';
+import TableData from '@/views/dataobject/comps/tableData.vue';
+import { ElMessage } from 'element-plus';
 
 const settingStore = useSettingStore();
 // 注入 字体对象
@@ -113,6 +121,10 @@ const state = reactive({
         show: false,
         title: ''
     },
+    dialogConfig2: {
+        show: false,
+        title: ''
+    },
 });
 
 let {
@@ -120,6 +132,7 @@ let {
     filterConfig,
     formLine,
     dialogConfig,
+    dialogConfig2
 } = toRefs(state);
 
 onMounted(() => {
@@ -149,13 +162,32 @@ function downloadFile(id) {
 }
 
 let identifier = ref('');
-function showPage(id) {
-    identifier.value = id
-    Object.assign(dialogConfig.value, {
-        show: true,
-        width: '60%',
-        title: computed(() => t('接口详情')),
-        showFooter: false
-    });
+let currNode = ref({'name': '', 'url': ''});
+function showPage(row) {
+    if(row.fileType == '接口') {
+        identifier.value = row.identifier
+        Object.assign(dialogConfig.value, {
+            show: true,
+            width: '60%',
+            title: computed(() => t('接口详情')),
+            showFooter: false
+        });
+    } else if(row.fileType == '数据表') {
+        currNode.value.name = row.name;
+        currNode.value.url = row.identifier;
+        Object.assign(dialogConfig2.value, {
+            show: true,
+            width: '60%',
+            title: computed(() => t('数据详情')),
+            showFooter: false
+        });
+    } else if(row.fileType == '数据库') {
+        ElMessage({
+            type: 'info',
+            message: t('数据库类型，请前往数据源管理—>数据对象处查看'),
+            offset: 65
+        });
+    }
+
 }
 </script>

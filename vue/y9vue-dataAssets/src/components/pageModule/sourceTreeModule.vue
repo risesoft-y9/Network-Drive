@@ -126,7 +126,7 @@
 
     const TreeLoading = ref(false);
 
-    const emits = defineEmits(['onTreeClick', 'onDeleteTree', 'onNodeExpand', 'onRefreshTree']);
+    const emits = defineEmits(['onNodeClick', 'onRemoveNode', 'onNodeExpand', 'onRefreshTree', 'onAddNode']);
 
     //已经加载的tree数据
     const alreadyLoadTreeData = ref([]);
@@ -161,22 +161,20 @@
         for (let i = 0; i < data.length; i++) {
             const item = data[i];
             item.delete_icon = props.showNodeDelete; //是否显示删除icon
-            item.add_icon = props.showNodeAdd;
+            item.add_icon = props.showNodeAdd;//是否显示添加icon
             const flag = props.treeApiObj?.flag;
 
-            if (flag == 'libraryTableType' && isTopLevel && item.name == 'ftp') {
+            if (flag == 'dataobject' && isTopLevel && item.name == 'ftp') {
                 data.splice(i, 1);
                 continue;
             }
 
-            if (flag === 'dataSource' || flag == 'libraryTableType') {
-                if (isTopLevel) {
-                    item.add_icon = true;
-                    item.$level = 1;
-                } else {
-                    item.isLeaf = true;
-                    item.$level = 2;
-                }
+            if (isTopLevel) {
+                item.$level = 1;
+            } else {
+                item.add_icon = false;
+                item.isLeaf = true;
+                item.$level = 2;
             }
         }
     }
@@ -189,14 +187,7 @@
         if (node.$level === 0) {
             //1.获取数据
             let data = [];
-            let res;
-            const flag = props.treeApiObj?.flag;
-            if (flag != 'libraryTable' || flag == 'RoleTable') {
-                res = await props.treeApiObj?.topLevel(); //请求一级节点接口
-            } else {
-                res = await props.treeApiObj?.topLevel({ type: 0 }); //请求一级节点接口
-            }
-
+            let res = await props.treeApiObj?.topLevel(); //请求一级节点接口;
             data = res.data || res.rows || res;
 
             //2.格式化数据
@@ -309,35 +300,21 @@
 
                 const flag = props.treeApiObj?.flag;
 
-                if (flag === 'dataSource' || flag === 'libraryTableType') {
-                    //格式化tree数据
-                    await formatLazyTreeData(data, true);
+                //格式化tree数据
+                await formatLazyTreeData(data, true);
 
-                    data.forEach(async (item) => {
-                        for (let key in item.category) {
-                            item[key] = item.category[key];
-                        }
-                        delete item.category;
-
-                        if (item.children.length) {
-                            await formatLazyTreeData(item.children, false);
-                        }
-                    });
-
-                    alreadyLoadTreeData.value = data;
-                } else {
-                    //格式化tree数据
-                    await formatLazyTreeData(data, true);
-                    //根据搜索结果转换成tree结构显示出来
-                    if (flag === 'businessClass') {
-                        data.map((item) => {
-                            if (item.parentId == '0') {
-                                item.parentId = null;
-                            }
-                        });
+                data.forEach(async (item) => {
+                    for (let key in item.category) {
+                        item[key] = item.category[key];
                     }
-                    alreadyLoadTreeData.value = await transformTreeBySearchResult(data);
-                }
+                    delete item.category;
+
+                    if (item.children.length) {
+                        await formatLazyTreeData(item.children, false);
+                    }
+                });
+
+                alreadyLoadTreeData.value = data;
 
                 TreeLoading.value = false;
 
@@ -351,12 +328,9 @@
 
                 nextTick(() => {
                     if (alreadyLoadTreeData.value.length > 0) {
-                        const flag = props.treeApiObj?.flag;
-                        if (flag != 'libraryTable') {
-                            y9TreeRef.value.setCurrentKey(alreadyLoadTreeData.value[0].id); //设置第一个节点为高亮节点
-                            y9TreeRef.value.setExpandKeys([alreadyLoadTreeData.value[0].id]); //设置第一个节点展开
-                            onNodeClick(alreadyLoadTreeData.value[0]); //模拟点击第一个节点
-                        }
+                        y9TreeRef.value.setCurrentKey(alreadyLoadTreeData.value[0].id); //设置第一个节点为高亮节点
+                        y9TreeRef.value.setExpandKeys([alreadyLoadTreeData.value[0].id]); //设置第一个节点展开
+                        onNodeClick(alreadyLoadTreeData.value[0]); //模拟点击第一个节点
                     }
                 });
             }
@@ -412,10 +386,6 @@
 
     //刷新tree
     function onRefreshTree() {
-        const flag = props.treeApiObj?.flag;
-        if (flag == 'libraryTable' || flag == 'RoleTable') {
-            emits('onRefreshTree');
-        }
         alreadyLoadTreeData.value = [];
         lazy.value = false;
         setTimeout(() => {

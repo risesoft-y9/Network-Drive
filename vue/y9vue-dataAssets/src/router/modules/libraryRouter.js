@@ -18,8 +18,8 @@ const libraryRouter = {
     children:[
         {
             path: '/managed',
-            component: () => import('@/views/common/index.vue'),
-            name: 'library_manageIndex',
+            component: () => import('@/views/library/index.vue'),
+            name: 'managed',
             props: route => ({
                 menuType: 'manage',
             }),
@@ -39,7 +39,7 @@ const libraryRouter = {
         },
         {
             path: '/labelled',
-            component: () => import('@/views/library/index3.vue'),
+            component: () => import('@/views/library/mark/index.vue'),
             name: 'labelled',
             meta: {
                 title: '资产标注',

@@ -14,15 +14,30 @@
                         <i class="ri-search-line"></i>
                         {{ $t('搜索') }}
                     </el-button>
-                    <el-button
-                        :size="fontSizeObj.buttonSize"
-                        :style="{ fontSize: fontSizeObj.baseFontSize }"
-                        class="global-btn-main"
-                        @click="addData()"
-                    >
-                        <i class="ri-add-line" />
-                        {{ $t('添加') }}
-                    </el-button>
+                </template>
+                <template v-slot:statusSelect>
+                    <div class="label">资产状态</div>
+                    <el-select v-model="state.formLine.status" clearable>
+                        <el-option key="0" label="下架" value="0" />
+                        <el-option key="1" label="上架" value="1" />
+                    </el-select>
+                </template>
+                <template #shareType="{ row, column, index }">
+                    <el-tag v-if="row.shareType == 0">不予共享</el-tag>
+                    <el-tag v-if="row.shareType == 1">有条件共享</el-tag>
+                    <el-tag v-if="row.shareType == 2">无条件共享</el-tag>
+                </template>
+                <template #status="{ row, column, index }">
+                    <el-tag :type="row.status=='1'? 'success':'danger'">{{ row.status == '1' ? '已上架' : '未上架' }}</el-tag>
+                </template>
+                <template #qrcode="{ row, column, index }">
+                    <el-image 
+                        style="height: 45px;" 
+                        :src="row.qrcode"  
+                        :preview-src-list="[row.qrcode]" 
+                        :preview-teleported="true" 
+                        v-if="row.qrcode"
+                    ></el-image>
                 </template>
             </y9Table>
             <!-- 制造loading效果 -->
@@ -59,8 +74,8 @@
     import type { UploadInstance } from 'element-plus';
     import settings from '@/settings';
     import router from '@/router';
-    import FormData from '../comps/FormData.vue';
-    import Details from '../comps/details.vue';
+    import FormData from '@/views/pretreat/comps/FormData.vue';
+    import Details from '@/views/pretreat/comps/details.vue';
 
     const settingStore = useSettingStore();
     // 注入 字体对象
@@ -85,15 +100,24 @@
         // 查询条件
         formLine: {
             name: '',
-            code: ''
+            code: '',
+            status: ''
         },
         // 表格的 配置信息
         tableConfig: {
             columns: [
                 { title: computed(() => t('序号')), type: 'index', width: 60, fixed: 'left' },
-                { title: computed(() => t('资产名称')), key: 'name' },
-                { title: computed(() => t('资产编码')), key: 'code' },
-                { title: computed(() => t('资产摘要')), key: 'remark' },
+                { title: computed(() => t('资产名称')), key: 'name', width: 150, fixed: 'left' },
+                { title: computed(() => t('资产编码')), key: 'code', width: 150 },
+                { title: computed(() => t('全球统一码')), key: 'codeGlobal', width: 150 },
+                { title: computed(() => t('二维码')), key: 'qrcode', slot: 'qrcode', width: 80 },
+                { title: computed(() => t('资产摘要')), key: 'remark', width: 250 },
+                { title: computed(() => t('标注信息')), key: 'labelData', width: 250 },
+                { title: computed(() => t('数据资产格式')), key: 'dataType', width: 120 },
+                { title: computed(() => t('共享类型')), key: 'shareType', slot: 'shareType', width: 120 },
+                { title: computed(() => t('上架状态')), key: 'status', slot: 'status', width: 100},
+                { title: computed(() => t('登记时间')), key: 'createTime', width: settingStore.getDatetimeSpan },
+                { title: computed(() => t('更新时间')), key: 'updateTime', width: settingStore.getDatetimeSpan },
                 {
                     title: computed(() => t('操作')),
                     fixed: 'right',
@@ -123,75 +147,75 @@
                                     h('span', t('查看'))
                                 ]
                             ),
-                            // h(
-                            //     'span',
-                            //     {
-                            //         style: {
-                            //             cursor: 'pointer',
-                            //             marginLeft: '10px',
-                            //         },
-                            //         class: 'global-btn-second',
-                            //         onClick: async () => {
-                            //             entity.value = row;
-                            //             disabled.value = false;
-                            //             Object.assign(dialogConfig.value, {
-                            //                 show: true,
-                            //                 width: '60%',
-                            //                 title: computed(() => t('修改数据资产')),
-                            //                 showFooter: false
-                            //             });
-                            //         }
-                            //     },
-                            //     [
-                            //         h('i', { class: 'ri-edit-line', style: { marginRight: '2px' } }),
-                            //         h('span', t('编辑'))
-                            //     ]
-                            // ),
-                            // h(
-                            //     'span',
-                            //     {
-                            //         style: {
-                            //             cursor: 'pointer',
-                            //             marginLeft: '10px',
-                            //         },
-                            //         class: 'global-btn-second',
-                            //         onClick: async () => {
-                            //             ElMessageBox.confirm(`${t('是否删除')}【${row.name}】?`, t('提示'), {
-                            //                 confirmButtonText: t('确定'),
-                            //                 cancelButtonText: t('取消'),
-                            //                 type: 'info'
-                            //             })
-                            //             .then(async () => {
-                            //                 loading.value = true;
-                            //                 let result = await deleteDataAssets(row.id);
-                            //                 ElNotification({
-                            //                     title: result.success ? t('成功') : t('失败'),
-                            //                     message: result.msg,
-                            //                     type: result.success ? 'success' : 'error',
-                            //                     duration: 2000,
-                            //                     offset: 80
-                            //                 });
-                            //                 loading.value = false;
-                            //                 // 重新请求 列表数据
-                            //                 if(result.success){
-                            //                     searchData();
-                            //                 }
-                            //             })
-                            //             .catch((e) => {
-                            //                 loading.value = false;
-                            //                 ElMessage({
-                            //                     type: 'info',
-                            //                     message: t('已取消删除'),
-                            //                     offset: 65
-                            //                 });
-                            //             });
-                            //         }
-                            //     },
-                            //     [
-                            //         h('i', { class: 'ri-delete-bin-line', style: { marginRight: '2px' } }),
-                            //         h('span', t('删除'))
-                            //     ]
-                            // )
+                            h(
+                                'span',
+                                {
+                                    style: {
+                                        cursor: 'pointer',
+                                        marginLeft: '10px',
+                                    },
+                                    class: 'global-btn-second',
+                                    onClick: async () => {
+                                        entity.value = row;
+                                        disabled.value = false;
+                                        Object.assign(dialogConfig.value, {
+                                            show: true,
+                                            width: '60%',
+                                            title: computed(() => t('修改数据资产')),
+                                            showFooter: false
+                                        });
+                                    }
+                                },
+                                [
+                                    h('i', { class: 'ri-edit-line', style: { marginRight: '2px' } }),
+                                    h('span', t('编辑'))
+                                ]
+                            ),
+                            h(
+                                'span',
+                                {
+                                    style: {
+                                        cursor: 'pointer',
+                                        marginLeft: '10px',
+                                    },
+                                    class: 'global-btn-second',
+                                    onClick: async () => {
+                                        ElMessageBox.confirm(`${t('是否删除')}【${row.name}】?`, t('提示'), {
+                                            confirmButtonText: t('确定'),
+                                            cancelButtonText: t('取消'),
+                                            type: 'info'
+                                        })
+                                        .then(async () => {
+                                            loading.value = true;
+                                            let result = await deleteDataAssets(row.id);
+                                            ElNotification({
+                                                title: result.success ? t('成功') : t('失败'),
+                                                message: result.msg,
+                                                type: result.success ? 'success' : 'error',
+                                                duration: 2000,
+                                                offset: 80
+                                            });
+                                            loading.value = false;
+                                            // 重新请求 列表数据
+                                            if(result.success){
+                                                searchData();
+                                            }
+                                        })
+                                        .catch((e) => {
+                                            loading.value = false;
+                                            ElMessage({
+                                                type: 'info',
+                                                message: t('已取消删除'),
+                                                offset: 65
+                                            });
+                                        });
+                                    }
+                                },
+                                [
+                                    h('i', { class: 'ri-delete-bin-line', style: { marginRight: '2px' } }),
+                                    h('span', t('删除'))
+                                ]
+                            )
                         ];
                         return h('span', editActions);
                     }
@@ -227,6 +251,12 @@
                     label: computed(() => t('资产编码')),
                     span: settingStore.device === 'mobile' ? 24 : 6,
                     clearable: true
+                },
+                {
+                    type: 'slot',
+                    value: '',
+                    slotName: 'statusSelect',
+                    span: 6
                 },
                 {
                     type: 'slot',
@@ -270,16 +300,6 @@
     );
 
     let disabled = ref(false);
-    function addData() {
-        disabled.value = false;
-        entity.value = null;
-        Object.assign(dialogConfig.value, {
-            show: true,
-            width: '60%',
-            title: computed(() => t('添加数据资产')),
-            showFooter: false
-        });
-    }
 
     const close = () => {
         dialogConfig.value.show = false;
@@ -294,7 +314,8 @@
             page: tableConfig.value.pageConfig.currentPage,
             size: tableConfig.value.pageConfig.pageSize,
             name: formLine.value.name,
-            code: formLine.value.code
+            code: formLine.value.code,
+            status: formLine.value.status
         };
         let res = await searchPage(params);
         if (res.code == 0) {
@@ -305,7 +326,12 @@
     }
 </script>
 <style lang="scss" scoped>
-.ml-3 {
-    float: right;
-}
+    .label {
+        margin-right: 10px;
+        color: #606266;
+        font-size: inherit;
+
+        display: flex;
+        align-items: center;
+    }
 </style>

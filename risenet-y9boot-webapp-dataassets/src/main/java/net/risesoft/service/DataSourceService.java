@@ -91,5 +91,7 @@ public interface DataSourceService {
 	 * @param id
 	 */
 	Y9Result<String> deleteCategory(String id);
+	
+	List<Map<String, Object>> getTableSelectTree();
 
 }

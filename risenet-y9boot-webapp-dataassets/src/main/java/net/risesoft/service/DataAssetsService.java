@@ -50,7 +50,7 @@ public interface DataAssetsService {
      * @param size
      * @return
      */
-    Page<DataAssets> searchPage(String categoryId, String name, String code, int page, int size);
+    Page<DataAssets> searchPage(String categoryId, String name, String code, Integer status, int page, int size);
     
     /**
      * 删除数据资产
@@ -118,5 +118,13 @@ public interface DataAssetsService {
      * @return
      */
     Y9Result<String> saveAssetsInterface(String ids, Long assetsId);
+    
+    /**
+     * 保存挂接的数据表信息
+     * @param ids
+     * @param assetsId
+     * @return
+     */
+    Y9Result<String> saveAssetsTable(String ids, Long assetsId);
 
 }

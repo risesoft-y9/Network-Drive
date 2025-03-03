@@ -14,6 +14,8 @@
                         :flxedTree="fixedTreeRef"
                         :currNode="currNode"
                         :changeLoading="changeLoading"
+                        :isAdd="true"
+                        :isLook="true"
                     ></dataSourceType>
                 </y9Card>
             </div>
@@ -32,6 +34,7 @@
                         :flxedTree="fixedTreeRef"
                         :currNode="currNode"
                         :changeLoading="changeLoading"
+                        :isAdd="true"
                     ></DataSource>
                 </y9Card>
             </div>
@@ -97,15 +100,11 @@
             api: searchDataSource,
             searchKeyName: 'name'
         },
-        flag: 'dataSource'
+        flag: 'dataobject'
     });
 
     //当前节点数据
     const currNode = ref({});
-
-    
-
-   
 
     //点击节点时
     const onNodeClick = (node) => {

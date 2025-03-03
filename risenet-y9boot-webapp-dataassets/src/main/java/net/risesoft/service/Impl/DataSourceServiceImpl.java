@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
-
 import net.risesoft.entity.DataSourceEntity;
 import net.risesoft.entity.DataSourceTypeEntity;
 import net.risesoft.id.Y9IdGenerator;
@@ -25,6 +26,7 @@ import net.risesoft.repository.DataSourceRepository;
 import net.risesoft.repository.DataSourceTypeRepository;
 import net.risesoft.service.DataSourceService;
 import net.risesoft.util.DataConstant;
+import net.risesoft.util.Y9FormDbMetaDataUtil;
 import net.risesoft.util.db.DbMetaDataUtil;
 import net.risesoft.util.elastic.ElasticsearchRestClient;
 import net.risesoft.y9.Y9LoginUserHolder;
@@ -244,5 +246,47 @@ public class DataSourceServiceImpl implements DataSourceService {
         }
         return Y9Result.failure("数据不存在，请刷新数据");
     }
+
+	@Override
+	public List<Map<String, Object>> getTableSelectTree() {
+		List<Map<String, Object>> listMap = new ArrayList<Map<String,Object>>();
+		try {
+			List<DataSourceTypeEntity> dataSourceTypeEntities = findDataCategory();
+			for(DataSourceTypeEntity entity : dataSourceTypeEntities) {
+				Map<String, Object> map = new HashMap<String, Object>();
+				map.put("value", entity.getId());
+				map.put("label", entity.getName());
+				map.put("disabled", true);
+				
+				List<Map<String, Object>> child1 = new ArrayList<>();
+				List<DataSourceEntity> list = findByBaseType(entity.getName());
+				for(DataSourceEntity info : list) {
+					Map<String, Object> map2 = new HashMap<String, Object>();
+					map2.put("value", "s-" + info.getId());
+					map2.put("label", info.getName());
+					
+					// 获取数据源
+					DataSource dataSource = Y9FormDbMetaDataUtil.createDataSource(info.getUrl(), info.getDriver(),
+							info.getUsername(), info.getPassword());
+					List<Map<String, Object>> child2 = new ArrayList<>();
+			        List<Map<String, Object>> table_map = Y9FormDbMetaDataUtil.listAllTables(dataSource);
+			        for (Map<String, Object> table : table_map) {
+			            Map<String, Object> map3 = new HashMap<>();
+			            map3.put("value", "t-" + info.getId() + "-" + table.get("name").toString());
+			            map3.put("label", table.get("name").toString());
+			            child2.add(map3);
+			        }
+			        map2.put("children", child2);
+					
+					child1.add(map2);
+				}
+				map.put("children", child1);
+				listMap.add(map);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return listMap;
+	}
 
 }

@@ -67,18 +67,6 @@
         }
     });
 
-    //获取类型列表
-    // const typeList = ref([]);
-    // const getTypeList = async () => {
-    // 	const result = await getDataSourceType();
-    // 	typeList.value = result.data || [];
-    // 	if (isEditStatus.value) {
-    // 		baseFormConfig.value.itemList[0].props.options = typeList.value;
-    // 		console.log('baseFormConfig.value.itemList[0]', baseFormConfig.value.itemList[0]);
-    // 	}
-    // };
-    // getTypeList();
-
     const y9FormRef = ref(null);
 
     //表单初始值

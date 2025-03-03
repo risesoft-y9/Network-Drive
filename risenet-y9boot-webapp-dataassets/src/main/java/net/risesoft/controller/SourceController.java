@@ -89,14 +89,14 @@ public class SourceController {
                 Map<String, Object> map = new HashMap<>();
                 map.put("id", item.getId());
                 map.put("name", item.getName());
-                map.put("url", item.getUrl());
-                map.put("driver", item.getDriver());
-                map.put("username", item.getUsername());
-                map.put("password", item.getPassword());
+                //map.put("url", item.getUrl());
+                //map.put("driver", item.getDriver());
+                //map.put("username", item.getUsername());
+                //map.put("password", item.getPassword());
                 map.put("type", item.getType());
                 map.put("baseType", item.getBaseType());
-                map.put("createTime", item.getCreateTime());
-                map.put("updateTime", item.getUpdateTime());
+                //map.put("createTime", item.getCreateTime());
+                //map.put("updateTime", item.getUpdateTime());
                 map.put("children", new ArrayList<>());
                 DataSource dataSource = Y9FormDbMetaDataUtil.createDataSource(item.getUrl(), item.getDriver(),
                     item.getUsername(), item.getPassword());
@@ -110,22 +110,19 @@ public class SourceController {
                         child_map.put("id", item.getId() + i);
                         child_map.put("name", table.get("name").toString());
                         child_map.put("url", item.getId());
-                        child_map.put("driver", item.getDriver());
-                        child_map.put("username", item.getUsername());
-                        child_map.put("password", item.getPassword());
+                        //child_map.put("driver", item.getDriver());
+                        //child_map.put("username", item.getUsername());
+                        //child_map.put("password", item.getPassword());
                         child_map.put("type", 3);
                         child_map.put("baseType", item.getBaseType());
-                        child_map.put("createTime", item.getCreateTime());
-                        child_map.put("updateTime", item.getUpdateTime());
+                        //child_map.put("createTime", item.getCreateTime());
+                        //child_map.put("updateTime", item.getUpdateTime());
                         childList_map.add(child_map);
                         i++;
                     }
                     map.put("children", childList_map);
                 } catch (Exception e) {
                     LOGGER.error("获取数据库表失败", e);
-                }
-                if (StringUtils.isNotBlank(item.getPassword())) {
-                    item.setPassword("******");
                 }
                 list_map.add(map);
             }
@@ -242,5 +239,10 @@ public class SourceController {
         }
         return Y9Result.success(true);
     }
+    
+    @GetMapping(value = "/getTableSelectTree")
+	public Y9Result<List<Map<String, Object>>> getTableSelectTree() {
+		return Y9Result.success(dataSourceService.getTableSelectTree());
+	}
 
 }

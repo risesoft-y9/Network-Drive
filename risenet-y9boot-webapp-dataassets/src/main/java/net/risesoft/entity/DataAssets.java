@@ -6,6 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
@@ -175,5 +176,8 @@ public class DataAssets extends BaseEntity {
     @Column(name = "MOUNTTYPE", length = 20)
     @Comment(value = "挂接类型：文件/数据/接口/地址")
     private String mountType;
+    
+    @Transient
+    private String labelData;// 标注信息
 
 }

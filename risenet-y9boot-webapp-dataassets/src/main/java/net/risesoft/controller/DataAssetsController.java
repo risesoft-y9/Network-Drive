@@ -47,6 +47,7 @@ import net.risesoft.service.DataAssetsFileService;
 import net.risesoft.service.DataAssetsService;
 import net.risesoft.service.DocumentFileService;
 import net.risesoft.service.ImageFileService;
+import net.risesoft.service.LabelService;
 import net.risesoft.service.MetadataConfigService;
 import net.risesoft.service.VideoFileService;
 import net.risesoft.util.EntityOrTableUtils;
@@ -75,6 +76,7 @@ public class DataAssetsController {
     private final CategoryTableService categoryTableService;
     private final DataAssetsFileService dataAssetsFileService;
     private final DataCatalogApiClient dataCatalogApiClient;
+    private final LabelService labelService;
 
     /**
      * 获取资产数据列表
@@ -312,12 +314,13 @@ public class DataAssetsController {
     
     @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取资产数据列表", logLevel = LogLevelEnum.RSLOG, enable = false)
 	@GetMapping("/searchPage")
-	public Y9Page<DataAssets> searchPage(String name, String code, String categoryId, Integer page, Integer size) {
-		Page<DataAssets> pageList = dataAssetsService.searchPage(categoryId, name, code, page, size);
+	public Y9Page<DataAssets> searchPage(String name, String code, String categoryId, Integer status, Integer page, Integer size) {
+		Page<DataAssets> pageList = dataAssetsService.searchPage(categoryId, name, code, status, page, size);
 		pageList.stream().map((item) -> {
 			if(StringUtils.isNotBlank(item.getPicture())) {
 				item.setPicture(Y9Context.getProperty("y9.common.dataAssetsBaseUrl") + item.getPicture());
 			}
+			item.setLabelData(labelService.getLabelData(item.getId()));
             return item;
         }).collect(Collectors.toList());
         return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(), "获取数据成功");
@@ -376,6 +379,12 @@ public class DataAssetsController {
 	@PostMapping("/saveAssetsInterface")
     public Y9Result<String> saveAssetsInterface(String ids, Long assetsId) {
         return dataAssetsService.saveAssetsInterface(ids, assetsId);
+    }
+    
+    @RiseLog(operationType = OperationTypeEnum.ADD, operationName = "资产挂接数据", logLevel = LogLevelEnum.RSLOG)
+	@PostMapping("/saveAssetsTable")
+    public Y9Result<String> saveAssetsTable(String ids, Long assetsId) {
+        return dataAssetsService.saveAssetsTable(ids, assetsId);
     }
 
 }
