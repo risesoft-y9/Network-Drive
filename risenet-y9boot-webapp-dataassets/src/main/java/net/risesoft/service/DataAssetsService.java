@@ -2,8 +2,8 @@ package net.risesoft.service;
 
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,16 +33,18 @@ public interface DataAssetsService {
     Y9Result<String> createAssetsNo(String categoryId, Long[] ids);
 
     List<DataAssets> findByDataAssetsIdIn(Long[] ids);
-    
+
     /**
      * 保存数据资产
+     * 
      * @param dataAssets
      * @return
      */
     Y9Result<String> saveDataAssets(DataAssets dataAssets);
-    
+
     /**
      * 分页获取数据资产列表
+     * 
      * @param categoryId
      * @param name
      * @param code
@@ -51,76 +53,86 @@ public interface DataAssetsService {
      * @return
      */
     Page<DataAssets> searchPage(String categoryId, String name, String code, Integer status, int page, int size);
-    
+
     /**
      * 删除数据资产
+     * 
      * @param id
      * @return
      */
     Y9Result<String> deleteDataAssets(Long id);
-    
+
     /**
      * 上传文件
+     * 
      * @param file
      * @param assetsId
      * @return
      */
     Y9Result<String> fileUpload(MultipartFile file, Long assetsId);
-    
+
     /**
      * 上下架资产
+     * 
      * @param id
      * @return
      */
     Y9Result<String> updownData(Long id);
-    
+
     /**
      * 给资产赋码
+     * 
      * @param id
      * @return
      */
     Y9Result<String> genQr(Long id);
-    
+
     /**
      * 生成数据资产编号
+     * 
      * @return
      */
     Y9Result<String> genCode(String categoryId, String pCode);
-    
+
     /**
      * 获取数据资产挂接的文件
+     * 
      * @param id
      * @param page
      * @param size
      * @return
      */
     Page<FileInfo> getFilePage(Long id, String name, int page, int size);
-    
+
     /**
      * 文件下载
+     * 
      * @param id
      * @param response
      * @param request
      */
     void fileDownload(Long id, HttpServletResponse response, HttpServletRequest request);
-    
+
     /**
      * 上传资产图片
+     * 
      * @param file
      * @param assetsId
      * @return
      */
     Y9Result<String> uploadPicture(MultipartFile file, Long assetsId);
-    
+
     /**
      * 保存挂接的接口信息
+     * 
      * @param ids
      * @return
      */
     Y9Result<String> saveAssetsInterface(String ids, Long assetsId);
-    
+
     /**
      * 保存挂接的数据表信息
+     * 
      * @param ids
      * @param assetsId
      * @return

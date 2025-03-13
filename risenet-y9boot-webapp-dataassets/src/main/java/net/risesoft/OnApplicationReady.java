@@ -2,7 +2,7 @@ package net.risesoft;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -27,7 +27,7 @@ public class OnApplicationReady implements ApplicationListener<ApplicationReadyE
     private final MetadataConfigService metadataConfigService;
 
     private final CategoryService categoryService;
-
+    private final Environment environment;
     @Value("${y9.app.dataAssets.tenantId}")
     private String tenantId;
 
@@ -53,8 +53,6 @@ public class OnApplicationReady implements ApplicationListener<ApplicationReadyE
         createCategoryConfig();
         createMetadataConfig();
     }
-    
-    private final Environment environment;
 
     @PostConstruct
     public void init() {

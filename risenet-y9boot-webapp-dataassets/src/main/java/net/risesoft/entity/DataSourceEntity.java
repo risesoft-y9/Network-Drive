@@ -1,10 +1,10 @@
 package net.risesoft.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
@@ -17,7 +17,7 @@ import net.risesoft.converter.EncryptConverter;
 
 @Entity
 @Table(name = "Y9_DATAASSETS_DATASOURCE")
-@org.hibernate.annotations.Table(comment = "数据源信息表", appliesTo = "Y9_DATAASSETS_DATASOURCE")
+@Comment("数据源信息表")
 @NoArgsConstructor
 @Data
 public class DataSourceEntity extends BaseEntity {
