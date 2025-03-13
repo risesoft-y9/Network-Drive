@@ -96,7 +96,6 @@ public class MobileFileShareController {
             LOGGER.error("获取文件列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -131,7 +130,6 @@ public class MobileFileShareController {
             LOGGER.error("共享失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -165,7 +163,6 @@ public class MobileFileShareController {
             LOGGER.error("公开失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -198,7 +195,6 @@ public class MobileFileShareController {
             LOGGER.error("取消共享失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
     /**
@@ -251,7 +247,6 @@ public class MobileFileShareController {
             LOGGER.error("获取文件公开记录列表失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(ret_map));
-        return;
     }
 
     /**
@@ -283,7 +278,6 @@ public class MobileFileShareController {
             LOGGER.error("删除公开人员失败", e);
         }
         Y9Util.renderJson(response, Y9JsonUtil.writeValueAsString(map));
-        return;
     }
 
 }

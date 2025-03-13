@@ -14,6 +14,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import net.risesoft.base.BaseEntity;
 
 /**
@@ -24,7 +25,7 @@ import net.risesoft.base.BaseEntity;
 @NoArgsConstructor
 @Entity
 @Table(name = "Y9_DATAASSETS_DETAILS")
-@Comment(  "数据资产详情表" )
+@Comment("数据资产详情表")
 public class DataAssets extends BaseEntity {
 
     private static final long serialVersionUID = 4774402268063407277L;
@@ -34,7 +35,7 @@ public class DataAssets extends BaseEntity {
     @GeneratedValue(generator = "IDGENERATOR")
     @GenericGenerator(name = "IDGENERATOR", strategy = "native")
     @Comment("主键id")
-	private Long id;
+    private Long id;
 
     @Column(name = "CATEGORYID", length = 50, nullable = false)
     @Comment(value = "目录ID")
@@ -51,7 +52,7 @@ public class DataAssets extends BaseEntity {
     @Column(name = "CODE", length = 200)
     @Comment(value = "数据资产编码")
     private String code;
-    
+
     @Column(name = "PICTURE")
     @Comment(value = "资产图片")
     private String picture;
@@ -172,7 +173,7 @@ public class DataAssets extends BaseEntity {
     @Column(name = "DATA_SERVICE_URL", length = 100)
     @Comment(value = "数据服务URL")
     private String dataServiceUrl;
-    
+
     @Column(name = "MOUNTTYPE", length = 20)
     @Comment(value = "挂接类型：文件/数据/接口/地址")
     private String mountType;
