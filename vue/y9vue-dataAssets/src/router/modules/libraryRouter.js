@@ -20,12 +20,9 @@ const libraryRouter = {
             path: '/managed',
             component: () => import('@/views/library/index.vue'),
             name: 'managed',
-            props: route => ({
-                menuType: 'manage',
-            }),
             meta: {
-                title: '资产管理',
-                icon: 'ri-folder-user-line',
+                title: '资产台账',
+                icon: 'ri-device-line',
             },
         },
         {

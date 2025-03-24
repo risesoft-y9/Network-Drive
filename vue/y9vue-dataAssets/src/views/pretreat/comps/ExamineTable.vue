@@ -21,20 +21,12 @@
                         {{ $t('搜索') }}
                     </el-button>
                 </template>
-                <template #qrcode="{ row, column, index }">
-                    <el-image 
-                        style="height: 45px;" 
-                        :src="row.qrcode"  
-                        :preview-src-list="[row.qrcode]" 
-                        :preview-teleported="true" 
-                        v-if="row.qrcode"
-                    ></el-image>
-                </template>
                 <template #opt_button="{ row, column, index }">
                     <span @click="handleView(row)" style="margin-right: 10px;"><i class="ri-eye-line"></i>查看</span>
-                    <span @click="handle(row)" v-if="!row.codeGlobal">
-                        <i class="ri-ai-generate"></i>一键生成
+                    <span @click="handle(row)" v-if="row.dataState == 'out'">
+                        <i class="ri-logout-circle-r-line"></i>入库
                     </span>
+                    <span style="color: #CCC" v-else>已入库</span>
                 </template>
             </y9Table>
             <!-- 制造loading效果 -->
@@ -57,7 +49,7 @@
     import { useSettingStore } from '@/store/modules/settingStore';
     import y9_storage from '@/utils/storage';
     import { getStoragePageSize } from '@/utils';
-    import { genQr, searchPage } from '@/api/pretreat';
+    import { examineData, searchPage } from '@/api/pretreat';
     import settings from '@/settings';
     import router from '@/router';
     import Details from '@/views/pretreat/comps/details.vue';
@@ -77,7 +69,6 @@
     });
 
     let entity = ref(null);
-
     // 变量 对象
     const state = reactive({
         // 区域 loading
@@ -93,8 +84,7 @@
                 { title: computed(() => t('序号')), type: 'index', width: 60, fixed: 'left' },
                 { title: computed(() => t('资产编码')), key: 'code' },
                 { title: computed(() => t('资产名称')), key: 'name' },
-                { title: computed(() => t('全球统一码')), key: 'codeGlobal', width: 250},
-                { title: computed(() => t('二维码')), key: 'qrcode', slot: 'qrcode', width: 80},
+                { title: computed(() => t('资产摘要')), key: 'remark' },
                 { title: '操作', width: 160, slot: 'opt_button' }
             ],
             tableData: [],
@@ -177,13 +167,13 @@
     }
 
     const handle = (row) => {
-        ElMessageBox.confirm('是否要生成二维码', t('提示'), {
+        ElMessageBox.confirm(`${t('是否入库')}【${row.name}】?`, t('提示'), {
             confirmButtonText: t('确定'),
             cancelButtonText: t('取消'),
             type: 'info'
         })
         .then(async () => {
-            let result = await genQr(row.id);
+            let result = await examineData(row.id, 'in');
             ElNotification({
                 title: result.success ? t('成功') : t('失败'),
                 message: result.msg,
@@ -212,8 +202,7 @@
             page: tableConfig.value.pageConfig.currentPage,
             size: tableConfig.value.pageConfig.pageSize,
             name: formLine.value.name,
-            code: formLine.value.code,
-            dataState: 'in'
+            code: formLine.value.code
         };
         let res = await searchPage(params);
         if (res.code == 0) {

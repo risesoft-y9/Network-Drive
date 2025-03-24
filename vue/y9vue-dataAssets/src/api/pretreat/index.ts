@@ -77,6 +77,16 @@ export const updownData = async (id) => {
     });
 };
 
+// 入库、出库
+export const examineData = async (id, dataState) => {
+    return await dataRequest({
+        url: '/vue/detail/examineData',
+        method: 'POST',
+        cType: false,
+        params: { id: id, dataState: dataState }
+    });
+};
+
 // 赋码
 export const genQr = async (id) => {
     return await dataRequest({
@@ -123,11 +133,12 @@ export const saveAssetsInterface = async (ids, assetsId) => {
 };
 
 // 获取挂接的表列表
-export const getTableSelectTree = async () => {
+export const getTableSelectTree = async (type) => {
     return await dataRequest({
         url: '/vue/source/getTableSelectTree',
         method: 'GET',
-        cType: false
+        cType: false,
+        params: { type: type }
     });
 };
 
@@ -141,5 +152,15 @@ export const saveAssetsTable = async (ids, assetsId) => {
         method: 'post',
         cType: false,
         data: formData
+    });
+};
+
+// 删除挂接数据
+export const deleteMountData = async (id) => {
+    return await dataRequest({
+        url: '/vue/detail/deleteMountData',
+        method: 'POST',
+        cType: false,
+        params: { id: id }
     });
 };

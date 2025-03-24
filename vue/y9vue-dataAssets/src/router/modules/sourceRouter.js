@@ -12,7 +12,7 @@ const sourceRouter = {
     name:'source',
     redirect: '/datasource',
     meta: {
-        title: '数据源管理',
+        title: '库表注册',
         icon: 'ri-database-2-line',
     },
     children:[
@@ -30,7 +30,7 @@ const sourceRouter = {
             component: () => import('@/views/dataobject/index.vue'),
             name: 'dataobject',
             meta: {
-                title: '数据对象',
+                title: '库表对象',
                 icon: 'ri-table-line',
             },
         },

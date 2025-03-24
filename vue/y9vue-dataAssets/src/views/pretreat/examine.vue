@@ -10,7 +10,7 @@
                 <!-- 右边卡片 -->
                 <div v-if="currData.id">
                     <!-- 列表 -->
-                    <MountTable :currTreeNodeInfo="currData" />
+                    <ExamineTable :currTreeNodeInfo="currData" />
                 </div>
             </template>
         </fixedTreeModule>
@@ -24,8 +24,9 @@
         dataCatalogTree,
         searchCatelogTree
     } from '@/api/pretreat';
-    import MountTable from './comps/MountTable.vue';
     import { useI18n } from 'vue-i18n';
+    import ExamineTable from './comps/ExamineTable.vue';
+    
     // 注入 字体对象
     const fontSizeObj: any = inject('sizeObjInfo');
     const { t } = useI18n();

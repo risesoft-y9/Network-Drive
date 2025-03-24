@@ -2,7 +2,13 @@
     <y9Card :title="`${$t('标签列表')} - ${currTreeNodeInfo.name ? currTreeNodeInfo.name : ''}`">
         <template v-slot>
             <!-- 表格 -->
-            <y9Table :config="tableConfig" :filterConfig="filterConfig">
+            <y9Table 
+                :config="tableConfig" 
+                :filterConfig="filterConfig"
+                uniqueIdent="labelConfig" 
+                @on-curr-page-change="onCurrentChange"
+                @on-page-size-change="onPageSizeChange"
+            >
                 <template v-slot:filterBtnSlot>
                     <el-button
                         :size="fontSizeObj.buttonSize"
@@ -147,7 +153,7 @@
             tableData: [],
             pageConfig: {
                 currentPage: 1,
-                pageSize: getStoragePageSize('fileConfig', 15),
+                pageSize: getStoragePageSize('labelConfig', 15),
                 total: 0,
                 pageSizeOpts:[10, 15, 30, 60, 120, 240]
             }
@@ -226,6 +232,17 @@
             tableConfig.value.tableData = res.rows;
             tableConfig.value.pageConfig.total = res.total;
         }
+    }
+
+    // 分页操作
+    function onCurrentChange(currPage) {
+        tableConfig.value.pageConfig.currentPage = currPage;
+        searchData();
+    }
+
+    function onPageSizeChange(pageSize) {
+        tableConfig.value.pageConfig.pageSize = pageSize;
+        searchData();
     }
 
     function editLabel(row) {

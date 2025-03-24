@@ -2,7 +2,13 @@
     <y9Card :title="`${$t('数据列表')} - ${currTreeNodeInfo.name ? currTreeNodeInfo.name : ''}`">
         <template v-slot>
             <!-- 表格 -->
-            <y9Table :config="tableConfig" :filterConfig="filterConfig">
+            <y9Table 
+                :config="tableConfig" 
+                :filterConfig="filterConfig"
+                uniqueIdent="dataConfig" 
+                @on-curr-page-change="onCurrentChange"
+                @on-page-size-change="onPageSizeChange"
+            >
                 <template v-slot:filterBtnSlot>
                     <el-button
                         :size="fontSizeObj.buttonSize"
@@ -14,6 +20,13 @@
                         <i class="ri-search-line"></i>
                         {{ $t('搜索') }}
                     </el-button>
+                </template>
+                <template v-slot:statusSelect>
+                    <div class="label">资产状态</div>
+                    <el-select v-model="state.formLine.status" clearable>
+                        <el-option key="0" label="下架" value="0" />
+                        <el-option key="1" label="上架" value="1" />
+                    </el-select>
                 </template>
                 <template #status="{ row, column, index }">
                     <el-tag :type="row.status=='1'? 'success':'danger'">{{ row.status == '1' ? '已上架' : '未上架' }}</el-tag>
@@ -73,7 +86,8 @@
         // 查询条件
         formLine: {
             name: '',
-            code: ''
+            code: '',
+            status: ''
         },
         // 表格的 配置信息
         tableConfig: {
@@ -87,7 +101,7 @@
             tableData: [],
             pageConfig: {
                 currentPage: 1,
-                pageSize: getStoragePageSize('fileConfig', 15),
+                pageSize: getStoragePageSize('dataConfig', 15),
                 total: 0,
                 pageSizeOpts:[10, 15, 30, 60, 120, 240]
             }
@@ -114,6 +128,12 @@
                     label: computed(() => t('资产编码')),
                     span: settingStore.device === 'mobile' ? 24 : 6,
                     clearable: true
+                },
+                {
+                    type: 'slot',
+                    value: '',
+                    slotName: 'statusSelect',
+                    span: 6
                 },
                 {
                     type: 'slot',
@@ -200,7 +220,9 @@
             page: tableConfig.value.pageConfig.currentPage,
             size: tableConfig.value.pageConfig.pageSize,
             name: formLine.value.name,
-            code: formLine.value.code
+            code: formLine.value.code,
+            status: formLine.value.status,
+            dataState: 'in'
         };
         let res = await searchPage(params);
         if (res.code == 0) {
@@ -209,7 +231,25 @@
             tableConfig.value.pageConfig.total = res.total;
         }
     }
+
+    // 分页操作
+    function onCurrentChange(currPage) {
+        tableConfig.value.pageConfig.currentPage = currPage;
+        searchData();
+    }
+
+    function onPageSizeChange(pageSize) {
+        tableConfig.value.pageConfig.pageSize = pageSize;
+        searchData();
+    }
 </script>
 <style lang="scss" scoped>
+    .label {
+        margin-right: 10px;
+        color: #606266;
+        font-size: inherit;
 
+        display: flex;
+        align-items: center;
+    }
 </style>

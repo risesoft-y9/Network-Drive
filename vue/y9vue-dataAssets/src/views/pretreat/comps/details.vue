@@ -7,7 +7,13 @@
             ></FormData>
         </el-tab-pane>
         <el-tab-pane label="数据项">
-            <y9Table :config="tableConfig" :filterConfig="filterConfig">
+            <y9Table 
+                :config="tableConfig" 
+                :filterConfig="filterConfig"
+                uniqueIdent="fileConfig" 
+                @on-curr-page-change="onCurrentChange"
+                @on-page-size-change="onPageSizeChange"
+            >
                 <template v-slot:filterBtnSlot>
                     <el-button
                         :size="fontSizeObj.buttonSize"
@@ -23,6 +29,9 @@
                 <template #opt_button="{ row, column, index }">
                     <span @click="downloadFile(row.id)" v-if="row.fileType == '文件'"><i class="ri-arrow-down-circle-line"></i>下载</span>
                     <span @click="showPage(row)" v-else><i class="ri-eye-line"></i>查看</span>
+                    <span @click="deleteData(row)" v-if="entity.dataState == 'out'" style="margin-left: 10px;">
+                        <i class="ri-delete-bin-line"></i>删除
+                    </span>
                 </template>
             </y9Table>
         </el-tab-pane>
@@ -39,9 +48,11 @@
             :currNode="currNode"
         ></TableData>
     </y9Dialog>
+    <!-- 制造loading效果 -->
+    <el-button v-loading.fullscreen.lock="loading" style="display: none"></el-button>
 </template>
 <script lang="ts" setup>
-import { getFilePage } from '@/api/pretreat';
+import { deleteMountData, getFilePage } from '@/api/pretreat';
 import { useSettingStore } from '@/store/modules/settingStore';
 import { getStoragePageSize } from '@/utils';
 import { computed, inject, onMounted, reactive, ref, toRefs } from 'vue';
@@ -51,12 +62,14 @@ import settings from '@/settings';
 import FormData from '../comps/FormData.vue';
 import ApiDetail from '@/views/test/detail.vue';
 import TableData from '@/views/dataobject/comps/tableData.vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus';
 
 const settingStore = useSettingStore();
 // 注入 字体对象
 const fontSizeObj: any = inject('sizeObjInfo');
 const { t } = useI18n();
+
+const emits = defineEmits(['close']);
 
 const props = defineProps({
     entity: {
@@ -74,6 +87,8 @@ const props = defineProps({
 
 // 变量 对象
 const state = reactive({
+    // 区域 loading
+    loading: false,
     // 查询条件
     formLine: {
         name: '',
@@ -84,7 +99,7 @@ const state = reactive({
             { title: computed(() => t('序号')), type: 'index', width: 60, fixed: 'left' },
             { title: computed(() => t('名称')), key: 'name' },
             { title: computed(() => t('类型')), key: 'fileType'},
-            { title: '操作', width: 120, slot: 'opt_button' }
+            { title: '操作', width: 140, slot: 'opt_button' }
         ],
         tableData: [],
         pageConfig: {
@@ -128,6 +143,7 @@ const state = reactive({
 });
 
 let {
+    loading,
     tableConfig,
     filterConfig,
     formLine,
@@ -153,6 +169,17 @@ async function searchData() {
         tableConfig.value.tableData = res.rows;
         tableConfig.value.pageConfig.total = res.total;
     }
+}
+
+// 分页操作
+function onCurrentChange(currPage) {
+    tableConfig.value.pageConfig.currentPage = currPage;
+    searchData();
+}
+
+function onPageSizeChange(pageSize) {
+    tableConfig.value.pageConfig.pageSize = pageSize;
+    searchData();
 }
 
 function downloadFile(id) {
@@ -188,6 +215,38 @@ function showPage(row) {
             offset: 65
         });
     }
+}
 
+const deleteData = (row) => {
+    ElMessageBox.confirm(`${t('是否删除')}【${row.name}】?`, t('提示'), {
+        confirmButtonText: t('确定'),
+        cancelButtonText: t('取消'),
+        type: 'info'
+    })
+    .then(async () => {
+        loading.value = true;
+        let result = await deleteMountData(row.id);
+        ElNotification({
+            title: result.success ? t('成功') : t('失败'),
+            message: result.msg,
+            type: result.success ? 'success' : 'error',
+            duration: 2000,
+            offset: 80
+        });
+        loading.value = false;
+        // 重新请求 列表数据
+        if(result.success){
+            searchData();
+            emits('close');
+        }
+    })
+    .catch((e) => {
+        loading.value = false;
+        ElMessage({
+            type: 'info',
+            message: t('已取消删除'),
+            offset: 65
+        });
+    });
 }
 </script>
