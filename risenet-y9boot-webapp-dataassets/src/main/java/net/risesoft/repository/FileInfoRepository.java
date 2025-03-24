@@ -14,4 +14,6 @@ public interface FileInfoRepository extends JpaRepository<FileInfo, Long>, JpaSp
 	Page<FileInfo> findByAssetsId(Long assetsId, Pageable pageable);
 	
 	Page<FileInfo> findByAssetsIdAndNameContains(Long assetsId, String name, Pageable pageable);
+	
+	long countByAssetsId(Long assetsId);
 }

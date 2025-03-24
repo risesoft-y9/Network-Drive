@@ -35,9 +35,9 @@ public class DataAssets extends BaseEntity {
     @GeneratedValue(generator = "IDGENERATOR")
     @GenericGenerator(name = "IDGENERATOR", strategy = "native")
     @Comment("主键id")
-    private Long id;
+	private Long id;
 
-    @Column(name = "CATEGORYID", length = 50, nullable = false)
+    @Column(name = "CATEGORYID", length = 50)
     @Comment(value = "目录ID")
     private String categoryId;
 
@@ -52,7 +52,7 @@ public class DataAssets extends BaseEntity {
     @Column(name = "CODE", length = 200)
     @Comment(value = "数据资产编码")
     private String code;
-
+    
     @Column(name = "PICTURE")
     @Comment(value = "资产图片")
     private String picture;
@@ -173,10 +173,14 @@ public class DataAssets extends BaseEntity {
     @Column(name = "DATA_SERVICE_URL", length = 100)
     @Comment(value = "数据服务URL")
     private String dataServiceUrl;
-
+    
     @Column(name = "MOUNTTYPE", length = 20)
-    @Comment(value = "挂接类型：文件/数据/接口/地址")
+    @Comment(value = "挂接类型：文件/数据/接口")
     private String mountType;
+
+    @Column(name = "DATASTATE")
+    @Comment(value = "入库状态: in-入库， out-出库")
+    private String dataState;
 
     @Transient
     private String labelData;// 标注信息
