@@ -51,7 +51,6 @@ import net.risesoft.service.LabelService;
 import net.risesoft.service.MetadataConfigService;
 import net.risesoft.service.VideoFileService;
 import net.risesoft.util.EntityOrTableUtils;
-import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.json.Y9JsonUtil;
 import net.risesoft.y9.util.Y9BeanUtil;
@@ -314,12 +313,9 @@ public class DataAssetsController {
     
     @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取资产数据列表", logLevel = LogLevelEnum.RSLOG, enable = false)
 	@GetMapping("/searchPage")
-	public Y9Page<DataAssets> searchPage(String name, String code, String categoryId, Integer status, Integer page, Integer size) {
-		Page<DataAssets> pageList = dataAssetsService.searchPage(categoryId, name, code, status, page, size);
+	public Y9Page<DataAssets> searchPage(String name, String code, String categoryId, Integer status, String dataState, Integer page, Integer size) {
+		Page<DataAssets> pageList = dataAssetsService.searchPage(categoryId, name, code, status, dataState, page, size);
 		pageList.stream().map((item) -> {
-			if(StringUtils.isNotBlank(item.getPicture())) {
-				item.setPicture(Y9Context.getProperty("y9.common.dataAssetsBaseUrl") + item.getPicture());
-			}
 			item.setLabelData(labelService.getLabelData(item.getId()));
             return item;
         }).collect(Collectors.toList());
@@ -371,7 +367,7 @@ public class DataAssetsController {
     
     @RiseLog(operationType = OperationTypeEnum.ADD, operationName = "上传资产图片", logLevel = LogLevelEnum.RSLOG)
 	@PostMapping("/uploadPicture")
-    public Y9Result<String> uploadPicture(@RequestParam MultipartFile file, @RequestParam Long assetsId) {
+    public Y9Result<DataAssets> uploadPicture(@RequestParam MultipartFile file, @RequestParam Long assetsId) {
         return dataAssetsService.uploadPicture(file, assetsId);
     }
     
@@ -386,5 +382,17 @@ public class DataAssetsController {
     public Y9Result<String> saveAssetsTable(String ids, Long assetsId) {
         return dataAssetsService.saveAssetsTable(ids, assetsId);
     }
+    
+    @RiseLog(operationType = OperationTypeEnum.MODIFY, operationName = "资产入库出库", logLevel = LogLevelEnum.RSLOG)
+	@PostMapping(value = "/examineData")
+	public Y9Result<String> examineData(Long id, String dataState) {
+		return dataAssetsService.examineData(id, dataState);
+	}
+    
+    @RiseLog(operationType = OperationTypeEnum.DELETE, operationName = "删除资产挂接数据", logLevel = LogLevelEnum.RSLOG)
+	@PostMapping(value = "/deleteMountData")
+	public Y9Result<String> deleteMountData(Long id) {
+		return dataAssetsService.deleteMountData(id);
+	}
 
 }

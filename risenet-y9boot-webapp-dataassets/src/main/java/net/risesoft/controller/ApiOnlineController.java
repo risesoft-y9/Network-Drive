@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.DataApiOnlineService;
 import net.risesoft.y9.json.Y9JsonUtil;
+import net.risesoft.api.auth.annotation.ApiAuth;
 import net.risesoft.entity.DataApiOnlineEntity;
 import net.risesoft.entity.DataApiOnlineInfoEntity;
 
@@ -25,6 +26,12 @@ import net.risesoft.entity.DataApiOnlineInfoEntity;
 public class ApiOnlineController {
 
 	private final DataApiOnlineService dataApiOnlineService;
+	
+	@GetMapping(value = "/get")
+	@ApiAuth(roles = {"admin"}, permitsPerSecond = 2.0, value = "获取信息", path = "/services/rest/get", method = "GET")
+    public Y9Result<String> get() {
+        return Y9Result.successMsg("hello world");
+    }
 	
 	/**
 	 * 保存接口信息

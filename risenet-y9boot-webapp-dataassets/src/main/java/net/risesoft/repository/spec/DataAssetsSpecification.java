@@ -23,12 +23,13 @@ public class DataAssetsSpecification implements Specification<DataAssets> {
 	private String code;
 	private Boolean isDeleted;
 	private Integer status;
+	private String dataState;
 	
 	public DataAssetsSpecification() {
 		super();
 	}
 
-	public DataAssetsSpecification(String categoryId, String name, String tenantId, String code, Boolean isDeleted, Integer status) {
+	public DataAssetsSpecification(String categoryId, String name, String tenantId, String code, Boolean isDeleted, Integer status, String dataState) {
 		super();
 		this.categoryId = categoryId;
 		this.name = name;
@@ -36,6 +37,7 @@ public class DataAssetsSpecification implements Specification<DataAssets> {
 		this.code = code;
 		this.isDeleted = isDeleted;
 		this.status = status;
+		this.dataState = dataState;
 	}
 
 	@Override
@@ -60,6 +62,9 @@ public class DataAssetsSpecification implements Specification<DataAssets> {
 		}
 		if (status != null) {
 			expressions.add(cb.equal(root.get("status").as(Integer.class), status));
+		}
+		if (StringUtils.isNotBlank(dataState)) {
+			expressions.add(cb.equal(root.get("dataState").as(String.class), dataState));
 		}
 		return predicate;
 	}
@@ -110,6 +115,14 @@ public class DataAssetsSpecification implements Specification<DataAssets> {
 
 	public void setStatus(Integer status) {
 		this.status = status;
+	}
+
+	public String getDataState() {
+		return dataState;
+	}
+
+	public void setDataState(String dataState) {
+		this.dataState = dataState;
 	}
 	
 }

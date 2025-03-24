@@ -1,18 +1,25 @@
 package net.risesoft.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import net.risesoft.api.auth.handler.ApiAuthInterceptor;
 import net.risesoft.converter.EncryptConverter;
 
 @Configuration
-public class DataAssetsConfiguration {
+public class DataAssetsConfiguration implements WebMvcConfigurer {
+	
+	@Autowired  
+    private ApiAuthInterceptor apiAuthInterceptor; 
 
-    /*
-     * @Bean public FilterRegistrationBean<Y9SkipSSOFilter> y9Oauth2ResourceFilter() { final FilterRegistrationBean<Y9SkipSSOFilter> filterBean = new FilterRegistrationBean<>(); filterBean.setFilter(new Y9SkipSSOFilter()); filterBean.setAsyncSupported(false);
-     * filterBean.setOrder(Ordered.HIGHEST_PRECEDENCE); filterBean.addUrlPatterns("/*"); return filterBean; }
-     */
+	@Override  
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(apiAuthInterceptor).addPathPatterns("/services/rest/**");  
+    }
 	
 	@Bean
 	@DependsOn("y9Context")

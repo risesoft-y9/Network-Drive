@@ -34,8 +34,8 @@ public class LabelController {
 	
 	@RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取目录树", logLevel = LogLevelEnum.RSLOG, enable = false)
 	@GetMapping("/getTree")
-	public Y9Result<List<Map<String, Object>>> getTree(String parentId, String searchName) {
-        return Y9Result.success(labelService.getTree(parentId, searchName), "获取数据成功");
+	public Y9Result<List<Map<String, Object>>> getTree(String parentId, String name) {
+        return Y9Result.success(labelService.getTree(parentId, name), "获取数据成功");
     }
 	
 	@RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取目录信息", logLevel = LogLevelEnum.RSLOG, enable = false)

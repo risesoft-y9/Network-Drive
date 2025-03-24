@@ -19,6 +19,12 @@
     </properties>
 
     <dependencies>
+    	<dependency>
+			<groupId>net.risesoft</groupId>
+			<artifactId>risenet-y9boot-api-auth</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
         <dependency>
             <groupId>net.risesoft</groupId>
             <artifactId>risenet-y9boot-starter-sso-oauth2-resource</artifactId>

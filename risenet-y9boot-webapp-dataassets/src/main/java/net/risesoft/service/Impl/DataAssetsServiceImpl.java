@@ -279,6 +279,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 			}
 			if(dataAssets.getId() == null) {
 				dataAssets.setCreator(Y9LoginUserHolder.getUserInfo().getName());
+				dataAssets.setDataState("out");
 				dataAssetsRepository.save(dataAssets);
 				return Y9Result.successMsg("新增成功");
 			}else {
@@ -295,12 +296,12 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 	}
 
 	@Override
-	public Page<DataAssets> searchPage(String categoryId, String name, String code, Integer status, int page, int size) {
+	public Page<DataAssets> searchPage(String categoryId, String name, String code, Integer status, String dataState, int page, int size) {
 		if (page < 0) {
             page = 1;
         }
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "createTime"));
-        DataAssetsSpecification spec = new DataAssetsSpecification(categoryId, name, Y9LoginUserHolder.getTenantId(), code, false, status);
+        DataAssetsSpecification spec = new DataAssetsSpecification(categoryId, name, Y9LoginUserHolder.getTenantId(), code, false, status, dataState);
 		return dataAssetsRepository.findAll(spec, pageable);
 	}
 
@@ -361,12 +362,15 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 	}
 
 	@Override
+	@Transactional(readOnly = false)
 	public Y9Result<String> updownData(Long id) {
 		try {
 			DataAssets dataAssets = findById(id);
 			if(dataAssets != null) {
 				dataAssets.setStatus(dataAssets.getStatus() == 0 ? 1 : 0);
 				dataAssetsRepository.save(dataAssets);
+			}else {
+				return Y9Result.failure("保存失败，数据不存在");
 			}
 			return Y9Result.successMsg("保存成功");
 		} catch (Exception e) {
@@ -376,6 +380,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 	}
 
 	@Override
+	@Transactional(readOnly = false)
 	public Y9Result<String> genQr(Long id) {
 		try {
 			DataAssets dataAssets = findById(id);
@@ -493,7 +498,8 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 	}
 
 	@Override
-	public Y9Result<String> uploadPicture(MultipartFile file, Long assetsId) {
+	public Y9Result<DataAssets> uploadPicture(MultipartFile file, Long assetsId) {
+		DataAssets dataAssets = null;
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 			String fileName = file.getOriginalFilename();// 文件名称
@@ -502,11 +508,17 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 			// 保存文件
 			Y9FileStore y9FileStore = y9FileStoreService.uploadFile(file, savePath, fileName);
 			if(y9FileStore != null) {
-				DataAssets dataAssets = findById(assetsId);
-				if(dataAssets != null) {
-					dataAssets.setPicture(y9FileStore.getUrl());
-					dataAssetsRepository.save(dataAssets);
+				if(assetsId == 0) {
+					dataAssets = new DataAssets();
+					dataAssets.setTenantId(Y9LoginUserHolder.getTenantId());
+					dataAssets.setCreator(Y9LoginUserHolder.getUserInfo().getName());
+					dataAssets.setDataState("out");
+				}else {
+					dataAssets = findById(assetsId);
 				}
+				dataAssets.setPicture(Y9Context.getProperty("y9.common.dataAssetsBaseUrl") + y9FileStore.getUrl());
+				DataAssets info = dataAssetsRepository.save(dataAssets);
+				assetsId = info.getId();
 			}else {
 				return Y9Result.failure("设置失败");
 			}
@@ -514,10 +526,11 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 			e.printStackTrace();
 			return Y9Result.failure("设置失败：" + e.getMessage());
 		}
-		return Y9Result.successMsg("设置成功");
+		return Y9Result.success(dataAssets, "设置成功");
 	}
 
 	@Override
+	@Transactional(readOnly = false)
 	public Y9Result<String> saveAssetsInterface(String ids, Long assetsId) {
 		try {
 			String[] interfaceIds = ids.split(",");
@@ -543,6 +556,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 	}
 
 	@Override
+	@Transactional(readOnly = false)
 	public Y9Result<String> saveAssetsTable(String ids, Long assetsId) {
 		try {
 			String[] interfaceIds = ids.split(",");
@@ -576,6 +590,49 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 			return Y9Result.failure("保存失败：" + e.getMessage());
 		}
 		return Y9Result.successMsg("保存成功");
+	}
+
+	@Override
+	@Transactional(readOnly = false)
+	public Y9Result<String> examineData(Long id, String dataState) {
+		try {
+			DataAssets dataAssets = findById(id);
+			if(dataAssets != null) {
+				dataAssets.setDataState(dataState);
+				dataAssetsRepository.save(dataAssets);
+			}else {
+				return Y9Result.failure("保存失败，数据不存在");
+			}
+			return Y9Result.successMsg("保存成功");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Y9Result.failure("保存失败：" + e.getMessage());
+		}
+	}
+
+	@Override
+	@Transactional(readOnly = false)
+	public Y9Result<String> deleteMountData(Long id) {
+		try {
+			FileInfo info = fileInfoRepository.findById(id).orElse(null);
+			if(info != null && info.getFileType().equals("文件")) {
+				y9FileStoreService.deleteFile(info.getFilePath());
+			}
+			fileInfoRepository.deleteById(id);
+			// 判断挂接数据量，为零时取出资产上的挂接状态
+			long count = fileInfoRepository.countByAssetsId(info.getAssetsId());
+			if(count == 0) {
+				DataAssets dataAssets = findById(info.getAssetsId());
+				if(dataAssets != null) {
+					dataAssets.setMountType("");
+					dataAssetsRepository.save(dataAssets);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Y9Result.failure("删除失败：" + e.getMessage());
+		}
+		return Y9Result.successMsg("删除成功");
 	}
 
 }

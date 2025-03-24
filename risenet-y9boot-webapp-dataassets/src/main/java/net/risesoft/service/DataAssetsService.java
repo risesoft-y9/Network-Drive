@@ -50,7 +50,7 @@ public interface DataAssetsService {
      * @param size
      * @return
      */
-    Page<DataAssets> searchPage(String categoryId, String name, String code, Integer status, int page, int size);
+    Page<DataAssets> searchPage(String categoryId, String name, String code, Integer status, String dataState, int page, int size);
     
     /**
      * 删除数据资产
@@ -110,7 +110,7 @@ public interface DataAssetsService {
      * @param assetsId
      * @return
      */
-    Y9Result<String> uploadPicture(MultipartFile file, Long assetsId);
+    Y9Result<DataAssets> uploadPicture(MultipartFile file, Long assetsId);
     
     /**
      * 保存挂接的接口信息
@@ -126,5 +126,20 @@ public interface DataAssetsService {
      * @return
      */
     Y9Result<String> saveAssetsTable(String ids, Long assetsId);
+    
+    /**
+     * 资产入库出库
+     * @param id
+     * @param dataState
+     * @return
+     */
+    Y9Result<String> examineData(Long id, String dataState);
+    
+    /**
+     * 删除挂接数据
+     * @param id
+     * @return
+     */
+    Y9Result<String> deleteMountData(Long id);
 
 }

@@ -248,7 +248,7 @@ public class DataSourceServiceImpl implements DataSourceService {
     }
 
 	@Override
-	public List<Map<String, Object>> getTableSelectTree() {
+	public List<Map<String, Object>> getTableSelectTree(String type) {
 		List<Map<String, Object>> listMap = new ArrayList<Map<String,Object>>();
 		try {
 			List<DataSourceTypeEntity> dataSourceTypeEntities = findDataCategory();
@@ -265,18 +265,20 @@ public class DataSourceServiceImpl implements DataSourceService {
 					map2.put("value", "s-" + info.getId());
 					map2.put("label", info.getName());
 					
-					// 获取数据源
-					DataSource dataSource = Y9FormDbMetaDataUtil.createDataSource(info.getUrl(), info.getDriver(),
-							info.getUsername(), info.getPassword());
-					List<Map<String, Object>> child2 = new ArrayList<>();
-			        List<Map<String, Object>> table_map = Y9FormDbMetaDataUtil.listAllTables(dataSource);
-			        for (Map<String, Object> table : table_map) {
-			            Map<String, Object> map3 = new HashMap<>();
-			            map3.put("value", "t-" + info.getId() + "-" + table.get("name").toString());
-			            map3.put("label", table.get("name").toString());
-			            child2.add(map3);
-			        }
-			        map2.put("children", child2);
+					if(type.equals("table")) {
+						// 获取数据源表
+						DataSource dataSource = Y9FormDbMetaDataUtil.createDataSource(info.getUrl(), info.getDriver(),
+								info.getUsername(), info.getPassword());
+						List<Map<String, Object>> child2 = new ArrayList<>();
+				        List<Map<String, Object>> table_map = Y9FormDbMetaDataUtil.listAllTables(dataSource);
+				        for (Map<String, Object> table : table_map) {
+				            Map<String, Object> map3 = new HashMap<>();
+				            map3.put("value", "t-" + info.getId() + "-" + table.get("name").toString());
+				            map3.put("label", table.get("name").toString());
+				            child2.add(map3);
+				        }
+				        map2.put("children", child2);
+					}
 					
 					child1.add(map2);
 				}
