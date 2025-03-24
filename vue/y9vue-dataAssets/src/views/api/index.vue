@@ -33,7 +33,7 @@
                     />
 
                     <!-- 列表 -->
-                    <LabelTable :currTreeNodeInfo="currData" v-if="!currData.isChild" />
+                    <ApiTable :currTreeNodeInfo="currData" v-if="!currData.isChild" />
                 </div>
             </template>
         </fixedTreeModule>
@@ -55,9 +55,9 @@
         dataCatalogTree,
         deleteDataCatalog,
         saveDataCatalog
-    } from '@/api/label';
+    } from '@/api/apiService';
     import BasicInfo from './comps/BasicInfo.vue';
-    import LabelTable from './comps/LabelTable.vue';
+    import ApiTable from './comps/ApiTable.vue';
     import { useI18n } from 'vue-i18n';
     // 注入 字体对象
     const fontSizeObj: any = inject('sizeObjInfo');

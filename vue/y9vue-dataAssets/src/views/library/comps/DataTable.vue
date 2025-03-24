@@ -2,7 +2,13 @@
     <y9Card :title="`${$t('数据列表')} - ${currTreeNodeInfo.name ? currTreeNodeInfo.name : ''}`">
         <template v-slot>
             <!-- 表格 -->
-            <y9Table :config="tableConfig" :filterConfig="filterConfig">
+            <y9Table 
+                :config="tableConfig" 
+                :filterConfig="filterConfig"
+                uniqueIdent="dataConfig" 
+                @on-curr-page-change="onCurrentChange"
+                @on-page-size-change="onPageSizeChange"
+            >
                 <template v-slot:filterBtnSlot>
                     <el-button
                         :size="fontSizeObj.buttonSize"
@@ -70,7 +76,7 @@
     import { useSettingStore } from '@/store/modules/settingStore';
     import y9_storage from '@/utils/storage';
     import { getStoragePageSize } from '@/utils';
-    import { deleteDataAssets, searchPage } from '@/api/pretreat';
+    import { deleteDataAssets, examineData, searchPage } from '@/api/pretreat';
     import type { UploadInstance } from 'element-plus';
     import settings from '@/settings';
     import router from '@/router';
@@ -113,7 +119,7 @@
                 { title: computed(() => t('二维码')), key: 'qrcode', slot: 'qrcode', width: 80 },
                 { title: computed(() => t('资产摘要')), key: 'remark', width: 250 },
                 { title: computed(() => t('标注信息')), key: 'labelData', width: 250 },
-                { title: computed(() => t('数据资产格式')), key: 'dataType', width: 120 },
+                // { title: computed(() => t('数据资产格式')), key: 'dataType', width: 120 },
                 { title: computed(() => t('共享类型')), key: 'shareType', slot: 'shareType', width: 120 },
                 { title: computed(() => t('上架状态')), key: 'status', slot: 'status', width: 100},
                 { title: computed(() => t('登记时间')), key: 'createTime', width: settingStore.getDatetimeSpan },
@@ -180,14 +186,13 @@
                                     },
                                     class: 'global-btn-second',
                                     onClick: async () => {
-                                        ElMessageBox.confirm(`${t('是否删除')}【${row.name}】?`, t('提示'), {
+                                        ElMessageBox.confirm(`${t('是否出库')}【${row.name}】?`, t('提示'), {
                                             confirmButtonText: t('确定'),
                                             cancelButtonText: t('取消'),
                                             type: 'info'
                                         })
                                         .then(async () => {
-                                            loading.value = true;
-                                            let result = await deleteDataAssets(row.id);
+                                            let result = await examineData(row.id, 'out');
                                             ElNotification({
                                                 title: result.success ? t('成功') : t('失败'),
                                                 message: result.msg,
@@ -195,17 +200,15 @@
                                                 duration: 2000,
                                                 offset: 80
                                             });
-                                            loading.value = false;
                                             // 重新请求 列表数据
                                             if(result.success){
                                                 searchData();
                                             }
                                         })
                                         .catch((e) => {
-                                            loading.value = false;
                                             ElMessage({
                                                 type: 'info',
-                                                message: t('已取消删除'),
+                                                message: t('已取消操作'),
                                                 offset: 65
                                             });
                                         });
@@ -213,7 +216,7 @@
                                 },
                                 [
                                     h('i', { class: 'ri-delete-bin-line', style: { marginRight: '2px' } }),
-                                    h('span', t('删除'))
+                                    h('span', t('出库'))
                                 ]
                             )
                         ];
@@ -224,7 +227,7 @@
             tableData: [],
             pageConfig: {
                 currentPage: 1,
-                pageSize: getStoragePageSize('fileConfig', 15),
+                pageSize: getStoragePageSize('dataConfig', 15),
                 total: 0,
                 pageSizeOpts:[10, 15, 30, 60, 120, 240]
             }
@@ -315,7 +318,8 @@
             size: tableConfig.value.pageConfig.pageSize,
             name: formLine.value.name,
             code: formLine.value.code,
-            status: formLine.value.status
+            status: formLine.value.status,
+            dataState: 'in'
         };
         let res = await searchPage(params);
         if (res.code == 0) {
@@ -323,6 +327,17 @@
             tableConfig.value.tableData = res.rows;
             tableConfig.value.pageConfig.total = res.total;
         }
+    }
+
+    // 分页操作
+    function onCurrentChange(currPage) {
+        tableConfig.value.pageConfig.currentPage = currPage;
+        searchData();
+    }
+
+    function onPageSizeChange(pageSize) {
+        tableConfig.value.pageConfig.pageSize = pageSize;
+        searchData();
     }
 </script>
 <style lang="scss" scoped>

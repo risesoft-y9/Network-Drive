@@ -6,7 +6,7 @@
         class="y9-form"
     >
         <el-divider content-position="left" border-style="dashed">资产信息</el-divider>
-        <el-descriptions class="margin-top" border :column="2">
+        <el-descriptions border :column="2">
             <el-descriptions-item>
                 <template #label>
                     数据资产名称<span style="color: red;">*</span>
@@ -48,7 +48,7 @@
                         <span v-else> 暂无图片 </span>
                     </template>
 
-                    <UploadAvatar v-else v-model="form.picture" :assetsId="form.id" name="uploadFile" width="460" height="480">
+                    <UploadAvatar v-else v-model="form.picture" :assetsId="form.id" @setId="setId" name="uploadFile" width="460" height="480">
                     </UploadAvatar>
                 </el-form-item>
             </el-descriptions-item>
@@ -207,7 +207,7 @@
         </el-descriptions>
 
         <el-divider content-position="left" border-style="dashed"> 基础属性</el-divider>
-        <el-descriptions class="margin-top" border :column="2">
+        <el-descriptions border :column="2">
             <el-descriptions-item
                 :span="2"
                 label="数据资产摘要"
@@ -379,24 +379,20 @@ watch(
         if (props.entity) {
             form.value = props.entity;
         }
-    }
-);
-
-watch(
-    () => props.categoryId,
-    (nv, ov) => {
-        form.value.categoryId = props.categoryId;
-    }
+    },
+    { immediate: true }
 );
 
 onMounted(() => {
     getDataType();
-    if (props.entity) {
-        form.value = props.entity;
-    } else {
+    if (!props.entity) {
         genCode();
     }
 });
+
+const setId = (id) => {
+    form.value.id = id;
+}
 
 let dataTypeList = ref([]);
 const getDataType = () => {

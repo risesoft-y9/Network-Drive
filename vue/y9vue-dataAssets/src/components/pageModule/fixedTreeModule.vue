@@ -256,7 +256,7 @@
                 await formatLazyTreeData(data, true);
 
                 //根据搜索结果转换成tree结构显示出来
-                alreadyLoadTreeData.value = [];
+                //alreadyLoadTreeData.value = [];
                 alreadyLoadTreeData.value = await transformTreeBySearchResult(data);
 
                 TreeLoading.value = false;
@@ -265,7 +265,19 @@
                     y9TreeRef.value.setExpandAll();
                 });
             } else {
-                onRefreshTree();
+                //没有就获取获取已经懒加载过的数据，并且设置默认选中第一个节点、默认展开第一个节点，模拟点击第一个节点
+
+                alreadyLoadTreeData.value = y9TreeRef.value.getLazyTreeData(); //获取已经懒加载过的数据
+
+                nextTick(() => {
+                    if (alreadyLoadTreeData.value.length > 0) {
+                        y9TreeRef.value.setCurrentKey(alreadyLoadTreeData.value[0].id); //设置第一个节点为高亮节点
+
+                        y9TreeRef.value.setExpandKeys([alreadyLoadTreeData.value[0].id]); //设置第一个节点展开
+
+                        onNodeClick(alreadyLoadTreeData.value[0]); //模拟点击第一个节点
+                    }
+                });
             }
         }, 500);
     };
@@ -275,7 +287,7 @@
         const treeData = [];
         for (let i = 0; i < result.length; i++) {
             const item = result[i];
-            if (!item.parentId) {
+            if (!item.parentId || item.parentId == '0') {
                 //一级节点
                 let node = item;
                 const child = result.filter((resultItem) => resultItem.parentId === item.id);

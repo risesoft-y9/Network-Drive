@@ -68,7 +68,8 @@ const props = defineProps({
         type: String
     },
     assetsId: {
-        type: String
+        type: String,
+        default: 0
     },
     baseUri: {
         type: String,
@@ -229,6 +230,8 @@ const handleUpload = (option: any) => {
         if (res.success) {
             imageUrl.value = corpImage.value;
             dialogVisible.value = false;
+            emits('setId', res.data?.id);
+            emits('update:modelValue', res.data?.picture);
         }
         ElNotification({
             title: res.success ? '成功' : '失败',
@@ -245,6 +248,7 @@ const handleUpload = (option: any) => {
 
 type Emit = {
     (event: 'update:modelValue', val: string): void;
+    (event: 'setId', val: null): void;
 };
 const emits = defineEmits<Emit>();
 

@@ -1,11 +1,3 @@
-/*
- * @Author: your name
- * @Date: 2021-04-15 10:16:53
- * @LastEditTime: 2023-07-10 10:36:06
- * @LastEditors: mengjuhua
- * @Description: In User Settings Edit
- * @FilePath: \workspace-y9boot-9.5-vuee:\workspace-y9boot-9.6-vue\y9vue-dataAssets\src\api\lib\request.js
- */
 import settings from '@/settings';
 import y9_storage from '@/utils/storage';
 import axios from 'axios'; // 考虑CDN
@@ -108,17 +100,17 @@ function y9Request(baseUrl = '') {
                     default:
                         if (!noVerifyBool) {
                             console.error(res.msg);
-                            // ElMessage({
-                            //     message: res.msg || 'Errors',
-                            //     type: 'error',
-                            //     duration: 1500,
-                            // });
                         }
                         break;
                 }
 
-                // 返回错误 走 catch
-                return Promise.reject(res);
+                if (code === 101000 || code === 10003) {
+                    // 返回错误 走 catch
+                    return Promise.resolve(res);
+                } else {
+                    // 返回错误 走 catch
+                    return res;
+                }
             } else {
                 return res;
             }
