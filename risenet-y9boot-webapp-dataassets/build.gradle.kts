@@ -9,6 +9,8 @@ dependencies {
     api(platform(libs.y9.digitalbase.dependencies))
     providedRuntime(platform(libs.y9.digitalbase.dependencies))
 
+    api(project(":risenet-y9boot-api-auth"))
+
     api("net.risesoft:risenet-y9boot-starter-sso-oauth2-resource")
     api("net.risesoft:risenet-y9boot-starter-jpa-public")
     api("net.risesoft:risenet-y9boot-starter-jpa-tenant")
