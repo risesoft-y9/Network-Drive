@@ -55,6 +55,7 @@
     </scm>
 
     <modules>
+        <module>risenet-y9boot-api-auth</module>
         <module>risenet-y9boot-webapp-dataassets</module>
         <module>risenet-y9boot-webapp-storage</module>
     </modules>
