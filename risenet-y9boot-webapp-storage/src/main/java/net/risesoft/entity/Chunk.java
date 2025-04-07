@@ -63,6 +63,7 @@ public class Chunk implements Serializable {
      * 总大小
      */
     @Column(nullable = false)
+    @Comment("总大小")
     private Long totalSize;
     /**
      * 文件标识
