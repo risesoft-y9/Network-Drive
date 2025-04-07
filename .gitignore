@@ -10,6 +10,7 @@ target/
 # IntelliJ IDEA
 .idea
 *.iml
+*.log
 
 # vscode
 .vscode
