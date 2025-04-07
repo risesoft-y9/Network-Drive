@@ -100,6 +100,16 @@ public class UploaderController {
             UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
             String fileExtension = FilenameUtils.getExtension(fileName);
             long fileSize = file.length();
+            if (parentId.equals(FileListType.MY.getValue())) {
+                StorageCapacity capacity = storageCapacityService.findByCapacityOwnerId(userInfo.getPersonId());
+                if (null != capacity) {
+                    if (capacity.getRemainingLength() < fileSize) {
+                        map.put("msg", "存储空间不够，无法上传");
+                        map.put("success", false);
+                        return map;
+                    }
+                }
+            }
             String fullPath = Y9FileStore.buildPath(Y9Context.getSystemName(), Y9LoginUserHolder.getTenantId(),
                 userInfo.getPersonId(), parentId);
             Y9FileStore y9FileStore = y9FileStoreService.uploadFile(file, fullPath, fileName);
@@ -152,15 +162,19 @@ public class UploaderController {
         String chunckPath = Y9Context.getWebRootRealPath() + "upload";
         String file = chunckPath + "/" + fileInfo.getIdentifier() + "/" + fileName;
         String folder = chunckPath + "/" + fileInfo.getIdentifier();
+
         // 合并文件
         map = mergeMethod(file, folder, fileName, parentId, listType);
-        if (map.get("success") == null) {
+        Boolean success = Boolean.valueOf(map.get("success").toString());
+        String message = map.get("message").toString();
+        if (success) {
             // 保存文件信息
             fileInfo.setLocation(file);
+            fileInfo.setFileNodeId(parentId);
             fileInfoService.addFileInfo(fileInfo);
             return Y9Result.success(map, "合并成功");
         }
-        return Y9Result.failure(500, "合并失败");
+        return Y9Result.failure(500, "合并失败:" + message);
     }
 
     private Map<String, Object> saveFileNodeAndCapacity(String parentId, String fileName, String fileExtension,
@@ -184,11 +198,6 @@ public class UploaderController {
                     if (capacity.getRemainingLength() > fileSize) {
                         capacity.setRemainingLength(capacity.getRemainingLength() - fileSize);
                         storageCapacityService.save(capacity);
-                    }
-                    if (capacity.getRemainingLength() < fileSize) {
-                        map.put("msg", "存储空间不够，无法上传");
-                        map.put("success", false);
-                        return map;
                     }
                 }
             }
@@ -214,7 +223,8 @@ public class UploaderController {
                 fileName = FilenameUtils.getBaseName(fileName) + sdf.format(new Date()) + "." + fileExtension;
             }
             fileNode.setName(fileName);
-            fileNodeService.saveNode(fileNode);
+            fileNode = fileNodeService.saveNode(fileNode);
+            map.put("fileId", fileNode.getId());
             map.put("msg", "文件上传成功");
             map.put("success", true);
         } catch (Exception e) {

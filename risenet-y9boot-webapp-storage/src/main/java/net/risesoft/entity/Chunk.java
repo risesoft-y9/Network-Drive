@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table(name = "Y9_STORAGE_NETWORK_FILE_CHUNKS",
-        indexes = {@Index(name = "FILE_NODE_ID_INDEX", columnList = "FILE_NODE_ID")})
+    indexes = {@Index(name = "FILE_NODE_ID_INDEX", columnList = "FILE_NODE_ID")})
 @org.hibernate.annotations.Table(comment = "文件分块记录表", appliesTo = "Y9_STORAGE_NETWORK_FILE_CHUNKS")
 public class Chunk implements Serializable {
 
@@ -63,6 +63,7 @@ public class Chunk implements Serializable {
      * 总大小
      */
     @Column(nullable = false)
+    @Comment("总大小")
     private Long totalSize;
     /**
      * 文件标识
