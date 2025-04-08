@@ -1,5 +1,6 @@
 # Build and Release Folders
 target/
+webapp/
 
 # Eclipse
 .settings/
