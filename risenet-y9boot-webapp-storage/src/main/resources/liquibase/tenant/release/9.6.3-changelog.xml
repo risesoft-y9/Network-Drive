@@ -1,8 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
-        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
-
+    <changeSet id="1702001405836-1-1" author="yihong" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="Y9_STORAGE_NETWORK_FILE_CHUNKS"/>
+            </not>
+        </preConditions>
+        <createTable remarks="文件分块记录表"
+                     tableName="Y9_STORAGE_NETWORK_FILE_CHUNKS">
+            <column name="ID" remarks="主键id" type="VARCHAR(50)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="FILE_NODE_ID" remarks="文件节点id" type="VARCHAR(50)">
+            </column>
+            <column name="FILE_STORE_ID" remarks="文件存储id" type="VARCHAR(50)">
+            </column>
+            <column name="chunkNumber" remarks="当前文件块" type="INT">
+            </column>
+            <column name="chunkSize" remarks="分块大小" type="BIGINT">
+            </column>
+            <column name="currentChunkSize" remarks="当前分块大小" type="BIGINT">
+            </column>
+            <column name="totalSize" remarks="总大小" type="BIGINT">
+            </column>
+            <column name="identifier" remarks="文件标识" type="VARCHAR(255)"/>
+            <column name="filename" remarks="文件名" type="VARCHAR(255)"/>
+            <column name="relativePath" remarks="相对路径" type="VARCHAR(255)"/>
+            <column name="totalChunks" remarks="总块数" type="VARCHAR(255)"/>
+            <column name="type" remarks="文件类型" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1702001405836-1-2" author="yihong" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="Y9_STORAGE_NETWORK_FILE_INFO"/>
+            </not>
+        </preConditions>
+        <createTable remarks="文件信息表"
+                     tableName="Y9_STORAGE_NETWORK_FILE_INFO">
+            <column name="ID" remarks="主键id" type="VARCHAR(50)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="FILE_NODE_ID" remarks="文件节点id" type="VARCHAR(50)">
+            </column>
+            <column name="filename" remarks="文件名" type="VARCHAR(255)"/>
+            <column name="identifier" remarks="文件标识" type="VARCHAR(255)"/>
+            <column name="totalSize" remarks="总大小" type="BIGINT">
+            </column>
+            <column name="type" remarks="类型" type="VARCHAR(255)"/>
+            <column name="location" remarks="文件位置" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>

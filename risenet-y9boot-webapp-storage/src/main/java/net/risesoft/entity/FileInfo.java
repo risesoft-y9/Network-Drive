@@ -26,11 +26,11 @@ public class FileInfo implements Serializable {
     private static final long serialVersionUID = 2887873103562809956L;
 
     @Id
-    @Column(name = "ID", length = 38)
-    @GeneratedValue(generator = "IDGENERATOR")
-    @GenericGenerator(name = "IDGENERATOR", strategy = "native")
+    @Column(name = "ID", length = 50)
+    @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name = "uuid", strategy = "assigned")
     @Comment("主键id")
-    private Long id;
+    private String id;
 
     @Column(name = "FILE_NODE_ID", length = 50)
     @Comment("文件节点id")
