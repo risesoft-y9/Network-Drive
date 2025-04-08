@@ -100,16 +100,7 @@ public class UploaderController {
             UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
             String fileExtension = FilenameUtils.getExtension(fileName);
             long fileSize = file.length();
-            if (parentId.equals(FileListType.MY.getValue())) {
-                StorageCapacity capacity = storageCapacityService.findByCapacityOwnerId(userInfo.getPersonId());
-                if (null != capacity) {
-                    if (capacity.getRemainingLength() < fileSize) {
-                        map.put("msg", "存储空间不够，无法上传");
-                        map.put("success", false);
-                        return map;
-                    }
-                }
-            }
+
             String fullPath = Y9FileStore.buildPath(Y9Context.getSystemName(), Y9LoginUserHolder.getTenantId(),
                 userInfo.getPersonId(), parentId);
             Y9FileStore y9FileStore = y9FileStoreService.uploadFile(file, fullPath, fileName);
@@ -125,38 +116,48 @@ public class UploaderController {
     }
 
     @PostMapping(value = "/chunk")
-    public Y9Result<String> uploadChunk1(Chunk chunk) {
+    public String uploadChunk1(Chunk chunk, HttpServletResponse response) {
         MultipartFile file = chunk.getFile();
         LOGGER.debug("file originName: {}, chunkNumber: {}", file.getOriginalFilename(), chunk.getChunkNumber());
-
+        UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         try {
+            Long fileSize = chunk.getTotalSize();
+            LOGGER.debug("##########################文件大小: {}", fileSize);
+            StorageCapacity capacity = storageCapacityService.findByCapacityOwnerId(userInfo.getPersonId());
+            if (null != capacity) {
+                if (capacity.getRemainingLength() < fileSize) {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    return "存储空间不够，无法上传，请联系存储空间管理员扩容";
+                }
+            }
             byte[] bytes = file.getBytes();
             String chunckPath = Y9Context.getWebRootRealPath() + "upload";
             Path path = Paths.get(generatePath(chunckPath, chunk));
             // 文件写入指定路径
             Files.write(path, bytes);
             LOGGER.debug("文件 {} 写入成功, uuid:{}", chunk.getFilename(), chunk.getIdentifier());
+            chunk.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
             chunkService.saveChunk(chunk);
 
-            return Y9Result.success("文件上传成功");
+            return "文件上传成功";
         } catch (IOException e) {
             LOGGER.error("后端异常...", e);
-            e.printStackTrace();
-            return Y9Result.failure("后端异常...");
+            return "后端异常...";
         }
     }
 
     @GetMapping(value = "/chunk")
-    public Y9Result<Object> checkChunk(Chunk chunk, HttpServletResponse response) {
+    public Object checkChunk(Chunk chunk, HttpServletResponse response) {
         LOGGER.debug("文件 {} 验证, uuid:{}", chunk.getFilename(), chunk.getIdentifier());
         if (chunkService.checkChunk(chunk.getIdentifier(), chunk.getChunkNumber())) {
             response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
         }
-        return Y9Result.success(chunk);
+        return chunk;
     }
 
     @PostMapping("/mergeFile")
-    public Y9Result<Map<String, Object>> mergeFile(FileInfo fileInfo, String parentId, String listType) {
+    public Y9Result<Map<String, Object>> mergeFile(FileInfo fileInfo, String parentId, String listType,
+        HttpServletResponse response) {
         Map<String, Object> map = new HashMap<>();
         String fileName = fileInfo.getFilename();
         String chunckPath = Y9Context.getWebRootRealPath() + "upload";
@@ -165,21 +166,28 @@ public class UploaderController {
 
         // 合并文件
         map = mergeMethod(file, folder, fileName, parentId, listType);
+        LOGGER.info("########### mergeMethod result: {}", map);
         Boolean success = Boolean.valueOf(map.get("success").toString());
-        String message = map.get("message").toString();
+        String message = map.get("msg").toString();
+        String fileId = null != map.get("fileId") ? map.get("fileId").toString() : "";
         if (success) {
             // 保存文件信息
+            fileInfo.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
             fileInfo.setLocation(file);
-            fileInfo.setFileNodeId(parentId);
+            fileInfo.setFileNodeId(fileId);
             fileInfoService.addFileInfo(fileInfo);
             return Y9Result.success(map, "合并成功");
         }
+        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         return Y9Result.failure(500, "合并失败:" + message);
     }
 
     private Map<String, Object> saveFileNodeAndCapacity(String parentId, String fileName, String fileExtension,
         long fileSize, String y9FileStoreId, String listType) {
         Map<String, Object> map = new HashMap<>();
+        map.put("msg", "文件上传失败");
+        map.put("success", false);
+        map.put("fileId", null);
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         String userId = userInfo.getPersonId(), userName = userInfo.getName();
         try {
@@ -229,8 +237,7 @@ public class UploaderController {
             map.put("success", true);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            map.put("msg", "文件上传失败");
-            map.put("success", false);
+
         }
         return map;
     }
