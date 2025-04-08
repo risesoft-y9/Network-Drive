@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import lombok.RequiredArgsConstructor;
@@ -67,5 +68,32 @@ public class FileUtils {
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
+    }
+
+    public static String convertFileSize(Long fileSize) {
+        Objects.requireNonNull(fileSize, "size");
+        double size = fileSize;
+        String unit = "B";
+
+        if (size >= 1024) {
+            size /= 1024;
+            unit = "KB";
+        }
+
+        if (size >= 1024) {
+            size /= 1024;
+            unit = "MB";
+        }
+
+        if (size >= 1024) {
+            size /= 1024;
+            unit = "GB";
+        }
+
+        if (size >= 1024) {
+            size /= 1024;
+            unit = "TB";
+        }
+        return String.format("%.2f %s", size, unit);
     }
 }
