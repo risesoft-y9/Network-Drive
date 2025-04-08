@@ -3,7 +3,6 @@ package net.risesoft.controller.dto;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -13,6 +12,7 @@ import lombok.NoArgsConstructor;
 
 import net.risesoft.entity.FileNode;
 import net.risesoft.support.FileNodeType;
+import net.risesoft.util.FileUtils;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.util.Y9ModelConvertUtil;
 
@@ -63,7 +63,7 @@ public class FileNodeDTO {
 
     public void setFileSize(Long fileSize) {
         if (fileSize != null) {
-            this.fileSize = FileUtils.byteCountToDisplaySize(fileSize);
+            this.fileSize = FileUtils.convertFileSize(fileSize);// FileUtils.byteCountToDisplaySize(fileSize);
         }
     }
 
