@@ -17,12 +17,15 @@ import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.entity.FileDownLoadRecord;
 import net.risesoft.entity.FileNode;
+import net.risesoft.entity.FileShareLink;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.FileDownLoadRecordService;
 import net.risesoft.service.FileNodeService;
+import net.risesoft.service.FileShareLinkService;
 import net.risesoft.y9.Y9LoginUserHolder;
+import net.risesoft.y9.util.base64.Y9Base64Util;
 import net.risesoft.y9.util.mime.ContentDispositionUtil;
 import net.risesoft.y9public.service.Y9FileStoreService;
 
@@ -41,6 +44,7 @@ public class LinkDownLoadController {
     private final Y9FileStoreService y9FileStoreService;
     private final FileNodeService fileNodeService;
     private final FileDownLoadRecordService fileDownLoadRecordService;
+    private final FileShareLinkService fileShareLinkService;
 
     /**
      * 文件直链下载
@@ -101,6 +105,24 @@ public class LinkDownLoadController {
             map.put("success", false);
             map.put("msg", "密码输入错误，请输入正确的密码");
             if (fileNode.getLinkPassword().equals(pwd)) {
+                map.put("success", true);
+                map.put("msg", "密码验证成功，正在为您下载");
+            }
+        }
+        return Y9Result.success(map);
+    }
+
+    @RequestMapping(value = "/checkLink")
+    public Y9Result<Object> checkLink(String tenantId, String pwd, String linkKey) {
+        Map<String, Object> map = new HashMap<String, Object>();
+        Y9LoginUserHolder.setTenantId(tenantId);
+        FileShareLink fileShareLink = fileShareLinkService.findByLinkKey(linkKey);
+        if (null != fileShareLink) {
+            map.put("success", false);
+            map.put("msg", "密码输入错误，请输入正确的密码");
+            String password = Y9Base64Util.encode(pwd);
+            if (fileShareLink.getLinkPassword().equals(password)) {
+                map.put("fileId", fileShareLink.getFileId());
                 map.put("success", true);
                 map.put("msg", "密码验证成功，正在为您下载");
             }

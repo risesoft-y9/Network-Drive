@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.security.SecureRandom;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -95,5 +96,13 @@ public class FileUtils {
             unit = "TB";
         }
         return String.format("%.2f %s", size, unit);
+    }
+
+    public static String generateRandomNumber() {
+        SecureRandom secureRandom = new SecureRandom();
+        String randomNumber = String.valueOf(secureRandom.nextLong()) + String.valueOf(secureRandom.nextLong());
+        randomNumber = randomNumber.replaceAll("-", "").substring(0, 24);
+        System.out.println("生成的20位随机数是: " + randomNumber);
+        return randomNumber;
     }
 }

@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +21,7 @@ import net.risesoft.model.user.UserInfo;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.StorageCapacityService;
+import net.risesoft.util.FileUtils;
 import net.risesoft.y9.Y9LoginUserHolder;
 
 /**
@@ -36,6 +37,8 @@ import net.risesoft.y9.Y9LoginUserHolder;
 public class StorageCapacityController {
 
     private final StorageCapacityService storageCapacityService;
+    @Value("${y9.app.storage.defaultStorageCapacity}")
+    private String defaultStorageCapacity;
 
     /**
      * 获取存储信息
@@ -68,8 +71,8 @@ public class StorageCapacityController {
         for (StorageCapacity sc : scList.getContent()) {
             Map<String, Object> map = new HashMap<>();
             map.put("id", sc.getId());
-            map.put("capacitySize", FileUtils.byteCountToDisplaySize(sc.getCapacitySize()));
-            map.put("remainingLength", FileUtils.byteCountToDisplaySize(sc.getRemainingLength()));
+            map.put("capacitySize", FileUtils.convertFileSize(sc.getCapacitySize()));
+            map.put("remainingLength", FileUtils.convertFileSize(sc.getRemainingLength()));
             map.put("capacityOwnerId", sc.getCapacityOwnerId());
             map.put("capacityOwnerName", sc.getCapacityOwnerName());
             map.put("operatorId", sc.getOperatorId());
@@ -97,8 +100,8 @@ public class StorageCapacityController {
         try {
             StorageCapacity sc = storageCapacityService.findByCapacityOwnerId(user.getPersonId());
             if (null != sc) {
-                map.put("capacitySize", FileUtils.byteCountToDisplaySize(sc.getCapacitySize()));
-                map.put("remainingLength", FileUtils.byteCountToDisplaySize(sc.getRemainingLength()));
+                map.put("capacitySize", FileUtils.convertFileSize(sc.getCapacitySize()));
+                map.put("remainingLength", FileUtils.convertFileSize(sc.getRemainingLength()));
             }
         } catch (Exception e) {
             LOGGER.error("获取存储长度失败", e);
@@ -117,17 +120,24 @@ public class StorageCapacityController {
         try {
             StorageCapacity sc = storageCapacityService.findById(storageCapacity.getId());
             if (null != sc) {
-                if (storageCapacity.getCapacitySize() > sc.getCapacitySize()) {
-                    Long size = storageCapacity.getCapacitySize() - sc.getCapacitySize();
-                    sc.setRemainingLength(size + sc.getRemainingLength());
+                long defaultSize = Long.parseLong(defaultStorageCapacity);
+                if (storageCapacity.getCapacitySize() == defaultSize
+                    || storageCapacity.getCapacitySize() > defaultSize) {
+                    if (storageCapacity.getCapacitySize() > sc.getCapacitySize()) {
+                        Long size = storageCapacity.getCapacitySize() - sc.getCapacitySize();
+                        sc.setRemainingLength(size + sc.getRemainingLength());
+                    }
+                    if (storageCapacity.getCapacitySize() < sc.getCapacitySize()) {// 5-8
+                        Long size = sc.getCapacitySize() - storageCapacity.getCapacitySize();// 3
+                        sc.setRemainingLength(sc.getRemainingLength() - size);
+                    }
+                    sc.setCapacitySize(storageCapacity.getCapacitySize());
+                    sc.setUpdateTime(new Date());
+                    storageCapacityService.save(sc);
+                } else {
+                    return Y9Result.failure("存储空间只能扩容，扩容值不能小于默认存储容量：" + defaultStorageCapacity + "字节("
+                        + FileUtils.convertFileSize(sc.getCapacitySize()) + ")");
                 }
-                if (storageCapacity.getCapacitySize() < sc.getCapacitySize()) {
-                    Long size = sc.getCapacitySize() - storageCapacity.getCapacitySize();
-                    sc.setRemainingLength(sc.getRemainingLength() - size);
-                }
-                sc.setCapacitySize(storageCapacity.getCapacitySize());
-                sc.setUpdateTime(new Date());
-                storageCapacityService.save(sc);
             }
         } catch (Exception e) {
             LOGGER.error("存储空间扩容失败", e);

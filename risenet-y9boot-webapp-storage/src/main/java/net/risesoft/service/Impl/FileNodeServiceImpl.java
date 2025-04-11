@@ -46,6 +46,7 @@ import net.risesoft.support.comparator.FileNameComparator;
 import net.risesoft.support.comparator.FileSizeComparator;
 import net.risesoft.support.comparator.UpdateTimeComparator;
 import net.risesoft.util.FileNodeUtil;
+import net.risesoft.util.FileUtils;
 import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9public.entity.Y9FileStore;
@@ -220,10 +221,12 @@ public class FileNodeServiceImpl implements FileNodeService {
             }
         } else {
             y9FileStoreService.deleteFile(fileNode.getFileStoreId());
-            StorageCapacity sc = storageCapacityService.findByCapacityOwnerId(Y9LoginUserHolder.getPersonId());
-            if (sc != null && StringUtils.isNotBlank(sc.getId())) {
-                sc.setRemainingLength(sc.getRemainingLength() + fileNode.getFileSize());
-                storageCapacityService.save(sc);
+            if (fileNode.getListType().equals(FileListType.MY.getValue())) { // 只计算我的文件列表删除的文件大小
+                StorageCapacity sc = storageCapacityService.findByCapacityOwnerId(Y9LoginUserHolder.getPersonId());
+                if (sc != null && StringUtils.isNotBlank(sc.getId())) {
+                    sc.setRemainingLength(sc.getRemainingLength() + fileNode.getFileSize());
+                    storageCapacityService.save(sc);
+                }
             }
         }
         fileNodeRepository.delete(fileNode);
@@ -347,7 +350,7 @@ public class FileNodeServiceImpl implements FileNodeService {
         try {
             long size = Long.parseLong(singleUploadLimit);
             if (file.getSize() > size) {
-                map.put("msg", "上传文件的大小超过单次上传限制120M?");
+                map.put("msg", "上传文件的大小超过单次上传限制" + FileUtils.convertFileSize(size) + "?");
                 map.put("success", false);
             } else {
                 Long fileSize = file.getSize();
@@ -359,7 +362,8 @@ public class FileNodeServiceImpl implements FileNodeService {
                         sc.setCapacityOwnerId(userId);
                         sc.setCapacityOwnerName(userName);
                         sc.setCapacitySize(Long.valueOf(defaultStorageCapacity));
-                        sc.setRemainingLength(Long.valueOf(defaultStorageCapacity));
+                        long remainingLength = Long.valueOf(defaultStorageCapacity) - fileSize;
+                        sc.setRemainingLength(remainingLength);
                         sc.setCreateTime(new Date());
                         storageCapacityService.save(sc);
                     } else {
