@@ -431,6 +431,10 @@ public class FileNodeController {
             boolean isCollect = fileNodeCollectService.findByCollectUserIdAndFileIdAndListName(userInfo.getPersonId(),
                 fileNodeDTO.getId(), fileNodeDTO.getListType());
             fileNodeDTO.setCollect(isCollect);
+            if (StringUtils.isNotBlank(searchName)) {
+                FileNode parentFileNode = fileNodeService.getParent(fileNodeDTO.getParentId());
+                fileNodeDTO.setParentFileNode(FileNodeDTO.from(parentFileNode));
+            }
         }
 
         List<FileNode> recursiveToRootFileNodeList = fileNodeService.recursiveToRoot(id);
@@ -713,12 +717,12 @@ public class FileNodeController {
      * @return
      */
     @RequestMapping(value = "/setLinkPwd")
-    public Y9Result<Object> setLinkPwd(String id, boolean encryption, String filePassword) {
+    public Y9Result<Object> setLinkPwd(String id, boolean encryption, String linkPassword) {
         try {
             FileNode fileNode = fileNodeService.findById(id);
             if (null != fileNode) {
                 fileNode.setEncryption(encryption);
-                fileNode.setLinkPassword(encryption ? filePassword : "");
+                fileNode.setLinkPassword(encryption ? linkPassword : "");
                 fileNodeService.saveNode(fileNode);
             }
         } catch (Exception e) {
