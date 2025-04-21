@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="1702001405837-1-1" author="yihong" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="Y9_STORAGE_SHARE_LINK"/>
+            </not>
+        </preConditions>
+        <createTable remarks="直链下载分享链接表"
+                     tableName="Y9_STORAGE_SHARE_LINK">
+            <column name="ID" remarks="主键id" type="VARCHAR(38)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="FILEID" remarks="文件id" type="VARCHAR(50)">
+            </column>
+            <column name="LINKEXPIRETIME" remarks="链接期限" type="VARCHAR(50)">
+            </column>
+            <column name="LINKKEY" remarks="链接密钥" type="VARCHAR(100)">
+            </column>
+            <column name="LINKPASSWORD" remarks="链接密码" type="VARCHAR(50)">
+            </column>
+            <column name="CREATEUSERID" remarks="创建人id" type="VARCHAR(50)">
+            </column>
+            <column name="CREATETIME" remarks="创建时间" type="datetime">
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
