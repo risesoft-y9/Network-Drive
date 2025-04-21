@@ -68,8 +68,8 @@ public class FileNodeCollectServiceImpl implements FileNodeCollectService {
         FileNode node = fileNodeRepository.findById(fileId).orElse(null);
         if (null != node && StringUtils.isNotBlank(node.getId())) {
             // cancelChildren(node);
-            FileNodeCollect collect = fileNodeCollectRepository.findByFileIdAndCollectUserIdAndListName(node.getId(),
-                userInfo.getPersonId(), node.getListType());
+            FileNodeCollect collect =
+                fileNodeCollectRepository.findByFileIdAndCollectUserId(node.getId(), userInfo.getPersonId());
             if (null != collect && StringUtils.isNotBlank(collect.getId())) {
                 fileNodeCollectRepository.delete(collect);
             }
@@ -99,6 +99,20 @@ public class FileNodeCollectServiceImpl implements FileNodeCollectService {
         try {
             FileNodeCollect coolect =
                 fileNodeCollectRepository.findByFileIdAndCollectUserIdAndListName(fileId, collectUserId, listName);
+            if (null != coolect && StringUtils.isNotBlank(coolect.getId())) {
+                isCollect = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return isCollect;
+    }
+
+    @Override
+    public boolean findByCollectUserIdAndFileId(String collectUserId, String fileId) {
+        boolean isCollect = false;
+        try {
+            FileNodeCollect coolect = fileNodeCollectRepository.findByFileIdAndCollectUserId(fileId, collectUserId);
             if (null != coolect && StringUtils.isNotBlank(coolect.getId())) {
                 isCollect = true;
             }

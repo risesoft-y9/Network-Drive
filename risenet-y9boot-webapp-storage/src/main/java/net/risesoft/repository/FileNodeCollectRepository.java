@@ -21,4 +21,6 @@ public interface FileNodeCollectRepository
     List<String> openCollectFolder(String userId);
 
     FileNodeCollect findByFileIdAndCollectUserIdAndListName(String fileId, String collectUserId, String listName);
+
+    FileNodeCollect findByFileIdAndCollectUserId(String fileId, String collectUserId);
 }
