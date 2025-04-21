@@ -328,8 +328,8 @@ public class FileNodeController {
 
         List<FileNodeDTO> fileNodeDTOList = FileNodeDTO.from(subFileList);
         for (FileNodeDTO fileNodeDTO : fileNodeDTOList) {
-            boolean isCollect = fileNodeCollectService.findByCollectUserIdAndFileIdAndListName(userInfo.getPersonId(),
-                fileNodeDTO.getId(), fileNodeDTO.getListType());
+            boolean isCollect =
+                fileNodeCollectService.findByCollectUserIdAndFileId(userInfo.getPersonId(), fileNodeDTO.getId());
             fileNodeDTO.setCollect(isCollect);
             List<FileNode> rootList = fileNodeService.recursiveToRoot(fileNodeDTO.getId());
             List<String> list = rootList.stream().map(FileNode::getName).collect(Collectors.toList());

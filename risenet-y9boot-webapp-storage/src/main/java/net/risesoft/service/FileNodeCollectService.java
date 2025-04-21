@@ -48,4 +48,13 @@ public interface FileNodeCollectService {
      * @return
      */
     boolean findByCollectUserIdAndFileIdAndListName(String collectUserId, String fileId, String listName);
+
+    /**
+     * 查询当前是否收藏过文件夹或者文件
+     * 
+     * @param collectUserId
+     * @param fileId
+     * @return
+     */
+    boolean findByCollectUserIdAndFileId(String collectUserId, String fileId);
 }
