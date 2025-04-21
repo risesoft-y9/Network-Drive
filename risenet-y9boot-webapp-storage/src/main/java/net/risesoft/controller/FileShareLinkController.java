@@ -53,10 +53,10 @@ public class FileShareLinkController {
             fileShareLink.setCreateTime(new Date());
             fileShareLink.setCreateUserId(userInfo.getPersonId());
             fileShareLink = fileShareLinkService.save(fileShareLink);
-            return Y9Result.success(fileShareLink, "直链创建成功！");
+            return Y9Result.success(fileShareLink, "直链加密链接创建成功！");
         } catch (Exception e) {
-            LOGGER.error("直链创建失败！", e);
-            return Y9Result.failure("直链创建失败！");
+            LOGGER.error("直链加密链接创建失败！", e);
+            return Y9Result.failure("直链加密链接创建失败！");
         }
     }
 
