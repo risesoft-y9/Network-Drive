@@ -119,6 +119,8 @@ spring:
     redis:
         database: 8
         host: 127.0.0.1
+        password: 111111
+        port: 6379
         lettuce:
             pool:
                 max-active: 8
@@ -126,8 +128,6 @@ spring:
                 max-wait: -1
                 min-idle: 0
             shutdown-timeout: 100ms
-        password: y9i-83204585
-        port: 6379
         ssl: false
         timeout: 10000
 y9:
