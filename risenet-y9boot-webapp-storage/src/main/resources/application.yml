@@ -106,7 +106,7 @@ spring:
             max-request-size: 2048MB
 y9:
     systemName: storage
-    internalIp: 192.168.x.x,10.0.x.x,172.20.x.x
+    internalIp: 192.168.x.x,10.x.x.x,172.20.x.x
     app:
         storage:
             #单次上传限制/字节 120Mb
