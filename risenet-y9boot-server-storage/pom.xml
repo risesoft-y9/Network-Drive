@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <!-- <groupId>net.risesoft</groupId> -->
-    <artifactId>risenet-y9boot-webapp-storage</artifactId>
+    <artifactId>risenet-y9boot-server-storage</artifactId>
     <version>${revision}</version>
     <packaging>war</packaging>
 
@@ -92,7 +92,7 @@
     </dependencies>
 
     <build>
-        <finalName>storage</finalName>
+        <finalName>server-storage</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

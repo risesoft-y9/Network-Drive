@@ -1,3 +1,8 @@
+management:
+    endpoints:
+        web:
+            exposure:
+                include: '*'
 server:
     port: 8080
     servlet:
@@ -7,11 +12,11 @@ server:
             force: true
         session:
             tracking-modes: COOKIE
-        context-path: /dataAssets
+        context-path: /server-storage
         register-default-servlet: true
 spring:
     application:
-        name: dataAssets
+        name: storage
     aop:
         auto: false
         proxy-target-class: true
@@ -25,18 +30,20 @@ spring:
             - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
     cloud:
         nacos:
+            server-addr: https://test.youshengyun.com:443
+            username: nacos
+            password: ${NACOS_PASSWORD:111111}
             config:
                 enabled: false
                 group: DEFAULT_GROUP
-                namespace: dev
-                server-addr: https://dev.youshengyun.com:443
-                username: nacos
-                password: ${NACOS_PASSWORD:111111}
+                namespace: test
             discovery:
                 enabled: false
+                group: DEFAULT_GROUP
+                namespace: test
     config:
         import:
-            - optional:nacos:dataAssets.yml
+            - optional:nacos:storage.yml
             #- optional:nacos:test01.yml?group=group_02
             #- optional:nacos:test02.yml?group=group_03&refreshEnabled=false
     datasource:
@@ -52,7 +59,7 @@ spring:
                     enabled: true
             stat-view-servlet:
                 allow: 10.168.18.1/24,10.168.12.1/24
-                enabled: false
+                enabled: true
                 login-password: '83204585'
                 login-username: y9admin
                 reset-enable: false
@@ -63,12 +70,12 @@ spring:
                 url-pattern: /*
             connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
             y9-public:
-                driver-class-name: com.mysql.cj.jdbc.Driver
-                url: jdbc:mysql://localhost:3306/y9_kernal?serverTimezone=GMT%2B8&nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&rewriteBatchedStatements=true&useCompression=true&useSSL=false
-                username: root
                 #driver-class-name: oracle.jdbc.OracleDriver
                 #url: jdbc:oracle:thin:@127.0.0.1:1521:orcl
                 #username: Y9_PUBLIC
+                driver-class-name: com.mysql.cj.jdbc.Driver
+                url: jdbc:mysql://localhost:3306/y9_public?serverTimezone=GMT%2B8&nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&rewriteBatchedStatements=true&useCompression=true&useSSL=false
+                username: root
                 password: 111111
                 initialSize: 1
                 maxActive: 20
@@ -96,16 +103,16 @@ spring:
                     use_second_level_cache: false
                 dialect: org.hibernate.dialect.MySQL8Dialect
                 hbm2ddl:
-                    auto: update
+                    auto: none
                 jdbc:
                     batch_size: 100
-                show_sql: false
+                show_sql: true
     kafka:
         bootstrap-servers: localhost:9092
         consumer:
             auto-commit-interval: 1000
             enable-auto-commit: true
-            group-id: y9dataAssets-server
+            group-id: y9storage-server
     main:
         allow-bean-definition-overriding: true
     mvc:
@@ -119,7 +126,7 @@ spring:
     redis:
         database: 8
         host: 127.0.0.1
-        password: 111111
+        password: '111111'
         port: 6379
         lettuce:
             pool:
@@ -131,33 +138,38 @@ spring:
         ssl: false
         timeout: 10000
 y9:
-    systemName: dataAssets
-    internalIp: 192.168.x.x,10.0.x.x,172.20.x.x
+    systemName: storage
+    internalIp: 192.168.x.x,10.x.x.x,172.20.x.x
     app:
-        dataAssets:
+        storage:
+            #单次上传限制/字节 120Mb
+            singleUploadLimit: 125829120
+            #默认存储容量/字节
+            defaultStorageCapacity: 5368709120
             fileManagerSystemName: itemAdmin
-            managerRoleName: 管理员角色
+            publicManagerRoleName: 公共文件管理角色
+            capacityManagerRoleName: 存储空间管理角色
+            reportManagerRoleName: 文件上报管理角色
             productDocument: 95b19opvx9d40458c002dd61c41eb2c
-            upload-folder: D:\testPlaceholder\upload
-            tenantId: c425281829dc4d4496ddddf7fc0198d0
     service:
         org:
-            directUrl: https://test-api.youshengyun.com
+            directUrl: http://localhost:7055
     common:
         kafkaEnabled: false
-        orgBaseUrl: http://127.0.0.1:7055/platform
+        orgBaseUrl: http://127.0.0.1:7055/server-platform
         jodconverterBaseUrl: https://www.youshengyun.com/jodconverter/onlinePreview?url=
-        dataAssetsBaseUrl: http://localhost:7056/dataAssets
-        logBaseUrl: http://localhost:7056/log
-        userOnlineBaseUrl: http://localhost:7056/userOnline
+        storageBaseUrl: http://localhost:7058/server-storage
+        logBaseUrl: http://localhost:7056/server-log
+        userOnlineBaseUrl: http://localhost:7056/server-useronline
     feature:
         file:
             base64FileName: false
             encryptionFileContent: false
-            #privateKey: 
-            #publicKey: 
+            #privateKey:
+            #publicKey:
+            rest:
+                fileManagerUrl: http://localhost:8080/fileManager
             ftp:
-                enabled: false
                 host: localhost
                 port: 21
                 username: y9admin
@@ -178,27 +190,31 @@ y9:
                 testWhileIdle: true
                 useEPSVwithIPv4: false
                 passiveMode: true
-            local:
-                enabled: true
-                # 本地文件存储的根路径，按需设置为自己的
-                basePath: "d:/y9FileStore"
         jpa:
             packagesToScanEntityPublic: net.risesoft.y9public.entity
             packagesToScanEntityTenant: net.risesoft.entity
             packagesToScanRepositoryPublic: net.risesoft.y9public.repository
             packagesToScanRepositoryTenant: net.risesoft.repository
         liquibase:
-            tenant-enabled: false
+            tenant-enabled: true
+        multi-tenant:
+            # kafka, db
+            event-source: db
         log:
-            enabled: false
+            enabled: true
             # kafka, api
-            logSaveTarget: kafka
+            reportMethod: api
         session:
             redis:
                 enabled: true
                 maxInactiveIntervalInSeconds: 3600
         security:
             enabled: true
+            csrf:
+                accepted-referer:
+                    - youshengyun.com
+                    - localhost
+                    - 127.0.0.1
             cors:
                 allowCredentials: true
                 allowed-headers: '*'
@@ -215,22 +231,6 @@ y9:
                     - http://localhost:8084
                     - http://127.0.0.1:7055
                     - http://127.0.0.1:7056
-                    - http//192.168.3.218:7056
-                    - http//192.168.3.171:7056
-            xss:
-                ignoreParam:
-                    - tables
-                    - fields
-                    - idAndIsShowJson
-                    - formDataJson
-                    - rulesJson
-            csrf:
-                acceptedReferer:
-                    - 127.0.0.1
-                    - localhost
-                    - demo.youshengyun.com
-                    - test.youshengyun.com
-                    - test-api.youshengyun.com
         oauth2:
             resource:
                 enabled: true
@@ -241,20 +241,5 @@ y9:
                 opaque:
                     client-id: clientid_oidc
                     client-secret: secret_oidc
-                    introspection-uri: https://test.youshengyun.com/sso/oidc/introspect
-                    profile-uri: https://test.youshengyun.com/sso/oidc/profile
-idCode:
-    #统一码接口地址
-    idCode_url: https://api.idcode.org.cn
-    #统一码解析地址
-    analyze_url: http://s.idcode.org.cn/
-    #单位主码
-    main_code: MA.156.1003.1629
-    #系统授权key
-    api_key: 9XRMKN90QA8O90SDAAAAAKJ
-    #系统授权码
-    api_code: 09DN09QA8X08XRNN9DRMXRXM9DNAK09Q
-    #统一码解析地址
-    goto_url: https://test.youshengyun.com/data-assets/goto
-    #统一码示例地址
-    sample_url: https://test.youshengyun.com/data-assets/goto
+                    introspection-uri: http://localhost:7055/sso/oidc/introspect
+                    profile-uri: http://localhost:7055/sso/oidc/profile
