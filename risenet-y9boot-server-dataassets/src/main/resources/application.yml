@@ -12,11 +12,11 @@ server:
             force: true
         session:
             tracking-modes: COOKIE
-        context-path: /storage
+        context-path: /server-dataassets
         register-default-servlet: true
 spring:
     application:
-        name: storage
+        name: dataAssets
     aop:
         auto: false
         proxy-target-class: true
@@ -30,20 +30,18 @@ spring:
             - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
     cloud:
         nacos:
-            server-addr: https://test.youshengyun.com:443
-            username: nacos
-            password: ${NACOS_PASSWORD:111111}
             config:
                 enabled: false
                 group: DEFAULT_GROUP
-                namespace: test
+                namespace: dev
+                server-addr: https://dev.youshengyun.com:443
+                username: nacos
+                password: ${NACOS_PASSWORD:111111}
             discovery:
                 enabled: false
-                group: DEFAULT_GROUP
-                namespace: test
     config:
         import:
-            - optional:nacos:storage.yml
+            - optional:nacos:dataAssets.yml
             #- optional:nacos:test01.yml?group=group_02
             #- optional:nacos:test02.yml?group=group_03&refreshEnabled=false
     data:
@@ -73,27 +71,28 @@ spring:
                 maximumPoolSize: 20
                 minimumIdle: 1
     jpa:
-        #databasePlatform: org.hibernate.dialect.MySQL8Dialect
         hibernate:
-            ddl-auto: none
             naming:
                 implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyHbmImpl
                 physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         open-in-view: false
         properties:
             hibernate:
+                cache:
+                    use_query_cache: false
+                    use_second_level_cache: false
                 dialect: org.hibernate.dialect.MySQL8Dialect
                 hbm2ddl:
-                    auto: none
+                    auto: update
                 jdbc:
-                    batchSize: 100
-                showSql: true
+                    batch_size: 100
+                show_sql: false
     kafka:
         bootstrap-servers: localhost:9092
         consumer:
             auto-commit-interval: 1000
             enable-auto-commit: true
-            group-id: y9storage-server
+            group-id: y9dataAssets-server
     main:
         allow-bean-definition-overriding: true
     mvc:
@@ -105,38 +104,33 @@ spring:
             max-file-size: 2048MB
             max-request-size: 2048MB
 y9:
-    systemName: storage
-    internalIp: 192.168.x.x,10.x.x.x,172.20.x.x
+    systemName: dataAssets
+    internalIp: 192.168.x.x,10.0.x.x,172.20.x.x
     app:
-        storage:
-            #单次上传限制/字节 120Mb
-            singleUploadLimit: 125829120
-            #默认存储容量/字节
-            defaultStorageCapacity: 5368709120
+        dataAssets:
             fileManagerSystemName: itemAdmin
-            publicManagerRoleName: 公共文件管理角色
-            capacityManagerRoleName: 存储空间管理角色
-            reportManagerRoleName: 文件上报管理角色
+            managerRoleName: 管理员角色
             productDocument: 95b19opvx9d40458c002dd61c41eb2c
+            upload-folder: D:\testPlaceholder\upload
+            tenantId: c425281829dc4d4496ddddf7fc0198d0
     service:
         org:
-            directUrl: http://localhost:7055
+            directUrl: https://test-api.youshengyun.com
     common:
         kafkaEnabled: false
-        orgBaseUrl: http://127.0.0.1:7055/platform
+        orgBaseUrl: http://127.0.0.1:7055/server-platform
         jodconverterBaseUrl: https://www.youshengyun.com/jodconverter/onlinePreview?url=
-        storageBaseUrl: http://localhost:7058/storage
-        logBaseUrl: http://localhost:7056/log
-        userOnlineBaseUrl: http://localhost:7056/userOnline
+        dataAssetsBaseUrl: http://localhost:7056/server-dataassets
+        logBaseUrl: http://localhost:7056/server-log
+        userOnlineBaseUrl: http://localhost:7056/server-useronline
     feature:
         file:
             base64FileName: false
             encryptionFileContent: false
             #privateKey:
             #publicKey:
-            rest:
-                fileManagerUrl: http://localhost:8080/fileManager
             ftp:
+                enabled: false
                 host: localhost
                 port: 21
                 username: y9admin
@@ -157,31 +151,27 @@ y9:
                 testWhileIdle: true
                 useEPSVwithIPv4: false
                 passiveMode: true
+            local:
+                enabled: true
+                # 本地文件存储的根路径，按需设置为自己的
+                basePath: "d:/y9FileStore"
         jpa:
             packagesToScanEntityPublic: net.risesoft.y9public.entity
             packagesToScanEntityTenant: net.risesoft.entity
             packagesToScanRepositoryPublic: net.risesoft.y9public.repository
             packagesToScanRepositoryTenant: net.risesoft.repository
         liquibase:
-            tenant-enabled: true
-        multi-tenant:
-            # kafka, db
-            event-source: db
+            tenant-enabled: false
         log:
-            enabled: true
+            enabled: false
             # kafka, api
-            reportMethod: api
+            logSaveTarget: kafka
         session:
             redis:
                 enabled: true
                 maxInactiveIntervalInSeconds: 3600
         security:
             enabled: true
-            csrf:
-                accepted-referer:
-                    - youshengyun.com
-                    - localhost
-                    - 127.0.0.1
             cors:
                 allowCredentials: true
                 allowed-headers: '*'
@@ -198,6 +188,22 @@ y9:
                     - http://localhost:8084
                     - http://127.0.0.1:7055
                     - http://127.0.0.1:7056
+                    - http//192.168.3.218:7056
+                    - http//192.168.3.171:7056
+            xss:
+                ignoreParam:
+                    - tables
+                    - fields
+                    - idAndIsShowJson
+                    - formDataJson
+                    - rulesJson
+            csrf:
+                acceptedReferer:
+                    - 127.0.0.1
+                    - localhost
+                    - demo.youshengyun.com
+                    - test.youshengyun.com
+                    - test-api.youshengyun.com
         oauth2:
             resource:
                 enabled: true
@@ -208,5 +214,20 @@ y9:
                 opaque:
                     client-id: clientid_oidc
                     client-secret: secret_oidc
-                    introspection-uri: http://localhost:7055/sso/oidc/introspect
-                    profile-uri: http://localhost:7055/sso/oidc/profile
+                    introspection-uri: https://test.youshengyun.com/sso/oidc/introspect
+                    profile-uri: https://test.youshengyun.com/sso/oidc/profile
+idCode:
+    #统一码接口地址
+    idCode_url: https://api.idcode.org.cn
+    #统一码解析地址
+    analyze_url: http://s.idcode.org.cn/
+    #单位主码
+    main_code: MA.156.1003.1629
+    #系统授权key
+    api_key: 9XRMKN90QA8O90SDAAAAAKJ
+    #系统授权码
+    api_code: 09DN09QA8X08XRNN9DRMXRXM9DNAK09Q
+    #统一码解析地址
+    goto_url: https://test.youshengyun.com/data-assets/goto
+    #统一码示例地址
+    sample_url: https://test.youshengyun.com/data-assets/goto

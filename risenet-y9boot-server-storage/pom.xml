@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <!-- <groupId>net.risesoft</groupId> -->
-    <artifactId>risenet-y9boot-webapp-dataassets</artifactId>
+    <artifactId>risenet-y9boot-server-storage</artifactId>
     <version>${revision}</version>
     <packaging>war</packaging>
 
@@ -19,12 +19,6 @@
     </properties>
 
     <dependencies>
-    	<dependency>
-			<groupId>net.risesoft</groupId>
-			<artifactId>risenet-y9boot-api-auth</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		
         <dependency>
             <groupId>net.risesoft</groupId>
             <artifactId>risenet-y9boot-starter-sso-oauth2-resource</artifactId>
@@ -34,12 +28,6 @@
         <dependency>
             <groupId>net.risesoft</groupId>
             <artifactId>risenet-y9boot-starter-security</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>net.risesoft</groupId>
-            <artifactId>risenet-y9boot-starter-log</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -72,18 +60,6 @@
             <artifactId>risenet-y9boot-support-file-service-ftp</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
-        <dependency>
-            <groupId>net.risesoft</groupId>
-            <artifactId>risenet-y9boot-support-file-service-local</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>net.risesoft</groupId>
-            <artifactId>risenet-y9boot-idcode</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -103,12 +79,6 @@
         </dependency>
 
         <dependency>
-            <groupId>net.risesoft</groupId>
-            <artifactId>risenet-y9boot-common-sqlddl</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
             <scope>provided</scope>
@@ -119,11 +89,10 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
-
     </dependencies>
 
     <build>
-        <finalName>dataAssets</finalName>
+        <finalName>server-storage</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -153,7 +122,7 @@
                         <groupId>com.ly.smart-doc</groupId>
                         <artifactId>smart-doc-maven-plugin</artifactId>
                         <configuration>
-                            <projectName>dataAssets</projectName>
+                            <projectName>storage</projectName>
                         </configuration>
                         <executions>
                             <execution>
