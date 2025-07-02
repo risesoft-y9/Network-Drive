@@ -6,7 +6,7 @@ import { useSettingStore } from '@/store/modules/settingStore';
 import y9_storage from '@/utils/storage';
 import NProgress from 'nprogress'; // progress bar
 import { $y9_SSO } from '@/main';
-import { getLoginInfo } from './getInitData';
+import { getUserRole } from './getInitData';
 
 NProgress.configure({ showSpinner: false, easing: 'ease', speed: 1000 });
 
@@ -59,34 +59,17 @@ async function check() {
         return false;
     }
 
-    //const y9UserInfo = JSON.parse(sessionStorage.getItem('ssoUserInfo'));
-    // if (y9UserInfo.managerLevel === 0) {
-    //     userRole = ['user'];
-    // }
-    // if (y9UserInfo.managerLevel === 1) {
-    //     userRole = ['systemAdmin'];
-    // }
-    
-    isRoleValid = (await checkRole(userRole)) ? true : false;
-    // 根据角色权限获取路由
-    // let isLoadRouter = sessionStorage.getItem('isLoadRouter');
-    // 是否加载过数据
-    // if (import.meta.env.VUE_APP_APPFEATURES === '1' && isLoadRouter !== '1') {
-    //     // 获取应用初始化数据，可选
-    //     let initInfo = await getLoginInfo();
-    //     y9_storage.setObjectItem('initInfo', initInfo.data);
-    // } else {
-    //     isRoleValid = true;
-    // }
-    // 每个工程都请求这个接口，当错误时，不再请求
-    // if (sessionStorage.getItem('getLoginInfo') != 'true') {
-        // let initInfo = await getLoginInfo();
-        // y9_storage.setObjectItem('initInfo', initInfo.data);
-    // }
+    // 判断角色
+    let result = await getUserRole();
+    if(result) {
+        userRole = ['systemAdmin'];
+    }
 
+    isRoleValid = (await checkRole(userRole)) ? true : false;
     if (!isRoleValid) {
         return false;
     }
+
     // token在有效期且角色已获取路由
     if (isTokenValid && isRoleValid) {
         return true;

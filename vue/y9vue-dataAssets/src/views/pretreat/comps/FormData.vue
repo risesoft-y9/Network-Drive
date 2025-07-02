@@ -257,7 +257,7 @@
             >
                 <el-form-item label="" prop="dataOriginSystem">
                     <span v-if="disabled">{{ form.dataOriginSystem }}</span>
-                    <el-select v-else v-model="form.dataOriginSystem"></el-select>
+                    <el-input v-else v-model="form.dataOriginSystem"></el-input>
                 </el-form-item>
             </el-descriptions-item>
 
@@ -267,6 +267,54 @@
                 <el-form-item label="" prop="dataProvider">
                     <span v-if="disabled">{{ form.dataProvider }}</span>
                     <el-input v-else v-model="form.dataProvider"></el-input>
+                </el-form-item>
+            </el-descriptions-item>
+
+            <el-descriptions-item>
+                <template #label>
+                    数据专区<span style="color: red;">*</span>
+                </template>
+                <el-form-item label="" prop="dataZone">
+                    <el-select :disabled="disabled" v-model="form.dataZone">
+                        <el-option
+                            v-for="item in dataZoneList"
+                            :key="item.code"
+                            :label="item.name"
+                            :value="item.code"
+                        />
+                    </el-select>
+                </el-form-item>
+            </el-descriptions-item>
+
+            <el-descriptions-item>
+                <template #label>
+                    产品类型<span style="color: red;">*</span>
+                </template>
+                <el-form-item label="" prop="productType">
+                    <el-select :disabled="disabled" v-model="form.productType">
+                        <el-option
+                            v-for="item in productTypeList"
+                            :key="item.code"
+                            :label="item.name"
+                            :value="item.code"
+                        />
+                    </el-select>
+                </el-form-item>
+            </el-descriptions-item>
+
+            <el-descriptions-item>
+                <template #label>
+                    应用场景<span style="color: red;">*</span>
+                </template>
+                <el-form-item label="" prop="appScenarios">
+                    <el-select :disabled="disabled" v-model="form.appScenarios">
+                        <el-option
+                            v-for="item in appScenariosList"
+                            :key="item.code"
+                            :label="item.name"
+                            :value="item.code"
+                        />
+                    </el-select>
                 </el-form-item>
             </el-descriptions-item>
         </el-descriptions>
@@ -284,7 +332,7 @@
 import { ref, onMounted, watch, nextTick, computed } from 'vue';
 import { FormInstance, Action, ElNotification } from 'element-plus';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { getDataCode, getPicture, saveData } from '@/api/pretreat';
+import { getDataCode, saveData } from '@/api/pretreat';
 import { getOptionValueList } from '@/api/dataAssets/dictionaryOption';
 import y9_storage from '@/utils/storage';
 import settings from '@/settings';
@@ -317,7 +365,10 @@ let rules = ref({
     code: [{ required: true, message: '数据资产编码不能为空', trigger: ['change', 'blur'] }],
     dataPurpose: [{ required: true, message: '主要用途不能为空', trigger: ['change', 'blur'] }],
     shareType: [{ required: true, message: '共享类型不能为空', trigger: ['change', 'blur'] }],
-    dataType: [{ required: true, message: '数据资产格式不能为空', trigger: ['change', 'blur'] }]
+    dataType: [{ required: true, message: '数据资产格式不能为空', trigger: ['change', 'blur'] }],
+    appScenarios: [{ required: true, message: '不能为空', trigger: ['change', 'blur'] }],
+    dataZone: [{ required: true, message: '不能为空', trigger: ['change', 'blur'] }],
+    productType: [{ required: true, message: '不能为空', trigger: ['change', 'blur'] }]
 });
 
 const form = ref({ categoryId: props.categoryId });
@@ -394,13 +445,25 @@ const setId = (id) => {
     form.value.id = id;
 }
 
-let dataTypeList = ref([]);
+let dataTypeList = ref([]);// 数据格式类型
+let appScenariosList = ref([]);// 应用场景
+let dataZoneList = ref([]);// 数据专区
+let productTypeList = ref([]);// 产品类型
 const getDataType = () => {
     getOptionValueList('assetsType').then((res) => {
         dataTypeList.value = res.data;
         // 设置默认选中
         //const itemData = dataTypeList.value.find(item => item.defaultSelected === 1);
         //form.value.dataType = itemData.code;
+    });
+    getOptionValueList('appScenarios').then((res) => {
+        appScenariosList.value = res.data;
+    });
+    getOptionValueList('dataZone').then((res) => {
+        dataZoneList.value = res.data;
+    });
+    getOptionValueList('productType').then((res) => {
+        productTypeList.value = res.data;
     });
 };
 

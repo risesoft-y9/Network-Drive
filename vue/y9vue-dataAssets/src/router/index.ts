@@ -42,7 +42,14 @@ export const constantRoutes: Array<any> = [
         },
         component: () => import('@/views/404/index.vue'),
     },
-    
+    {
+        path: '/goto',
+        hidden: true,
+        component: () => import('@/views/qrcode/goto/index.vue'),
+        meta: {
+            title: '二维码信息'
+        }
+    }
 ];
 // 懒加载
 const lazy = (path) => {

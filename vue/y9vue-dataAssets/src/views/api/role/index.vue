@@ -36,14 +36,7 @@
     <el-button v-loading.fullscreen.lock="loading" style="display: none"></el-button>
 
     <y9Dialog v-model:config="addDialogConfig">
-        <y9Form ref="ruleFormRef" :config="formConfig">
-            <template #statusSelect>
-                <el-radio-group v-model="formConfig.model.status">
-                    <el-radio value="0">正常</el-radio>
-                    <el-radio value="1">禁用</el-radio>
-                </el-radio-group>
-            </template>
-        </y9Form>
+        <y9Form ref="ruleFormRef" :config="formConfig"></y9Form>
     </y9Dialog>
 
     <y9Dialog v-model:config="dialogConfig">
@@ -269,6 +262,7 @@
         searchData();
     }
 
+    let oldName = ref('');
     // 菜单表单ref
     const ruleFormRef = ref();
     // 菜单 表单
@@ -301,11 +295,20 @@
                 rows: 3
             },
             {
-                type: 'slot',
+                type: 'radio',
+                prop: 'status',
                 label: computed(() => t('状态')),
-                required: true,
                 props: {
-                    slotName: 'statusSelect'
+                    options: [
+                        {
+                            value: 0,
+                            label: '正常'
+                        },
+                        {
+                            value: 1,
+                            label: '禁用'
+                        }
+                    ]
                 }
             },
         ],
@@ -325,30 +328,33 @@
                 const ruleFormInstance = ruleFormRef.value?.elFormRef;
                 await ruleFormInstance.validate(async (valid) => {
                     if (valid) {
-                        // 将数值为''的值去除
-                        Object.keys(ruleFormRef.value?.model).forEach((key) => {
-                            if (ruleFormRef.value?.model[key] == '' && ruleFormRef.value?.model[key] !== false) {
-                                delete ruleFormRef.value?.model[key];
-                                return;
+                        if(oldName.value != '' && oldName.value != ruleFormRef.value.model.appName) {
+                            ElNotification({
+                                title: '失败',
+                                message: "名称不能修改，只能删除重建",
+                                type: 'error',
+                                duration: 2000,
+                                offset: 80
+                            });
+                            reject();
+                        }else {
+                            let params = {
+                                ...ruleFormRef.value.model
+                            };
+
+                            let result = await saveApiRoleData(params);
+                            if (result.success) {
+                                searchData();
                             }
-                        });
-
-                        let params = {
-                            ...ruleFormRef.value.model
-                        };
-
-                        let result = await saveApiRoleData(params);
-                        if (result.success) {
-                            searchData();
+                            ElNotification({
+                                title: result.success ? t('成功') : t('失败'),
+                                message: result.msg,
+                                type: result.success ? 'success' : 'error',
+                                duration: 2000,
+                                offset: 80
+                            });
+                            resolve();
                         }
-                        ElNotification({
-                            title: result.success ? t('成功') : t('失败'),
-                            message: result.msg,
-                            type: result.success ? 'success' : 'error',
-                            duration: 2000,
-                            offset: 80
-                        });
-                        resolve();
                     } else {
                         reject();
                     }
@@ -358,14 +364,15 @@
     });
 
     function handleClick() {
+        oldName.value = '';
         formConfig.value.model = {};
-        formConfig.value.model.status = '0';
+        formConfig.value.model.status = 0;
         addDialogConfig.value.show = true;
     }
 
     function editClick(row) {
+        oldName.value = row.appName;
         formConfig.value.model = row;
-        formConfig.value.model.status = row.status == 0 ? '0' : '1';
         addDialogConfig.value.show = true;
     }
 </script>

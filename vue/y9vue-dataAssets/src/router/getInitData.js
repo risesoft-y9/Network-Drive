@@ -1,7 +1,7 @@
 export async function getLoginInfo() {
     let sessionObj = JSON.parse(sessionStorage.getItem(
-        import.meta.env. VUE_APP_SSO_SITETOKEN_KEY));
-    return await fetch(import.meta.env.VUE_APP_SSO_DOMAINURL + 'y9home/api/rest/index/getLoginInfo', {
+        import.meta.env.VUE_APP_SSO_SITETOKEN_KEY));
+    return await fetch(import.meta.env.VUE_APP_CONTEXT + 'api/rest/index/getLoginInfo', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
@@ -29,5 +29,21 @@ export async function getLoginInfo() {
         // window.location = window.location.origin + window.location.pathname;
         sessionStorage.setItem("getLoginInfo","false")
         window.location = window.location.origin + window.location.pathname;
+    });
+}
+
+export function getUserRole() {
+    let sessionObj = JSON.parse(sessionStorage.getItem(import.meta.env.VUE_APP_SSO_SITETOKEN_KEY));
+    return fetch(import.meta.env.VUE_APP_CONTEXT + 'vue/catalog/hasRole', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'Authorization': 'Bearer ' + sessionObj.access_token
+        }
+    }).then(response => response.json()).then((res) => {
+        // console.log(res.data);
+        return res.data;
+    }).catch(e => {
+        console.log(e)
     });
 }

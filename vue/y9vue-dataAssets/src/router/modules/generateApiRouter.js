@@ -6,6 +6,7 @@ const generateApiRouter = {
     meta: {
         title: 'API服务',
         icon: 'ri-terminal-box-line',
+        roles: ['systemAdmin']
     },
     children:[
         {

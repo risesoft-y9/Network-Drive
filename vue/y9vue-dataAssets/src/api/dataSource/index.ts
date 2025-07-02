@@ -31,13 +31,13 @@ export const getDataSourceByType = async (params) => {
 };
 
 /**
- * 三级接口 根据数据源id获取数据库表
+ * 根据数据源id获取数据库表
  * @param params 
  * @returns 
  */
-export const getTablesByBaseType = async (params) => {
+export const getTablesByBaseId = async (params) => {
     return await platformRequest({
-        url: 'vue/source/findTablesByBaseType',
+        url: 'vue/source/getTablePage',
         method: 'GET',
         cType: false,
         params: params

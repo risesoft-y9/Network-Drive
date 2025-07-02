@@ -6,6 +6,7 @@ const examineRouter = {
     meta: {
         title: '资产审核',
         icon: 'ri-function-line',
+        roles: ['systemAdmin']
     },
     children:[
         {
