@@ -1,6 +1,7 @@
 package net.risesoft.service;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,7 +11,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.risesoft.entity.DataAssets;
 import net.risesoft.entity.FileInfo;
+import net.risesoft.model.AssetsModel;
 import net.risesoft.model.SearchPage;
+import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 
 public interface DataAssetsService {
@@ -141,5 +144,33 @@ public interface DataAssetsService {
      * @return
      */
     Y9Result<String> deleteMountData(Long id);
+    
+    /**
+     * 可信数据空间-获取数据资产列表
+     * @param page
+     * @param size
+     * @return
+     */
+    Y9Page<Map<String, Object>> searchPage2(String searchText, String appScenarios, String dataZone, String productType, Integer sort, int page, int size);
+    
+    /**
+     * 根据id获取数据资产信息
+     * @param id
+     * @return
+     */
+    Y9Result<AssetsModel> getDataById(Long id);
+    
+    /**
+     * 根据二维码获取信息
+     * @param qrcode
+     * @return
+     */
+    Y9Result<AssetsModel> getDataByQrCode(String qrcode);
+    
+    /**
+     * 可信数据空间-获取过滤条件
+     * @return
+     */
+    Y9Result<List<Map<String, Object>>> getDataFilter();
 
 }

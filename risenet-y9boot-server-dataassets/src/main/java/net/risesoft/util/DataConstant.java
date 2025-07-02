@@ -1,7 +1,7 @@
 package net.risesoft.util;
 
 /**
- * 数据源工具类
+ * 数据工具类
  * @author pzx
  *
  */
@@ -41,4 +41,18 @@ public class DataConstant {
 				return "";
 		}
 	}
+	
+	public static String getShareType(Integer type) {
+		switch (type) {
+			case 0:
+				return "不予共享";
+			case 1:
+				return "有条件共享";
+			case 2:
+				return "无条件共享";
+			default:
+				return "";
+		}
+	}
+	
 }

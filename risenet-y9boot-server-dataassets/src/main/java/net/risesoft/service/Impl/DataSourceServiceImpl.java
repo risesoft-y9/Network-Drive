@@ -9,10 +9,6 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,12 +21,9 @@ import net.risesoft.pojo.Y9Result;
 import net.risesoft.repository.DataSourceRepository;
 import net.risesoft.repository.DataSourceTypeRepository;
 import net.risesoft.service.DataSourceService;
-import net.risesoft.util.DataConstant;
 import net.risesoft.util.Y9FormDbMetaDataUtil;
-import net.risesoft.util.db.DbMetaDataUtil;
-import net.risesoft.util.elastic.ElasticsearchRestClient;
 import net.risesoft.y9.Y9LoginUserHolder;
-
+import y9.client.rest.platform.permission.PersonRoleApiClient;
 import jodd.util.Base64;
 
 @Service(value = "dataSourceService")
@@ -39,19 +32,7 @@ public class DataSourceServiceImpl implements DataSourceService {
 
     private final DataSourceRepository datasourceRepository;
     private final DataSourceTypeRepository dataSourceTypeRepository;
-
-    @Override
-    public Page<DataSourceEntity> getDataSourcePage(String baseName, int page, int rows) {
-        if (page < 0) {
-            page = 1;
-        }
-        Pageable pageable = PageRequest.of(page - 1, rows, Sort.by(Sort.Direction.DESC, "createTime"));
-        if (StringUtils.isNotBlank(baseName)) {
-            return datasourceRepository.findByNameContainingAndTenantId(baseName, Y9LoginUserHolder.getTenantId(),
-                pageable);
-        }
-        return datasourceRepository.findAll(pageable);
-    }
+    private final PersonRoleApiClient personRoleApiClient;
 
     @Override
     @Transactional(readOnly = false)
@@ -105,64 +86,6 @@ public class DataSourceServiceImpl implements DataSourceService {
     }
 
     @Override
-    public DataSourceEntity findByBaseName(String lookupName) {
-        return datasourceRepository.findByNameAndTenantId(lookupName, Y9LoginUserHolder.getTenantId());
-    }
-
-    @Override
-    public List<DataSourceEntity> findByType(Integer type) {
-        if (type.equals(0)) {
-            List<DataSourceEntity> list =
-                datasourceRepository.findByTypeAndTenantId(type, Y9LoginUserHolder.getTenantId());
-            list.addAll(datasourceRepository.findByBaseTypeAndTenantIdOrderByCreateTime(DataConstant.ES,
-                Y9LoginUserHolder.getTenantId()));
-            return list;
-        }
-        return datasourceRepository.findByTenantId(Y9LoginUserHolder.getTenantId());
-    }
-
-    @Override
-    public Map<String, Object> getNotExtractList(String baseId, String tableName) {
-        Map<String, Object> map = new HashMap<String, Object>();
-        List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
-        if (StringUtils.isBlank(baseId)) {
-            map.put("count", listMap.size());
-            map.put("msg", "");
-            map.put("code", 0);
-            map.put("data", listMap);
-            return map;
-        }
-        DataSourceEntity source = datasourceRepository.findById(baseId).orElse(null);
-        List<String> list = new ArrayList<String>();
-        if (source.getBaseType().equals(DataConstant.ES)) {
-            ElasticsearchRestClient elasticsearchRestClient =
-                new ElasticsearchRestClient(source.getUrl(), source.getUsername(), source.getPassword());
-            try {
-                list = elasticsearchRestClient.getIndexs();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            list = DbMetaDataUtil.getAllTable(source.getDriver(), source.getUsername(), source.getPassword(),
-                source.getUrl(), source.getBaseSchema());
-        }
-        for (String str : list) {
-            if (StringUtils.isNotBlank(tableName) && !str.contains(tableName)) {
-                continue;
-            }
-            Map<String, Object> row = new HashMap<String, Object>();
-            row.put("name", str);
-            row.put("baseId", baseId);
-            listMap.add(row);
-        }
-        map.put("count", listMap.size());
-        map.put("msg", "");
-        map.put("code", 0);
-        map.put("data", listMap);
-        return map;
-    }
-
-    @Override
     @Transactional(readOnly = false)
     public Y9Result<DataSourceTypeEntity> saveDataCategory(MultipartFile iconFile, DataSourceTypeEntity entity) {
         if (entity != null && StringUtils.isNotBlank(entity.getName())) {
@@ -203,17 +126,33 @@ public class DataSourceServiceImpl implements DataSourceService {
 
     @Override
     public List<DataSourceEntity> findByBaseType(String baseType) {
-        return datasourceRepository.findByBaseTypeAndTenantIdOrderByCreateTime(baseType,
-            Y9LoginUserHolder.getTenantId());
+    	// 判断是否系统管理员
+		boolean isAdmin = personRoleApiClient.hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, 
+				"系统管理员", Y9LoginUserHolder.getPersonId()).getData();
+		if(isAdmin) {
+			return datasourceRepository.findByBaseTypeAndTenantIdOrderByCreateTime(baseType, Y9LoginUserHolder.getTenantId());
+		}else {
+			return datasourceRepository.findByBaseTypeAndTenantIdAndUserIdOrderByCreateTime(baseType, 
+					Y9LoginUserHolder.getTenantId(), Y9LoginUserHolder.getPersonId());
+		}
     }
 
     @Override
     public List<Map<String, Object>> searchSource(String baseName) {
         List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+        // 判断是否系统管理员
+ 		boolean isAdmin = personRoleApiClient.hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, 
+     				"系统管理员", Y9LoginUserHolder.getPersonId()).getData();
         List<DataSourceTypeEntity> list = dataSourceTypeRepository.findAll();
         for (DataSourceTypeEntity category : list) {
-            List<DataSourceEntity> sourceList = datasourceRepository.findByNameContainingAndBaseTypeAndTenantId(
-                baseName, category.getName(), Y9LoginUserHolder.getTenantId());
+            List<DataSourceEntity> sourceList = null;
+            if(isAdmin) {
+            	sourceList = datasourceRepository.findByNameContainingAndBaseTypeAndTenantId(baseName, 
+            			category.getName(), Y9LoginUserHolder.getTenantId());
+            }else {
+            	sourceList = datasourceRepository.findByNameContainingAndBaseTypeAndTenantIdAndUserId(baseName, 
+            			category.getName(), Y9LoginUserHolder.getTenantId(), Y9LoginUserHolder.getPersonId());
+            }
             if (sourceList.size() == 0) {
                 continue;
             }
@@ -284,6 +223,34 @@ public class DataSourceServiceImpl implements DataSourceService {
 				}
 				map.put("children", child1);
 				listMap.add(map);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return listMap;
+	}
+
+	@Override
+	public List<Map<String, Object>> getTablePage(String id, String name) {
+		List<Map<String, Object>> listMap = new ArrayList<Map<String,Object>>();
+		try {
+			DataSourceEntity dataSourceEntity = getDataSourceById(id);
+			if(dataSourceEntity != null) {
+				// 获取数据源
+				DataSource dataSource = Y9FormDbMetaDataUtil.createDataSource(dataSourceEntity.getUrl(), dataSourceEntity.getDriver(), 
+						dataSourceEntity.getUsername(), dataSourceEntity.getPassword());
+				// 获取数据表
+			    List<Map<String, Object>> table_map = Y9FormDbMetaDataUtil.listAllTables(dataSource);
+			    for (Map<String, Object> table : table_map) {
+			    	String tableName = table.get("name").toString();
+			    	if(StringUtils.isNotBlank(name) && !tableName.contains(name)) {
+			    		continue;
+			    	}
+			        Map<String, Object> map = new HashMap<>();
+			        map.put("name", tableName);
+			        map.put("sourceId", id);
+			        listMap.add(map);
+			    }
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
