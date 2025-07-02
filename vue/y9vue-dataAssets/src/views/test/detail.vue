@@ -533,8 +533,8 @@
     }
 
     async function init() {
-        getApiData();
         initJsonContainer();
+        getApiData();
         autoAddToken();
     }
     onMounted(() => {

@@ -14,6 +14,7 @@ const dictionaryRouter = {
     meta: {
         title: '资产字典',
         icon: 'ri-book-marked-line',
+        roles: ['systemAdmin']
     },
     children:[
         {

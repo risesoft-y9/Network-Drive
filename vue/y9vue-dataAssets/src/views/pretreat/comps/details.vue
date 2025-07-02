@@ -189,7 +189,7 @@ function downloadFile(id) {
 }
 
 let identifier = ref('');
-let currNode = ref({'name': '', 'url': ''});
+let currNode = ref({'name': '', 'sourceId': ''});
 function showPage(row) {
     if(row.fileType == '接口') {
         identifier.value = row.identifier
@@ -201,7 +201,7 @@ function showPage(row) {
         });
     } else if(row.fileType == '数据表') {
         currNode.value.name = row.name;
-        currNode.value.url = row.identifier;
+        currNode.value.sourceId = row.identifier;
         Object.assign(dialogConfig2.value, {
             show: true,
             width: '60%',

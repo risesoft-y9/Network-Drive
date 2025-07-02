@@ -14,6 +14,7 @@ const libraryRouter = {
     meta: {
         title: '资产库',
         icon: 'ri-archive-line',
+        roles: ['systemAdmin']
     },
     children:[
         {

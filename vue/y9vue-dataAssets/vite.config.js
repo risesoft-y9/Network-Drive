@@ -34,20 +34,8 @@ export default (serve) => {
                 '@': resolve(__dirname, 'src')
             },
         },
-        devServer: {
-            proxy: {
-              '/dataAssets': {
-                target: 'http://localhost:7058/dataAssets',
-                changeOrigin: true,
-                ws: true,
-                pathRewrite: {
-                  '^/dataAssets': ''
-                }
-              }
-            }
-          },
         server: {
-            port: 8080,
+            port: 7070,
             // host: '192.168.3.15',   // 局域网内测试【填写你的当前IP】
             proxy: {
                 '/.*/sso': {
@@ -56,19 +44,8 @@ export default (serve) => {
                     secure: true,
                     pathRewrite: { '^/.*/sso': '/sso' },
                 },
-                // '/dataAssets.*/(.*)/vue': {
-                //     target: process.env.VUE_APP_APIHOST,
-                //     changeOrigin: true,
-                //     secure: true,
-                //     pathRewrite: { "^/dataAssets.*/(.*)/vue": "/$1/vue" }
-                //   },
             },
-            cors: true,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                referrer: "http://localhost:7058/dataAssets/s/"
-            }
-      
+            cors: true,      
         },
         plugins: [
             vue(),

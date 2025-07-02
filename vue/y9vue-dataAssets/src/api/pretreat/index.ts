@@ -164,3 +164,12 @@ export const deleteMountData = async (id) => {
         params: { id: id }
     });
 };
+
+export const getDataByQrCode = async (params) => {
+    return await dataRequest({
+        url: '/service/qrcode/getDataByQrCode',
+        method: 'GET',
+        cType: false,
+        params
+    });
+};

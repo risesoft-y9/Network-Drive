@@ -60,15 +60,15 @@ const refreshFunc = () => {
 };
 const logout = () => {
   try {
-    const params = {
-      to: {path: window.location.pathname},
-      logoutUrl: import.meta.env.VUE_APP_SSO_LOGOUT_URL + import.meta.env.VUE_APP_NAME + '/',
-      __y9delete__: () => {
-        // 删除前执行的函数
-        console.log('删除前执行的函数');
-      },
-    };
-    $y9_SSO.ssoLogout(params);
+    // const params = {
+    //   to: {path: window.location.pathname},
+    //   logoutUrl: import.meta.env.VUE_APP_SSO_LOGOUT_URL + import.meta.env.VUE_APP_NAME + '/',
+    //   __y9delete__: () => {
+    //     // 删除前执行的函数
+    //     console.log('删除前执行的函数');
+    //   },
+    // };
+    $y9_SSO.ssoLogout({});
   } catch (error) {
     ElMessage.error(error.message || 'Has Error');
   }

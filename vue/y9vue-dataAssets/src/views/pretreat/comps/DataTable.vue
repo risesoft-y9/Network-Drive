@@ -56,14 +56,14 @@
         </template>
     </y9Card>
     <y9Dialog v-model:config="dialogConfig">
-        <FormData 
+        <FormView 
             v-if="dialogConfig.show" 
             :categoryId="currTreeNodeInfo.id" 
             :disabled="disabled" 
             :entity="entity" 
             @close="close"
             :pCode="currTreeNodeInfo.customId"
-        ></FormData>
+        ></FormView>
     </y9Dialog>
     <y9Dialog v-model:config="dialogConfig5">
         <Details 
@@ -123,7 +123,7 @@
     import type { UploadInstance } from 'element-plus';
     import settings from '@/settings';
     import router from '@/router';
-    import FormData from '../comps/FormData.vue';
+    import FormView from '../comps/FormData.vue';
     import Details from '../comps/details.vue';
 
     const settingStore = useSettingStore();
