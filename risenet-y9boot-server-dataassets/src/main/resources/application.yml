@@ -51,12 +51,12 @@ spring:
                         drop-table-allow: false
                     enabled: true
             stat-view-servlet:
-                allow: 10.168.18.1/24,10.168.12.1/24
                 enabled: false
-                login-password: '83204585'
-                login-username: y9admin
-                reset-enable: false
                 url-pattern: /druid/*
+                login-username: admin
+                login-password: admin
+                reset-enable: false
+                allow: 127.0.0.1
             web-stat-filter:
                 enabled: true
                 exclusions: '*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*,/static/*'
@@ -119,8 +119,6 @@ spring:
     redis:
         database: 8
         host: 127.0.0.1
-        password: 111111
-        port: 6379
         lettuce:
             pool:
                 max-active: 8
@@ -128,28 +126,31 @@ spring:
                 max-wait: -1
                 min-idle: 0
             shutdown-timeout: 100ms
+        password: 111111
+        port: 6379
         ssl: false
         timeout: 10000
 y9:
     systemName: dataAssets
-    internalIp: 192.168.x.x,10.0.x.x,172.20.x.x
+    internalIp: 192.168.x.x,10.0.x.x,172.20.x.x,10.192.x.x
     app:
         dataAssets:
-            fileManagerSystemName: itemAdmin
             managerRoleName: 管理员角色
-            productDocument: 95b19opvx9d40458c002dd61c41eb2c
-            upload-folder: D:\testPlaceholder\upload
+            # 数据初始化默认租户Id
             tenantId: c425281829dc4d4496ddddf7fc0198d0
+            # 可信空间注册人员默认机构Id
+            orgId: 1784650901097676800
     service:
         org:
             directUrl: https://test-api.youshengyun.com
+        cms:
+            directUrl: https://test-api.youshengyun.com
     common:
+        convertEnabled: true
         kafkaEnabled: false
         orgBaseUrl: http://127.0.0.1:7055/server-platform
-        jodconverterBaseUrl: https://www.youshengyun.com/jodconverter/onlinePreview?url=
         dataAssetsBaseUrl: http://localhost:7056/server-dataassets
         logBaseUrl: http://localhost:7056/server-log
-        userOnlineBaseUrl: http://localhost:7056/server-useronline
     feature:
         file:
             base64FileName: false
@@ -192,11 +193,7 @@ y9:
         log:
             enabled: false
             # kafka, api
-            logSaveTarget: kafka
-        session:
-            redis:
-                enabled: true
-                maxInactiveIntervalInSeconds: 3600
+            reportMethod: kafka
         security:
             enabled: true
             cors:
@@ -208,11 +205,8 @@ y9:
                     - http://localhost:7055
                     - http://localhost:7056
                     - http://localhost:7058
+                    - http://localhost:7070
                     - http://localhost:8080
-                    - http://localhost:8081
-                    - http://localhost:8082
-                    - http://localhost:8083
-                    - http://localhost:8084
                     - http://127.0.0.1:7055
                     - http://127.0.0.1:7056
                     - http//192.168.3.218:7056

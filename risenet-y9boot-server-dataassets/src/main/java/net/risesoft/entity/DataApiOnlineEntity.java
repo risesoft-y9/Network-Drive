@@ -36,5 +36,13 @@ public class DataApiOnlineEntity extends BaseEntity {
 	@Column(name = "TYPE", length = 50, nullable = false)
 	@Comment(value = "类别：folder/api")
 	private String type;
+	
+	@Column(name = "CREATOR", length = 50)
+    @Comment(value = "创建人")
+    private String creator;
+    
+    @Column(name = "CREATORID", length = 50)
+    @Comment(value = "创建人ID")
+    private String creatorId;
 
 }

@@ -27,7 +27,7 @@ public class DeleteChunkFileUtil {
     /**
      * 定时任务，定时删除临时分块或合并文件
      */
-    @Scheduled(cron = "0 0 */5 * * ?") // 每5个小时执行一次
+    //@Scheduled(cron = "0 0 */5 * * ?") // 每5个小时执行一次
     // @Scheduled(cron = "0 */2 * * * ?") // 每1个小时执行一次
     public void deleteChunkFile() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

@@ -13,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.DataApiOnlineService;
+import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.json.Y9JsonUtil;
+import y9.client.rest.platform.permission.PersonRoleApiClient;
 import net.risesoft.entity.DataApiOnlineEntity;
 import net.risesoft.entity.DataApiOnlineInfoEntity;
 import net.risesoft.repository.DataApiOnlineInfoRepository;
@@ -25,6 +27,7 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
 	
 	private final DataApiOnlineRepository dataApiOnlineRepository;
 	private final DataApiOnlineInfoRepository dataApiOnlineInfoRepository;
+	private final PersonRoleApiClient personRoleApiClient;
 	
 	@Override
 	@Transactional(readOnly = false)
@@ -68,6 +71,16 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
 	public Y9Result<DataApiOnlineEntity> saveData(DataApiOnlineEntity entity, DataApiOnlineInfoEntity infoEntity) {
 		if (StringUtils.isBlank(entity.getId())) {
 			entity.setId(Y9IdGenerator.genId());
+			entity.setCreator(Y9LoginUserHolder.getUserInfo().getName());
+			entity.setCreatorId(Y9LoginUserHolder.getPersonId());
+		}else {
+			DataApiOnlineEntity dataApiOnlineEntity = dataApiOnlineRepository.findById(entity.getId()).orElse(null);
+			if(dataApiOnlineEntity != null) {
+				entity.setCreator(dataApiOnlineEntity.getCreator());
+				entity.setCreatorId(dataApiOnlineEntity.getCreatorId());
+			}else {
+				return Y9Result.failure("数据不存在，修改失败");
+			}
 		}
 		if(infoEntity != null) {
 			infoEntity.setId(entity.getId());
@@ -81,12 +94,23 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
 		if(StringUtils.isBlank(id)) {
 			id = "0";
 		}
-		return getListMap(id);
+		// 判断是否系统管理员
+		boolean isAdmin = personRoleApiClient.hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId()).getData();
+		return getListMap(id, isAdmin);
 	}
 	
-	private List<Map<String, Object>> getListMap(String parentId) {
+	private List<Map<String, Object>> getListMap(String parentId, boolean isAdmin) {
 		List<Map<String, Object>> listMap = new ArrayList<Map<String,Object>>();
-		List<DataApiOnlineEntity> apiList = dataApiOnlineRepository.findByParentIdOrderByCreateTime(parentId);
+		List<DataApiOnlineEntity> apiList = null;
+		if(parentId.equals("0")) {
+			if(isAdmin) {
+				apiList = dataApiOnlineRepository.findByParentIdOrderByCreateTime(parentId);
+			}else {
+				apiList = dataApiOnlineRepository.findByParentIdAndCreatorIdOrderByCreateTime(parentId, Y9LoginUserHolder.getPersonId());
+			}
+		}else {
+			apiList = dataApiOnlineRepository.findByParentIdOrderByCreateTime(parentId);
+		}
 		for(DataApiOnlineEntity apiOnlineEntity : apiList) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("id", apiOnlineEntity.getId());
@@ -95,7 +119,7 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
 			map.put("type", apiOnlineEntity.getType());
 			
 			if(apiOnlineEntity.getType().equals("folder")) {
-				map.put("children", getListMap(apiOnlineEntity.getId()));
+				map.put("children", getListMap(apiOnlineEntity.getId(), isAdmin));
 			}else {
 				String json = dataApiOnlineInfoRepository.findById(apiOnlineEntity.getId()).orElse(null).getFormData();
 				map.put("ApiForm", Y9JsonUtil.readHashMap(json));
@@ -107,18 +131,29 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
 
 	@Override
 	public List<Map<String, Object>> getSelectTree() {
-		return getSelectListMap("0");
+		// 判断是否系统管理员
+		boolean isAdmin = personRoleApiClient.hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId()).getData();
+		return getSelectListMap("0", isAdmin);
 	}
 	
-	private List<Map<String, Object>> getSelectListMap(String parentId) {
+	private List<Map<String, Object>> getSelectListMap(String parentId, boolean isAdmin) {
 		List<Map<String, Object>> listMap = new ArrayList<Map<String,Object>>();
-		List<DataApiOnlineEntity> apiList = dataApiOnlineRepository.findByParentIdOrderByCreateTime(parentId);
+		List<DataApiOnlineEntity> apiList = null;
+		if(parentId.equals("0")) {
+			if(isAdmin) {
+				apiList = dataApiOnlineRepository.findByParentIdOrderByCreateTime(parentId);
+			}else {
+				apiList = dataApiOnlineRepository.findByParentIdAndCreatorIdOrderByCreateTime(parentId, Y9LoginUserHolder.getPersonId());
+			}
+		}else {
+			apiList = dataApiOnlineRepository.findByParentIdOrderByCreateTime(parentId);
+		}
 		for(DataApiOnlineEntity apiOnlineEntity : apiList) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("value", apiOnlineEntity.getId());
 			map.put("label", apiOnlineEntity.getName());
 			
-			map.put("children", getSelectListMap(apiOnlineEntity.getId()));
+			map.put("children", getSelectListMap(apiOnlineEntity.getId(), isAdmin));
 			listMap.add(map);
 		}
 		return listMap;

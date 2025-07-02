@@ -5,8 +5,11 @@ import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +34,7 @@ import net.risesoft.entity.DataApiOnlineEntity;
 import net.risesoft.entity.DataAssets;
 import net.risesoft.entity.DataAssetsNumberRules;
 import net.risesoft.entity.DataSourceEntity;
+import net.risesoft.entity.DictionaryValue;
 import net.risesoft.entity.FileInfo;
 import net.risesoft.entity.MetadataConfig;
 import net.risesoft.enums.CategoryEnums;
@@ -39,10 +43,12 @@ import net.risesoft.enums.CodeTypeEnum;
 import net.risesoft.enums.MarginTypeEnum;
 import net.risesoft.interfaces.Four;
 import net.risesoft.interfaces.Six;
+import net.risesoft.model.AssetsModel;
 import net.risesoft.model.CodePicBase64;
 import net.risesoft.model.IdcodeRegResult;
 import net.risesoft.model.SearchPage;
 import net.risesoft.model.platform.DataCatalog;
+import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.repository.AudioFileRepository;
 import net.risesoft.repository.DataApiOnlineRepository;
@@ -57,7 +63,9 @@ import net.risesoft.repository.spec.DataAssetsSpecification;
 import net.risesoft.service.CategoryTableService;
 import net.risesoft.service.DataAssetsService;
 import net.risesoft.service.DataSourceService;
+import net.risesoft.service.DictionaryOptionService;
 import net.risesoft.util.Config;
+import net.risesoft.util.DataConstant;
 import net.risesoft.util.FileDataUtil;
 import net.risesoft.util.PageUtil;
 import net.risesoft.y9.Y9Context;
@@ -65,6 +73,7 @@ import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.util.Y9BeanUtil;
 import net.risesoft.y9public.entity.Y9FileStore;
 import net.risesoft.y9public.service.Y9FileStoreService;
+import y9.client.rest.platform.permission.PersonRoleApiClient;
 import y9.client.rest.platform.resource.DataCatalogApiClient;
 
 @Service
@@ -86,6 +95,8 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     private final Y9FileStoreService y9FileStoreService;
     private final DataApiOnlineRepository dataApiOnlineRepository;
     private final DataSourceService dataSourceService;
+    private final PersonRoleApiClient personRoleApiClient;
+    private final DictionaryOptionService dictionaryOptionService;
 
     public static Object getFieldValue(Object entity, String fieldName) {
         try {
@@ -279,6 +290,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 			}
 			if(dataAssets.getId() == null) {
 				dataAssets.setCreator(Y9LoginUserHolder.getUserInfo().getName());
+				dataAssets.setCreatorId(Y9LoginUserHolder.getPersonId());
 				dataAssets.setDataState("out");
 				dataAssetsRepository.save(dataAssets);
 				return Y9Result.successMsg("新增成功");
@@ -286,6 +298,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 				DataAssets dataAssets2 = findById(dataAssets.getId());
 				Y9BeanUtil.copyProperties(dataAssets, dataAssets2);
 				dataAssets2.setUpdateUser(Y9LoginUserHolder.getUserInfo().getName());
+				dataAssets2.setUpdateUserId(Y9LoginUserHolder.getPersonId());
 				dataAssetsRepository.save(dataAssets2);
 				return Y9Result.successMsg("修改成功");
 			}
@@ -300,8 +313,11 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 		if (page < 0) {
             page = 1;
         }
+		// 判断是否系统管理员
+		boolean isAdmin = personRoleApiClient.hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId()).getData();
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "createTime"));
-        DataAssetsSpecification spec = new DataAssetsSpecification(categoryId, name, Y9LoginUserHolder.getTenantId(), code, false, status, dataState);
+        DataAssetsSpecification spec = new DataAssetsSpecification(categoryId, name, Y9LoginUserHolder.getTenantId(), code, false, status, 
+        		dataState, isAdmin ? "" : Y9LoginUserHolder.getPersonId(), "", "", "", "");
 		return dataAssetsRepository.findAll(spec, pageable);
 	}
 
@@ -311,6 +327,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 		if(dataAssets != null) {
 			dataAssets.setIsDeleted(true);
 			dataAssets.setDeleteUser(Y9LoginUserHolder.getUserInfo().getName());
+			dataAssets.setDeleteUserId(Y9LoginUserHolder.getPersonId());
 			dataAssetsRepository.save(dataAssets);
 		}else {
 			return Y9Result.failure("数据不存在，请刷新数据");
@@ -406,9 +423,8 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     private String getIdCode(Long id, String name) {
         String _id = "dataassets-" + id;
         IdcodeRegResult result = Four.m407(Config.MAIN_CODE, "60", 10167, "11000000", _id, "", name, CodePayTypeEnum.REGISTER.getValue(), 
-        		Config.GOTO_URL, Config.SAMPLE_URL);
+        		Config.GOTO_URL + "?tenantId=" + Y9LoginUserHolder.getTenantId(), Config.SAMPLE_URL + "?tenantId=" + Y9LoginUserHolder.getTenantId());
         return result.getOrganUnitIdCode();
-
     }
 
     /**
@@ -512,13 +528,17 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 					dataAssets = new DataAssets();
 					dataAssets.setTenantId(Y9LoginUserHolder.getTenantId());
 					dataAssets.setCreator(Y9LoginUserHolder.getUserInfo().getName());
+					dataAssets.setCreatorId(Y9LoginUserHolder.getPersonId());
 					dataAssets.setDataState("out");
 				}else {
 					dataAssets = findById(assetsId);
 				}
-				dataAssets.setPicture(Y9Context.getProperty("y9.common.dataAssetsBaseUrl") + y9FileStore.getUrl());
-				DataAssets info = dataAssetsRepository.save(dataAssets);
-				assetsId = info.getId();
+				String fileUrl = y9FileStore.getUrl();
+				if(!fileUrl.startsWith("http")) {
+					fileUrl = Y9Context.getProperty("y9.common.dataAssetsBaseUrl") + fileUrl;
+				}
+				dataAssets.setPicture(fileUrl);
+				dataAssetsRepository.save(dataAssets);
 			}else {
 				return Y9Result.failure("设置失败");
 			}
@@ -633,6 +653,136 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 			return Y9Result.failure("删除失败：" + e.getMessage());
 		}
 		return Y9Result.successMsg("删除成功");
+	}
+
+	@Override
+	public Y9Page<Map<String, Object>> searchPage2(String searchText, String appScenarios, String dataZone, 
+			String productType, Integer sort, int page, int size) {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		List<Map<String, Object>> listMap = new ArrayList<Map<String,Object>>();
+		Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "orderNum"));
+		if(sort == null) {
+			pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "orderNum"));
+		}else if(sort == 1) {
+			pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createTime"));
+		}else if(sort == 2) {
+			pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "clickNum"));
+		}
+        DataAssetsSpecification spec = new DataAssetsSpecification("", "", Y9LoginUserHolder.getTenantId(), "", false, 1, "in", "", searchText, 
+        		appScenarios, dataZone, productType);
+		Page<DataAssets> assetsPage = dataAssetsRepository.findAll(spec, pageable);
+		for(DataAssets dataAssets : assetsPage) {
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("id", dataAssets.getId());
+			map.put("title", dataAssets.getName());
+			map.put("unit", dataAssets.getDataProvider());
+			map.put("description", dataAssets.getRemark());
+			map.put("src", dataAssets.getPicture());
+			map.put("date", sdf.format(dataAssets.getCreateTime()));
+			map.put("tag", DataConstant.getShareType(dataAssets.getShareType()));
+			listMap.add(map);
+		}
+		return Y9Page.success(page, assetsPage.getTotalPages(), assetsPage.getTotalElements(), listMap, "获取数据成功");
+	}
+
+	@Override
+	public Y9Result<AssetsModel> getDataById(Long id) {
+		AssetsModel model = new AssetsModel();
+		DataAssets dataAssets = findById(id);
+		if(dataAssets != null) {
+			Y9BeanUtil.copyProperties(dataAssets, model);
+			model.setShareTypeName(DataConstant.getShareType(dataAssets.getShareType()));
+			model.setDataType(dictionaryOptionService.findByCodeAndType(dataAssets.getDataType(), "assetsType"));
+			model.setAppScenarios(dictionaryOptionService.findByCodeAndType(dataAssets.getAppScenarios(), "appScenarios"));
+			model.setDataZone(dictionaryOptionService.findByCodeAndType(dataAssets.getDataZone(), "dataZone"));
+			model.setProductType(dictionaryOptionService.findByCodeAndType(dataAssets.getProductType(), "productType"));
+			
+			// 保存点击次数
+			dataAssets.setClickNum(dataAssets.getClickNum() + 1);
+			dataAssetsRepository.save(dataAssets);
+		}
+		return Y9Result.success(model);
+	}
+
+	@Override
+	public Y9Result<AssetsModel> getDataByQrCode(String qrcode) {
+		AssetsModel model = new AssetsModel();
+		DataAssets dataAssets = dataAssetsRepository.findByCodeGlobalAndIsDeleted(qrcode, false);
+		if(dataAssets != null) {
+			Y9BeanUtil.copyProperties(dataAssets, model);
+			model.setShareTypeName(DataConstant.getShareType(dataAssets.getShareType()));
+			model.setDataType(dictionaryOptionService.findByCodeAndType(dataAssets.getDataType(), "assetsType"));
+		}
+		return Y9Result.success(model);
+	}
+
+	@Override
+	public Y9Result<List<Map<String, Object>>> getDataFilter() {
+		List<Map<String, Object>> listMap = new ArrayList<Map<String,Object>>();
+		// 应用场景
+		Map<String, Object> map1 = new HashMap<String, Object>();
+		map1.put("title", "应用场景");
+		map1.put("key", "appScenarios");
+		
+		List<Map<String, Object>> options1 = new ArrayList<Map<String,Object>>();
+		Map<String, Object> dataMap1 = new HashMap<String, Object>();
+		dataMap1.put("label", "全部");
+		dataMap1.put("value", "");
+		options1.add(dataMap1);
+		
+		List<DictionaryValue> list1 = dictionaryOptionService.listByTypeOrderByTabIndexAsc("appScenarios");
+		for(DictionaryValue value : list1) {
+			Map<String, Object> rmap = new HashMap<String, Object>();
+			rmap.put("label", value.getName());
+			rmap.put("value", value.getCode());
+			options1.add(rmap);
+		}
+		map1.put("options", options1);
+		listMap.add(map1);
+		
+		// 数据专区
+		Map<String, Object> map2 = new HashMap<String, Object>();
+		map2.put("title", "数据专区");
+		map2.put("key", "dataZone");
+		
+		List<Map<String, Object>> options2 = new ArrayList<Map<String,Object>>();
+		Map<String, Object> dataMap2 = new HashMap<String, Object>();
+		dataMap2.put("label", "全部");
+		dataMap2.put("value", "");
+		options2.add(dataMap2);
+		
+		List<DictionaryValue> list2 = dictionaryOptionService.listByTypeOrderByTabIndexAsc("dataZone");
+		for(DictionaryValue value : list2) {
+			Map<String, Object> rmap = new HashMap<String, Object>();
+			rmap.put("label", value.getName());
+			rmap.put("value", value.getCode());
+			options2.add(rmap);
+		}
+		map2.put("options", options2);
+		listMap.add(map2);
+		
+		// 产品类型
+		Map<String, Object> map3 = new HashMap<String, Object>();
+		map3.put("title", "产品类型");
+		map3.put("key", "productType");
+		
+		List<Map<String, Object>> options3 = new ArrayList<Map<String,Object>>();
+		Map<String, Object> dataMap3 = new HashMap<String, Object>();
+		dataMap3.put("label", "全部");
+		dataMap3.put("value", "");
+		options3.add(dataMap3);
+		
+		List<DictionaryValue> list3 = dictionaryOptionService.listByTypeOrderByTabIndexAsc("productType");
+		for(DictionaryValue value : list3) {
+			Map<String, Object> rmap = new HashMap<String, Object>();
+			rmap.put("label", value.getName());
+			rmap.put("value", value.getCode());
+			options3.add(rmap);
+		}
+		map3.put("options", options3);
+		listMap.add(map3);
+		
+		return Y9Result.success(listMap);
 	}
 
 }

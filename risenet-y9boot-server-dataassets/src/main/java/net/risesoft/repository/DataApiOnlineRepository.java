@@ -15,6 +15,8 @@ public interface DataApiOnlineRepository extends JpaRepository<DataApiOnlineEnti
 	
 	List<DataApiOnlineEntity> findByParentIdOrderByCreateTime(String parentId);
 	
+	List<DataApiOnlineEntity> findByParentIdAndCreatorIdOrderByCreateTime(String parentId, String creatorId);
+	
 	@Transactional
 	@Modifying
 	@Query("delete from DataApiOnlineEntity p where p.parentId = ?1")
@@ -22,7 +24,5 @@ public interface DataApiOnlineRepository extends JpaRepository<DataApiOnlineEnti
 	
 	@Query("select p.id from DataApiOnlineEntity p where p.parentId = ?1")
 	List<String> findByParentId(String parentId);
-	
-	List<DataApiOnlineEntity> findByNameLikeAndTypeOrderByCreateTime(String name, String type);
 	
 }

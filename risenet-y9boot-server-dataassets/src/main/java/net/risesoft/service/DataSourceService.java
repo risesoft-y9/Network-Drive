@@ -3,7 +3,6 @@ package net.risesoft.service;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.risesoft.pojo.Y9Result;
@@ -11,11 +10,6 @@ import net.risesoft.entity.DataSourceTypeEntity;
 import net.risesoft.entity.DataSourceEntity;
 
 public interface DataSourceService {
-
-	/**
-	 * 查询数据源分页列表
-	 */
-	Page<DataSourceEntity> getDataSourcePage(String baseName, int page, int rows);
 
 	/**
 	 * 保存数据源实体类
@@ -39,13 +33,6 @@ public interface DataSourceService {
 	Y9Result<String> deleteDataSource(String id);
 
 	/**
-	 * 根据数据源名称查询
-	 * @param baseName
-	 * @return
-	 */
-	DataSourceEntity findByBaseName(String baseName);
-	
-	/**
 	 * 根据类别获取数据源列表
 	 * @param baseType
 	 * @return
@@ -53,25 +40,11 @@ public interface DataSourceService {
 	List<DataSourceEntity> findByBaseType(String baseType);
 	
 	/**
-	 * 获取数据源列表：1-获取所有，0-获取非表的数据源
-	 * @return
-	 */
-	List<DataSourceEntity> findByType(Integer type);
-	
-	/**
 	 * 搜索数据源
 	 * @param baseName
 	 * @return
 	 */
 	List<Map<String, Object>> searchSource(String baseName);
-	
-	/**
-	 * 根据数据源获取需要提取的表
-	 * @param baseId
-	 * @param tableName
-	 * @return
-	 */
-	Map<String, Object> getNotExtractList(String baseId, String tableName);
 	
 	/**
 	 * 获取数据源分类列表
@@ -92,6 +65,19 @@ public interface DataSourceService {
 	 */
 	Y9Result<String> deleteCategory(String id);
 	
+	/**
+	 * 获取数据库下拉选择框数据
+	 * @param type
+	 * @return
+	 */
 	List<Map<String, Object>> getTableSelectTree(String type);
+	
+	/**
+	 * 获取数据库表列表
+	 * @param id
+	 * @param name
+	 * @return
+	 */
+	List<Map<String, Object>> getTablePage(String id, String name);
 
 }

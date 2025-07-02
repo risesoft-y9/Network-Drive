@@ -24,12 +24,18 @@ public class DataAssetsSpecification implements Specification<DataAssets> {
 	private Boolean isDeleted;
 	private Integer status;
 	private String dataState;
+	private String creatorId;
+	private String searchText;
+	private String appScenarios;
+	private String dataZone;
+	private String productType;
 	
 	public DataAssetsSpecification() {
 		super();
 	}
 
-	public DataAssetsSpecification(String categoryId, String name, String tenantId, String code, Boolean isDeleted, Integer status, String dataState) {
+	public DataAssetsSpecification(String categoryId, String name, String tenantId, String code, Boolean isDeleted, Integer status,
+			String dataState, String creatorId, String searchText, String appScenarios, String dataZone, String productType) {
 		super();
 		this.categoryId = categoryId;
 		this.name = name;
@@ -38,6 +44,11 @@ public class DataAssetsSpecification implements Specification<DataAssets> {
 		this.isDeleted = isDeleted;
 		this.status = status;
 		this.dataState = dataState;
+		this.creatorId = creatorId;
+		this.searchText = searchText;
+		this.appScenarios = appScenarios;
+		this.dataZone = dataZone;
+		this.productType = productType;
 	}
 
 	@Override
@@ -65,6 +76,27 @@ public class DataAssetsSpecification implements Specification<DataAssets> {
 		}
 		if (StringUtils.isNotBlank(dataState)) {
 			expressions.add(cb.equal(root.get("dataState").as(String.class), dataState));
+		}
+		if (StringUtils.isNotBlank(creatorId)) {
+			expressions.add(cb.equal(root.get("creatorId").as(String.class), creatorId));
+		}
+		if (StringUtils.isNotBlank(appScenarios)) {
+			expressions.add(cb.equal(root.get("appScenarios").as(String.class), appScenarios));
+		}
+		if (StringUtils.isNotBlank(dataZone)) {
+			expressions.add(cb.equal(root.get("dataZone").as(String.class), dataZone));
+		}
+		if (StringUtils.isNotBlank(productType)) {
+			expressions.add(cb.equal(root.get("productType").as(String.class), productType));
+		}
+		if(StringUtils.isNotBlank(searchText)) {
+			expressions.add(cb.or(cb.like(root.get("name").as(String.class), "%" + searchText + "%"), 
+					cb.like(root.get("code").as(String.class), "%" + searchText + "%"), 
+					cb.like(root.get("remark").as(String.class), "%" + searchText + "%"), 
+					cb.like(root.get("dataPurpose").as(String.class), "%" + searchText + "%"), 
+					cb.like(root.get("keyField").as(String.class), "%" + searchText + "%"), 
+					cb.like(root.get("dataProvider").as(String.class), "%" + searchText + "%"), 
+					cb.like(root.get("dataOwner").as(String.class), "%" + searchText + "%")));
 		}
 		return predicate;
 	}
@@ -123,6 +155,46 @@ public class DataAssetsSpecification implements Specification<DataAssets> {
 
 	public void setDataState(String dataState) {
 		this.dataState = dataState;
+	}
+
+	public String getCreatorId() {
+		return creatorId;
+	}
+
+	public void setCreatorId(String creatorId) {
+		this.creatorId = creatorId;
+	}
+
+	public String getSearchText() {
+		return searchText;
+	}
+
+	public void setSearchText(String searchText) {
+		this.searchText = searchText;
+	}
+
+	public String getAppScenarios() {
+		return appScenarios;
+	}
+
+	public void setAppScenarios(String appScenarios) {
+		this.appScenarios = appScenarios;
+	}
+
+	public String getDataZone() {
+		return dataZone;
+	}
+
+	public void setDataZone(String dataZone) {
+		this.dataZone = dataZone;
+	}
+
+	public String getProductType() {
+		return productType;
+	}
+
+	public void setProductType(String productType) {
+		this.productType = productType;
 	}
 	
 }

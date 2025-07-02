@@ -37,6 +37,7 @@ import net.risesoft.enums.CategoryEnums;
 import net.risesoft.log.LogLevelEnum;
 import net.risesoft.log.OperationTypeEnum;
 import net.risesoft.log.annotation.RiseLog;
+import net.risesoft.model.AssetsModel;
 import net.risesoft.model.SearchPage;
 import net.risesoft.model.platform.DataCatalog;
 import net.risesoft.pojo.Y9Page;
@@ -394,5 +395,24 @@ public class DataAssetsController {
 	public Y9Result<String> deleteMountData(Long id) {
 		return dataAssetsService.deleteMountData(id);
 	}
+    
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "可信数据空间-分页获取数据列表", logLevel = LogLevelEnum.RSLOG, enable = false)
+	@GetMapping("/getDataPage")
+	public Y9Page<Map<String, Object>> getDataPage(String searchText, String appScenarios, String dataZone, 
+			String productType, Integer sort, Integer page, Integer size) {
+        return dataAssetsService.searchPage2(searchText, appScenarios, dataZone, productType, sort, page, size);
+    }
+    
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "可信数据空间-获取数据信息", logLevel = LogLevelEnum.RSLOG, enable = false)
+	@GetMapping("/getDataById")
+	public Y9Result<AssetsModel> getDataById(Long id) {
+        return dataAssetsService.getDataById(id);
+    }
+    
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "可信数据空间-获取过滤条件", logLevel = LogLevelEnum.RSLOG, enable = false)
+	@GetMapping("/getDataFilter")
+	public Y9Result<List<Map<String, Object>>> getDataFilter() {
+        return dataAssetsService.getDataFilter();
+    }
 
 }

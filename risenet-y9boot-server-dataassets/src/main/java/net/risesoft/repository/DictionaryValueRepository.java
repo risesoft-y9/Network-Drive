@@ -11,8 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import net.risesoft.entity.DictionaryValue;
 
 @Transactional(value = "rsTenantTransactionManager", readOnly = true)
-public interface DictionaryValueRepository
-    extends JpaRepository<DictionaryValue, String>, JpaSpecificationExecutor<DictionaryValue> {
+public interface DictionaryValueRepository extends JpaRepository<DictionaryValue, String>, JpaSpecificationExecutor<DictionaryValue> {
 
     @Modifying
     @Transactional(readOnly = false)
@@ -22,5 +21,7 @@ public interface DictionaryValueRepository
 
     @Query("select max(tabIndex) from DictionaryValue where type = ?1")
     Integer getMaxTabIndex(String type);
+    
+    DictionaryValue findByCodeAndType(String code, String type);
 
 }

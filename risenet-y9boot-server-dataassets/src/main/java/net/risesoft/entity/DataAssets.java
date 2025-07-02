@@ -86,15 +86,6 @@ public class DataAssets extends BaseEntity {
     @Comment(value = "数据资产提供方")
     private String dataProvider;
 
-    @Column(name = "DELETE_USER", length = 50)
-    @Comment(value = "删除人")
-    private String deleteUser;
-
-    @Column(name = "IS_DELETED")
-    @Comment(value = "删除标记")
-    @ColumnDefault("0")
-    private Boolean isDeleted = false;
-
     @Column(name = "STATUS")
     @Comment(value = "资产状态: 1-上架 0-下架")
     @ColumnDefault("0")
@@ -104,14 +95,6 @@ public class DataAssets extends BaseEntity {
     @Comment(value = "排序序号")
     @ColumnDefault("1")
     private Integer orderNum;
-
-    @Column(name = "CREATOR", length = 50)
-    @Comment(value = "创建人")
-    private String creator;
-
-    @Column(name = "UPDATE_USER", length = 50)
-    @Comment(value = "更新人")
-    private String updateUser;
 
     @Column(name = "DATA_OWNER", length = 50)
     @Comment(value = "数据所有者")
@@ -173,6 +156,18 @@ public class DataAssets extends BaseEntity {
     @Comment(value = "数据服务URL")
     private String dataServiceUrl;
     
+    @Column(name = "APPSCENARIOS", length = 20)
+    @Comment(value = "应用场景")
+    private String appScenarios;
+    
+    @Column(name = "DATAZONE", length = 20)
+    @Comment(value = "数据专区")
+    private String dataZone;
+    
+    @Column(name = "PRODUCTTYPE", length = 20)
+    @Comment(value = "产品类型")
+    private String productType;
+    
     @Column(name = "MOUNTTYPE", length = 20)
     @Comment(value = "挂接类型：文件/数据/接口")
     private String mountType;
@@ -180,6 +175,40 @@ public class DataAssets extends BaseEntity {
     @Column(name = "DATASTATE")
     @Comment(value = "入库状态: in-入库， out-出库")
     private String dataState;
+    
+    @Column(name = "CREATOR", length = 50)
+    @Comment(value = "创建人")
+    private String creator;
+    
+    @Column(name = "CREATORID", length = 50)
+    @Comment(value = "创建人ID")
+    private String creatorId;
+
+    @Column(name = "UPDATE_USER", length = 50)
+    @Comment(value = "更新人")
+    private String updateUser;
+    
+    @Column(name = "UPDATE_USERID", length = 50)
+    @Comment(value = "更新人ID")
+    private String updateUserId;
+    
+    @Column(name = "DELETE_USER", length = 50)
+    @Comment(value = "删除人")
+    private String deleteUser;
+    
+    @Column(name = "DELETE_USERID", length = 50)
+    @Comment(value = "删除人ID")
+    private String deleteUserId;
+
+    @Column(name = "IS_DELETED")
+    @Comment(value = "删除标记")
+    @ColumnDefault("0")
+    private Boolean isDeleted = false;
+    
+    @Column(name = "CLICKNUM")
+    @Comment(value = "点击次数")
+    @ColumnDefault("0")
+    private Integer clickNum;
     
     @Transient
     private String labelData;// 标注信息

@@ -23,4 +23,6 @@ public interface DataAssetsRepository extends JpaRepository<DataAssets, Long>, J
     
     @Query("select max(code) from DataAssets p where p.categoryId = ?1")
 	String getMaxCode(String categoryId);
+    
+    DataAssets findByCodeGlobalAndIsDeleted(String codeGlobal, Boolean isDeleted);
 }

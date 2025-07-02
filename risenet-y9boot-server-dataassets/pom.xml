@@ -19,12 +19,12 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>net.risesoft</groupId>
-            <artifactId>risenet-y9boot-api-auth</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
+    	<dependency>
+			<groupId>net.risesoft</groupId>
+			<artifactId>risenet-y9boot-api-auth</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
         <dependency>
             <groupId>net.risesoft</groupId>
             <artifactId>risenet-y9boot-starter-sso-oauth2-resource</artifactId>
@@ -36,7 +36,7 @@
             <artifactId>risenet-y9boot-starter-security</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        
         <dependency>
             <groupId>net.risesoft</groupId>
             <artifactId>risenet-y9boot-starter-log</artifactId>
@@ -72,13 +72,13 @@
             <artifactId>risenet-y9boot-support-file-service-ftp</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        
         <dependency>
             <groupId>net.risesoft</groupId>
             <artifactId>risenet-y9boot-support-file-service-local</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        
         <dependency>
             <groupId>net.risesoft</groupId>
             <artifactId>risenet-y9boot-idcode</artifactId>
@@ -130,7 +130,6 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
-
     </build>
 
     <profiles>
@@ -141,28 +140,6 @@
                     <plugin>
                         <groupId>com.google.cloud.tools</groupId>
                         <artifactId>jib-maven-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>build-api-doc</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.ly.smart-doc</groupId>
-                        <artifactId>smart-doc-maven-plugin</artifactId>
-                        <configuration>
-                            <projectName>dataAssets</projectName>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>html</goal>
-                                    <goal>markdown</goal>
-                                </goals>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>
