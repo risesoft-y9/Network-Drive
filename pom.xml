@@ -85,6 +85,7 @@
                         <artifactId>central-publishing-maven-plugin</artifactId>
                         <configuration>
                             <excludeArtifacts>
+                                <artifact>risenet-y9boot-webapp-dataassets</artifact>
                                 <artifact>risenet-y9boot-webapp-storage</artifact>
                             </excludeArtifacts>
                         </configuration>
