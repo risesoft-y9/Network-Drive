@@ -1,14 +1,14 @@
-import { remove } from "lodash";
+import { remove } from 'lodash';
 import { defineStore } from 'pinia';
 
 export const useStorageStore = defineStore('storageStore', {
     state: () => {
         return {
-            positionList: [],//岗位列表，用于切换岗位
-            currentPositionId: '',//当前岗位id
-            currentPositionName: '',//当前岗位名称
-            tenantId:'' //当前租户Id
-        }
+            positionList: [], //岗位列表，用于切换岗位
+            currentPositionId: '', //当前岗位id
+            currentPositionName: '', //当前岗位名称
+            tenantId: '' //当前租户Id
+        };
     },
     getters: {
         getPositionList(state) {
@@ -24,7 +24,5 @@ export const useStorageStore = defineStore('storageStore', {
             return state.tenantId;
         }
     },
-    actions: {
-       
-    }
-})
+    actions: {}
+});

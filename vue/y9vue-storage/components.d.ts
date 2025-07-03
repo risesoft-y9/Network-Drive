@@ -56,9 +56,11 @@ declare module '@vue/runtime-core' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SelectTree: typeof import('./src/components/pageModule/selectTree.vue')['default']
+    TestLogout: typeof import('./src/components/TestLogout/index.vue')['default']
     TextViewer: typeof import('./src/components/file/TextViewer.vue')['default']
     TreeItem: typeof import('./src/components/tree/treeItem.vue')['default']
     TreeItemList: typeof import('./src/components/tree/treeItemList.vue')['default']
+    Uploader: typeof import('./src/components/storage/Uploader/index.vue')['default']
     VideoPlayer: typeof import('./src/components/file/videoPlayer.vue')['default']
     Y9Tree: typeof import('./src/components/tree/y9Tree.vue')['default']
   }

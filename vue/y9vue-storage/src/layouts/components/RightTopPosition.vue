@@ -1,6 +1,6 @@
 <template>
-    <div class="item" v-if="positions?.length">
-        <el-dropdown @command="onMenuClick" :hide-on-click="true" class="position-el-dropdown">
+    <div v-if="positions?.length" class="item">
+        <el-dropdown :hide-on-click="true" class="position-el-dropdown" @command="onMenuClick">
             <div class="name" @click="(e) => e.preventDefault()">
                 <!-- show & if 的vue指令 仅用于适配移动端 -->
                 <div>
@@ -11,9 +11,9 @@
             <template #dropdown>
                 <el-dropdown-menu>
                     <div v-for="(item, index) in storageStore.positionList" :key="index">
-                        <el-dropdown-item :command="item" v-if="item.id !== positionId">
+                        <el-dropdown-item v-if="item.id !== positionId" :command="item">
                             <div class="el-dropdown-item">
-                                <div> <i class="ri-shield-user-line"></i>{{ item.name }} </div>
+                                <div><i class="ri-shield-user-line"></i>{{ item.name }}</div>
                             </div>
                         </el-dropdown-item>
                     </div>
@@ -21,7 +21,7 @@
             </template>
         </el-dropdown>
     </div>
-    <div class="item" v-else style="display: none">
+    <div v-else class="item" style="display: none">
         <div class="position-el-dropdown">
             <!-- show & if 的vue指令 仅用于适配移动端 -->
             <div class="name" style="cursor: not-allowed; color: #aaa">
@@ -36,10 +36,9 @@
     </div>
 </template>
 <script lang="ts" setup>
-    import { ref, computed, ComputedRef, defineComponent } from 'vue';
     import { useRoute } from 'vue-router';
-    import y9_storage from '@/utils/storage';
     import { useStorageStore } from '@/store/modules/storageStore';
+
     const fontSizeObj: any = inject('sizeObjInfo');
     let positionName = sessionStorage.getItem('positionName') ? sessionStorage.getItem('positionName') : '';
 
@@ -47,7 +46,7 @@
     console.log(storageStore.positionList);
     // const personInfo = ref();
     // 获取当前登录用户信息
-    const userInfo =JSON.parse(sessionStorage.getItem('ssoUserInfo'));
+    const userInfo = JSON.parse(sessionStorage.getItem('ssoUserInfo'));
     // 岗位列表
     let positions: any = storageStore.positionList;
     let positionId = sessionStorage.getItem('positionId');
@@ -64,27 +63,31 @@
         sessionStorage.setItem('positionName', command?.name);
         storageStore.$patch({
             currentPositionId: command?.id,
-            currentPositionName: command?.todoCount,
+            currentPositionName: command?.todoCount
         });
         window.location.href = import.meta.env.VUE_APP_HOST_INDEX;
     };
 </script>
 <style lang="scss" scoped>
     @import '@/theme/global-vars.scss';
+
     .item {
         overflow: hidden;
         padding: 0 11px;
         min-width: 5px;
         display: flex;
         align-items: center;
+
         i {
             position: relative;
             // top: 4px;
         }
+
         span {
             font-size: v-bind('fontSizeObj.baseFontSize');
             margin-left: 5px;
         }
+
         &:hover {
             cursor: pointer;
             outline: none;
@@ -95,12 +98,14 @@
             .badge {
                 top: -4px;
                 z-index: 1;
+
                 & > .el-badge__content--danger {
                     background-color: var(--el-color-danger);
                 }
             }
         }
     }
+
     .position-el-dropdown {
         z-index: 9999;
         min-width: 5px;
@@ -108,14 +113,17 @@
         text-align: center;
         line-height: 50px;
         font-size: v-bind('fontSizeObj.largeFontSize');
+
         :deep(.el-dropdown--default) {
             display: flex;
             align-items: center;
         }
+
         i {
             position: relative;
             top: 4px;
         }
+
         span {
             margin-left: 5px;
         }
@@ -125,6 +133,7 @@
             top: -4px;
             margin-left: 7px;
             z-index: 1;
+
             & > .el-badge__content--danger {
                 background-color: var(--el-color-danger);
             }
@@ -145,6 +154,7 @@
         .el-badge__content {
             border: none;
         }
+
         sup {
             top: 0;
         }
