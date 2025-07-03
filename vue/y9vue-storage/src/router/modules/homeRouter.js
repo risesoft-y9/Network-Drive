@@ -1,4 +1,3 @@
-
 const homeRouter = {
     path: '/index',
     component: () => import('@/layouts/index.vue'),

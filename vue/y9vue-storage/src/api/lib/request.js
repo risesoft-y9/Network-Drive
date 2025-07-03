@@ -13,6 +13,7 @@ import { ElMessage } from 'element-plus';
 import i18n from '@/language/index';
 import { isExternal } from '@/utils/validate.ts';
 import { $y9_SSO } from '@/main';
+
 const { t } = i18n.global;
 
 // 创建一个axios实例
@@ -22,7 +23,7 @@ function y9Request(baseUrl = '') {
     const service = axios.create({
         baseURL: import.meta.env.VUE_APP_CONTEXT,
         withCredentials: true,
-        timeout: 0,
+        timeout: 0
     });
     // 请求拦截器
     service.interceptors.request.use(
@@ -60,64 +61,10 @@ function y9Request(baseUrl = '') {
             setTimeout(() => {
                 requestList.delete(response.config.url);
             }, 600);
-            let res;
             if (response.data) {
-                res = response.data;
+                return response.data;
             } else {
-                res = response;
-            }
-            const { code } = res;
-            if (code !== 0) {
-                // 获取替换后的字符串
-                const reqUrl = response.config.url.split('?')[0].replace(response.config.baseURL, '');
-                const noVerifyBool = settings.ajaxResponseNoVerifyUrl.includes(reqUrl);
-                switch (code) {
-                    case 100: // 未登陆
-                    case 101: // 令牌已失效
-                    case 102: // 校验令牌出问题了
-                        if (!noVerifyBool) {
-                            ElMessageBox({
-                                title: t('提示'),
-                                showClose: false,
-                                closeOnClickModal: false,
-                                closeOnPressEscape: false,
-                                message: t('当前用户登入信息已失效，请重新登入再操作'),
-                                beforeClose: (action, instance, done) => {
-                                    if (isExternal(settings.serverLoginUrl)) {
-                                        window.location.href = settings.serverLoginUrl;
-                                    } else {
-                                        window.location.reload();
-                                    }
-                                },
-                                
-                            });
-                        }
-
-                        break;
-                    case 40300:
-                        window.location.href = import.meta.env.VUE_APP_PUBLIC_PATH + '/401';
-                        break;
-                    case 40400:
-                        window.location.href = import.meta.env.VUE_APP_PUBLIC_PATH + '/404';
-                        break;
-                    case 50000:
-                        return res;
-                    default:
-                        if (!noVerifyBool) {
-                            console.error(res.msg);
-                            // ElMessage({
-                            //     message: res.msg || 'Errors',
-                            //     type: 'error',
-                            //     duration: 1500,
-                            // });
-                        }
-                        break;
-                }
-
-                // 返回错误 走 catch
-                return Promise.reject(res);
-            } else {
-                return res;
+                return response;
             }
         },
         (error) => {
@@ -143,19 +90,10 @@ function y9Request(baseUrl = '') {
                             if (isExternal(settings.serverLoginUrl)) {
                                 window.location.href = settings.serverLoginUrl;
                             } else {
-                                const params = {
-                                    to: { path: window.location.pathname },
-                                    logoutUrl:
-                                        import.meta.env.VUE_APP_SSO_LOGOUT_URL + import.meta.env.VUE_APP_NAME + '/',
-                                    __y9delete__: () => {
-                                        // 删除前执行的函数
-                                        console.log('删除前执行的函数');
-                                    },
-                                };
-                                $y9_SSO.ssoLogout(params);
-                                // window.location.reload();
+                                $y9_SSO.clearCurrentSessionStorage();
+                                window.location.reload();
                             }
-                        },
+                        }
                     });
                 } else if (error.response.status === 400) {
                     // 参数、业务上的错误统一返回 http 状态 400，返回原始 body 到请求处自行处理
@@ -165,7 +103,7 @@ function y9Request(baseUrl = '') {
             ElMessage({
                 message: error.message,
                 type: 'error',
-                duration: 5 * 1000,
+                duration: 5 * 1000
             });
 
             return Promise.reject(error);

@@ -26,11 +26,7 @@
     };
 
     const backHomeMethod = () => {
-        if (userInfo.tenantId == '1563572018593402880') {
-            window.location.href = import.meta.env.VUE_APP_CONTEXT_Y9HOME;
-        } else {
-            window.location.href = import.meta.env.VUE_APP_HOST_HOMEINDEX;
-        }
+        window.location.href = import.meta.env.VUE_APP_HOST_HOMEINDEX;
     };
 
     // 搜索

@@ -8,26 +8,26 @@
 -->
 
 <template>
-  <div class="block">
-    <el-pagination
-      @size-change="handleSizeChange" 
-      @current-change="handleCurrentChange"
-      :current-page="currentPage"
-      :background="true"
-      :page-sizes="[20, 50, 100, 200]"
-      :page-size="pageSize"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="total"
-    >
-    </el-pagination>
-  </div>
+    <div class="block">
+        <el-pagination
+            :background="true"
+            :current-page="currentPage"
+            :page-size="pageSize"
+            :page-sizes="[20, 50, 100, 200]"
+            :total="total"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+        >
+        </el-pagination>
+    </div>
 </template>
 
 <script setup>
-import { defineProps,watchEffect  } from "vue"
-const props = defineProps({
-  currentPage: Number,
-  total: Number
-})
+    import { defineProps } from 'vue';
 
+    const props = defineProps({
+        currentPage: Number,
+        total: Number
+    });
 </script>

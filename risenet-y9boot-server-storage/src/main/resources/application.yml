@@ -168,7 +168,7 @@ y9:
             #privateKey:
             #publicKey:
             rest:
-                fileManagerUrl: http://localhost:8080/fileManager
+                fileManagerUrl: http://localhost:8080/filemanager
             ftp:
                 host: localhost
                 port: 21
