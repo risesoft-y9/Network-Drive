@@ -1,15 +1,17 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>risenet-y9boot-api-auth</artifactId>
-    <version>${revision}</version>
-    <packaging>jar</packaging>
-
     <parent>
         <groupId>net.risesoft</groupId>
         <artifactId>y9-storage</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+    <artifactId>risenet-y9boot-api-auth</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>risenet-y9boot-api-auth</name>
+    <description>RiseSoft/Network Drive auth api</description>
 
     <repositories>
         <repository>
@@ -27,7 +29,6 @@
     </repositories>
 
     <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
     <dependencies>
@@ -100,5 +101,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
