@@ -96,14 +96,14 @@
                 <!-- <img src="@/assets/images/app-icon.png"> -->
                 <el-avatar :src="userInfo.avator ? userInfo.avator : ''"> {{ userInfo.loginName }}</el-avatar>
             </div>
-            <div class="item" @click="backHomeMethod">
-                <i class="ri-arrow-go-back-line"></i>
-                <span>{{ $t('首页') }}</span>
-            </div>
-            <!-- <div class="item" @click="logout">
+            <!-- <div class="item" @click="backHomeMethod">
+                 <i class="ri-arrow-go-back-line"></i>
+                 <span>{{ $t('首页') }}</span>
+             </div> -->
+            <div class="item" @click="logout">
                 <i class="ri-logout-box-r-line"></i>
                 <span>{{ $t('退出') }}</span>
-            </div> -->
+            </div>
         </div>
     </div>
 </template>
