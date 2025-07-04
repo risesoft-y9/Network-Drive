@@ -115,9 +115,9 @@ y9:
             orgId: 1784650901097676800
     service:
         org:
-            directUrl: https://test-api.youshengyun.com
+            directUrl: https://test.youshengyun.com
         cms:
-            directUrl: https://test-api.youshengyun.com
+            directUrl: https://test.youshengyun.com/server-cms
     common:
         convertEnabled: true
         kafkaEnabled: false
