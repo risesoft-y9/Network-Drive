@@ -34,7 +34,7 @@ public class CmsController {
     		String tenantId = Y9Context.getProperty("y9.app.dataAssets.tenantId");
 			// 创建CloseableHttpClient
 			CloseableHttpClient client = HttpClientBuilder.create().build();
-			HttpGet httpGet = new HttpGet(serverUrl + "/cms/visit/pageDocList/" + tenantId +"?path="+code+"&page=1&rows=10");
+			HttpGet httpGet = new HttpGet(serverUrl + "/visit/pageDocList/" + tenantId +"?path="+code+"&page=1&rows=10");
 
 			CloseableHttpResponse response = client.execute(httpGet);
 			String obj = EntityUtils.toString(response.getEntity());
