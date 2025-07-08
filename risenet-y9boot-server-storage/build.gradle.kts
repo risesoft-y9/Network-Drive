@@ -26,9 +26,9 @@ dependencies {
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
 }
 
-description = "risenet-y9boot-webapp-storage"
+description = "risenet-y9boot-server-storage"
 
-val finalName = "storage"
+val finalName = "server-storage"
 
 y9Docker {
     appName = finalName

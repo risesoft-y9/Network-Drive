@@ -31,9 +31,9 @@ dependencies {
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
 }
 
-description = "risenet-y9boot-webapp-dataassets"
+description = "risenet-y9boot-server-dataassets"
 
-val finalName = "dataAssets"
+val finalName = "server-dataassets"
 y9Docker {
     appName = finalName
 }
