@@ -1,10 +1,10 @@
 package net.risesoft.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
@@ -15,7 +15,7 @@ import net.risesoft.base.BaseEntity;
 
 @Entity
 @Table(name = "Y9_DATAASSETS_DEMAND")
-@org.hibernate.annotations.Table(comment = "数据需求信息表", appliesTo = "Y9_DATAASSETS_DEMAND")
+@Comment( "数据需求信息表")
 @NoArgsConstructor
 @Data
 public class DataDemandEntity extends BaseEntity {
