@@ -182,6 +182,7 @@ vue -- 前端工程
 | 21 | <a href="https://vue.youshengyun.com/files/storage/网络硬盘Mariadb数据库适配文档.pdf" target="_blank">Mariadb数据库适配文档</a>       |
 | 22 | <a href="https://vue.youshengyun.com/files/storage/网络硬盘OceanBase数据库适配文档.pdf" target="_blank">OceanBase数据库适配文档</a>   |
 | 23 | <a href="https://vue.youshengyun.com/files/storage/网络硬盘MySQL数据库适配文档.pdf" target="_blank">MySQL数据库适配文档</a>           | 
+| 24 | <a href="https://docs.youshengyun.com/digitalbase/backend/hole/holeInfo" target="_blank">安全扫描漏洞问题及解决方案文档</a>        | 
 
 ## 网络硬盘截图
 
