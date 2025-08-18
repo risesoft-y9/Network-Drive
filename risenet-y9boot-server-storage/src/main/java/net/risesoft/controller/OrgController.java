@@ -17,11 +17,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.api.platform.org.PositionApi;
-import net.risesoft.api.platform.permission.PersonRoleApi;
-import net.risesoft.enums.platform.OrgTreeTypeEnum;
-import net.risesoft.model.platform.OrgUnit;
-import net.risesoft.model.platform.Organization;
-import net.risesoft.model.platform.Position;
+import net.risesoft.api.platform.permission.cache.PersonRoleApi;
+import net.risesoft.enums.platform.org.OrgTreeTypeEnum;
+import net.risesoft.model.platform.org.OrgUnit;
+import net.risesoft.model.platform.org.Organization;
+import net.risesoft.model.platform.org.Position;
 import net.risesoft.model.user.UserInfo;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.y9.Y9Context;
@@ -61,12 +61,14 @@ public class OrgController {
         String capacityManagerRoleName = Y9Context.getProperty("y9.app.storage.capacityManagerRoleName");
         String reportManagerRoleName = Y9Context.getProperty("y9.app.storage.reportManagerRoleName");
         boolean publicManager = personRoleApi
-            .hasRole(tenantId, Y9Context.getSystemName(), "", publicManagerRoleName, userInfo.getPersonId()).getData();
+            .hasRole(tenantId, Y9Context.getSystemName(), "", publicManagerRoleName, userInfo.getPersonId())
+            .getData();
         boolean capacityManager = personRoleApi
             .hasRole(tenantId, Y9Context.getSystemName(), "", capacityManagerRoleName, userInfo.getPersonId())
             .getData();
         boolean reportManager = personRoleApi
-            .hasRole(tenantId, Y9Context.getSystemName(), "", reportManagerRoleName, userInfo.getPersonId()).getData();
+            .hasRole(tenantId, Y9Context.getSystemName(), "", reportManagerRoleName, userInfo.getPersonId())
+            .getData();
         res_map.put("publicManager", publicManager);
         res_map.put("capacityManager", capacityManager);
         res_map.put("reportManager", reportManager);

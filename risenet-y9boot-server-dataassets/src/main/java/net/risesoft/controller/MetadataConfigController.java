@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.entity.MetadataConfig;
-import net.risesoft.model.platform.DataCatalog;
+import net.risesoft.model.platform.resource.DataCatalog;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.MetadataConfigService;

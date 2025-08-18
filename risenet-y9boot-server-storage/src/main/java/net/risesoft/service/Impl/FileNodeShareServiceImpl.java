@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import net.risesoft.entity.FileNodeShare;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
-import net.risesoft.model.platform.OrgUnit;
+import net.risesoft.model.platform.org.OrgUnit;
 import net.risesoft.model.user.UserInfo;
 import net.risesoft.repository.FileNodeShareRepository;
 import net.risesoft.service.FileNodeShareService;

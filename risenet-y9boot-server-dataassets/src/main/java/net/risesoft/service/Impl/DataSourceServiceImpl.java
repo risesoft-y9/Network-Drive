@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
+
 import net.risesoft.entity.DataSourceEntity;
 import net.risesoft.entity.DataSourceTypeEntity;
 import net.risesoft.id.Y9IdGenerator;
@@ -23,7 +24,9 @@ import net.risesoft.repository.DataSourceTypeRepository;
 import net.risesoft.service.DataSourceService;
 import net.risesoft.util.Y9FormDbMetaDataUtil;
 import net.risesoft.y9.Y9LoginUserHolder;
-import y9.client.rest.platform.permission.PersonRoleApiClient;
+
+import y9.client.rest.platform.permission.cache.PersonRoleApiClient;
+
 import jodd.util.Base64;
 
 @Service(value = "dataSourceService")
@@ -126,32 +129,35 @@ public class DataSourceServiceImpl implements DataSourceService {
 
     @Override
     public List<DataSourceEntity> findByBaseType(String baseType) {
-    	// 判断是否系统管理员
-		boolean isAdmin = personRoleApiClient.hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, 
-				"系统管理员", Y9LoginUserHolder.getPersonId()).getData();
-		if(isAdmin) {
-			return datasourceRepository.findByBaseTypeAndTenantIdOrderByCreateTime(baseType, Y9LoginUserHolder.getTenantId());
-		}else {
-			return datasourceRepository.findByBaseTypeAndTenantIdAndUserIdOrderByCreateTime(baseType, 
-					Y9LoginUserHolder.getTenantId(), Y9LoginUserHolder.getPersonId());
-		}
+        // 判断是否系统管理员
+        boolean isAdmin = personRoleApiClient
+            .hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId())
+            .getData();
+        if (isAdmin) {
+            return datasourceRepository.findByBaseTypeAndTenantIdOrderByCreateTime(baseType,
+                Y9LoginUserHolder.getTenantId());
+        } else {
+            return datasourceRepository.findByBaseTypeAndTenantIdAndUserIdOrderByCreateTime(baseType,
+                Y9LoginUserHolder.getTenantId(), Y9LoginUserHolder.getPersonId());
+        }
     }
 
     @Override
     public List<Map<String, Object>> searchSource(String baseName) {
         List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
         // 判断是否系统管理员
- 		boolean isAdmin = personRoleApiClient.hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, 
-     				"系统管理员", Y9LoginUserHolder.getPersonId()).getData();
+        boolean isAdmin = personRoleApiClient
+            .hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId())
+            .getData();
         List<DataSourceTypeEntity> list = dataSourceTypeRepository.findAll();
         for (DataSourceTypeEntity category : list) {
             List<DataSourceEntity> sourceList = null;
-            if(isAdmin) {
-            	sourceList = datasourceRepository.findByNameContainingAndBaseTypeAndTenantId(baseName, 
-            			category.getName(), Y9LoginUserHolder.getTenantId());
-            }else {
-            	sourceList = datasourceRepository.findByNameContainingAndBaseTypeAndTenantIdAndUserId(baseName, 
-            			category.getName(), Y9LoginUserHolder.getTenantId(), Y9LoginUserHolder.getPersonId());
+            if (isAdmin) {
+                sourceList = datasourceRepository.findByNameContainingAndBaseTypeAndTenantId(baseName,
+                    category.getName(), Y9LoginUserHolder.getTenantId());
+            } else {
+                sourceList = datasourceRepository.findByNameContainingAndBaseTypeAndTenantIdAndUserId(baseName,
+                    category.getName(), Y9LoginUserHolder.getTenantId(), Y9LoginUserHolder.getPersonId());
             }
             if (sourceList.size() == 0) {
                 continue;
@@ -186,76 +192,76 @@ public class DataSourceServiceImpl implements DataSourceService {
         return Y9Result.failure("数据不存在，请刷新数据");
     }
 
-	@Override
-	public List<Map<String, Object>> getTableSelectTree(String type) {
-		List<Map<String, Object>> listMap = new ArrayList<Map<String,Object>>();
-		try {
-			List<DataSourceTypeEntity> dataSourceTypeEntities = findDataCategory();
-			for(DataSourceTypeEntity entity : dataSourceTypeEntities) {
-				Map<String, Object> map = new HashMap<String, Object>();
-				map.put("value", entity.getId());
-				map.put("label", entity.getName());
-				map.put("disabled", true);
-				
-				List<Map<String, Object>> child1 = new ArrayList<>();
-				List<DataSourceEntity> list = findByBaseType(entity.getName());
-				for(DataSourceEntity info : list) {
-					Map<String, Object> map2 = new HashMap<String, Object>();
-					map2.put("value", "s-" + info.getId());
-					map2.put("label", info.getName());
-					
-					if(type.equals("table")) {
-						// 获取数据源表
-						DataSource dataSource = Y9FormDbMetaDataUtil.createDataSource(info.getUrl(), info.getDriver(),
-								info.getUsername(), info.getPassword());
-						List<Map<String, Object>> child2 = new ArrayList<>();
-				        List<Map<String, Object>> table_map = Y9FormDbMetaDataUtil.listAllTables(dataSource);
-				        for (Map<String, Object> table : table_map) {
-				            Map<String, Object> map3 = new HashMap<>();
-				            map3.put("value", "t-" + info.getId() + "-" + table.get("name").toString());
-				            map3.put("label", table.get("name").toString());
-				            child2.add(map3);
-				        }
-				        map2.put("children", child2);
-					}
-					
-					child1.add(map2);
-				}
-				map.put("children", child1);
-				listMap.add(map);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return listMap;
-	}
+    @Override
+    public List<Map<String, Object>> getTableSelectTree(String type) {
+        List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+        try {
+            List<DataSourceTypeEntity> dataSourceTypeEntities = findDataCategory();
+            for (DataSourceTypeEntity entity : dataSourceTypeEntities) {
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("value", entity.getId());
+                map.put("label", entity.getName());
+                map.put("disabled", true);
 
-	@Override
-	public List<Map<String, Object>> getTablePage(String id, String name) {
-		List<Map<String, Object>> listMap = new ArrayList<Map<String,Object>>();
-		try {
-			DataSourceEntity dataSourceEntity = getDataSourceById(id);
-			if(dataSourceEntity != null) {
-				// 获取数据源
-				DataSource dataSource = Y9FormDbMetaDataUtil.createDataSource(dataSourceEntity.getUrl(), dataSourceEntity.getDriver(), 
-						dataSourceEntity.getUsername(), dataSourceEntity.getPassword());
-				// 获取数据表
-			    List<Map<String, Object>> table_map = Y9FormDbMetaDataUtil.listAllTables(dataSource);
-			    for (Map<String, Object> table : table_map) {
-			    	String tableName = table.get("name").toString();
-			    	if(StringUtils.isNotBlank(name) && !tableName.contains(name)) {
-			    		continue;
-			    	}
-			        Map<String, Object> map = new HashMap<>();
-			        map.put("name", tableName);
-			        map.put("sourceId", id);
-			        listMap.add(map);
-			    }
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return listMap;
-	}
+                List<Map<String, Object>> child1 = new ArrayList<>();
+                List<DataSourceEntity> list = findByBaseType(entity.getName());
+                for (DataSourceEntity info : list) {
+                    Map<String, Object> map2 = new HashMap<String, Object>();
+                    map2.put("value", "s-" + info.getId());
+                    map2.put("label", info.getName());
+
+                    if (type.equals("table")) {
+                        // 获取数据源表
+                        DataSource dataSource = Y9FormDbMetaDataUtil.createDataSource(info.getUrl(), info.getDriver(),
+                            info.getUsername(), info.getPassword());
+                        List<Map<String, Object>> child2 = new ArrayList<>();
+                        List<Map<String, Object>> table_map = Y9FormDbMetaDataUtil.listAllTables(dataSource);
+                        for (Map<String, Object> table : table_map) {
+                            Map<String, Object> map3 = new HashMap<>();
+                            map3.put("value", "t-" + info.getId() + "-" + table.get("name").toString());
+                            map3.put("label", table.get("name").toString());
+                            child2.add(map3);
+                        }
+                        map2.put("children", child2);
+                    }
+
+                    child1.add(map2);
+                }
+                map.put("children", child1);
+                listMap.add(map);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return listMap;
+    }
+
+    @Override
+    public List<Map<String, Object>> getTablePage(String id, String name) {
+        List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+        try {
+            DataSourceEntity dataSourceEntity = getDataSourceById(id);
+            if (dataSourceEntity != null) {
+                // 获取数据源
+                DataSource dataSource = Y9FormDbMetaDataUtil.createDataSource(dataSourceEntity.getUrl(),
+                    dataSourceEntity.getDriver(), dataSourceEntity.getUsername(), dataSourceEntity.getPassword());
+                // 获取数据表
+                List<Map<String, Object>> table_map = Y9FormDbMetaDataUtil.listAllTables(dataSource);
+                for (Map<String, Object> table : table_map) {
+                    String tableName = table.get("name").toString();
+                    if (StringUtils.isNotBlank(name) && !tableName.contains(name)) {
+                        continue;
+                    }
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("name", tableName);
+                    map.put("sourceId", id);
+                    listMap.add(map);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return listMap;
+    }
 
 }

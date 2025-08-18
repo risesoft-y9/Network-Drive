@@ -38,7 +38,7 @@ import net.risesoft.entity.FileDownLoadRecord;
 import net.risesoft.entity.FileNode;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
-import net.risesoft.model.platform.Person;
+import net.risesoft.model.platform.org.Person;
 import net.risesoft.model.user.UserInfo;
 import net.risesoft.service.FileDownLoadRecordService;
 import net.risesoft.service.FileNodeCollectService;

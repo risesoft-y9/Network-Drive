@@ -8,11 +8,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import net.risesoft.enums.platform.AuthorityEnum;
-import net.risesoft.model.platform.DataCatalog;
+
+import net.risesoft.enums.platform.permission.AuthorityEnum;
+import net.risesoft.model.platform.resource.DataCatalog;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.y9.Y9LoginUserHolder;
-import y9.client.rest.platform.permission.PersonRoleApiClient;
+
+import y9.client.rest.platform.permission.cache.PersonRoleApiClient;
 import y9.client.rest.platform.resource.DataCatalogApiClient;
 
 /**
@@ -40,9 +42,10 @@ public class DataAssetsCatalogController {
         String tenantId = Y9LoginUserHolder.getTenantId(), userId = Y9LoginUserHolder.getUserInfo().getPersonId();
         return dataCatalogApiClient.getTree("asset", parentId, false, tenantId, userId, AuthorityEnum.BROWSE);
     }
-    
+
     /**
      * 搜索树
+     * 
      * @param name
      * @return
      */
@@ -51,9 +54,10 @@ public class DataAssetsCatalogController {
         String tenantId = Y9LoginUserHolder.getTenantId(), userId = Y9LoginUserHolder.getUserInfo().getPersonId();
         return dataCatalogApiClient.treeSearch("asset", name, tenantId, userId, AuthorityEnum.BROWSE);
     }
-    
+
     /**
      * 判断是否系统管理员
+     * 
      * @param parentId
      * @return
      */
