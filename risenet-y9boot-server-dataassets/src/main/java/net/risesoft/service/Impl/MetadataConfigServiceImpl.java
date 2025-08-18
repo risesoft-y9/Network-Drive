@@ -29,7 +29,7 @@ import net.risesoft.entity.VideoFile;
 import net.risesoft.enums.CategoryEnums;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
-import net.risesoft.model.platform.Manager;
+import net.risesoft.model.platform.org.Manager;
 import net.risesoft.model.user.UserInfo;
 import net.risesoft.repository.CategoryTableRepository;
 import net.risesoft.repository.MetadataConfigRepository;

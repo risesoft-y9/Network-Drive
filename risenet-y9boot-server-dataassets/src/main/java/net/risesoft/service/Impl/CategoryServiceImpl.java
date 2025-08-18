@@ -28,7 +28,7 @@ import net.risesoft.enums.CategoryEnums;
 import net.risesoft.enums.DataSourceEnums;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
-import net.risesoft.model.platform.Manager;
+import net.risesoft.model.platform.org.Manager;
 import net.risesoft.model.user.UserInfo;
 import net.risesoft.repository.CategoryRepository;
 import net.risesoft.service.CategoryService;
