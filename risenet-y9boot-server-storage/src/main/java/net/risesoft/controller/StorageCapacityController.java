@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.entity.StorageCapacity;
+import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.user.UserInfo;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
@@ -115,6 +116,7 @@ public class StorageCapacityController {
      * @param storageCapacity
      * @return
      */
+    @RiseLog(operationName = "更新存储空间值")
     @RequestMapping(value = "/updateCapacity")
     public Y9Result<Object> updateCapacity(StorageCapacity storageCapacity) {
         try {

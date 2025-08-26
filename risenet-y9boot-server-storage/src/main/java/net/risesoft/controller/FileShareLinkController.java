@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.risesoft.entity.FileShareLink;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
+import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.user.UserInfo;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.FileShareLinkService;
@@ -39,6 +40,7 @@ public class FileShareLinkController {
      * @param fileId
      * @return
      */
+    @RiseLog(operationName = "创建文件分享链接")
     @PostMapping(value = "/createLink")
     public Y9Result<FileShareLink> createLink(String fileId, String linkPassword) {
         try {

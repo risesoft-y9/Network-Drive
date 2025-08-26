@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.FileNodeCollectService;
 
@@ -29,6 +30,7 @@ public class FileNodeCollectController {
      * @param fileId
      * @return
      */
+    @RiseLog(operationName = "取消收藏文件或者文件夹")
     @RequestMapping(value = "/cancelCollect")
     public Y9Result<String> cancelCollect(String fileId) {
         try {
@@ -46,6 +48,7 @@ public class FileNodeCollectController {
      * @param fileId
      * @return
      */
+    @RiseLog(operationName = "收藏文件或者文件夹")
     @RequestMapping(value = "/setCollect")
     public Y9Result<String> setCollect(String fileId) {
         fileNodeCollectService.save(fileId, "");

@@ -41,6 +41,7 @@ import net.risesoft.entity.FileDownLoadRecord;
 import net.risesoft.entity.FileNode;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
+import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.user.UserInfo;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
@@ -76,6 +77,7 @@ public class FileNodeController {
      * @param folder
      * @return
      */
+    @RiseLog(operationName = "取消文件夹密码")
     @RequestMapping(value = "/cancelFolderPassword")
     public Y9Result<String> cancelFolderPassword(FileNode folder) {
         try {
@@ -108,6 +110,7 @@ public class FileNodeController {
      * @param folder
      * @return
      */
+    @RiseLog(operationName = "验证文件夹密码")
     @RequestMapping(value = "/checkFolderPassword")
     public Y9Result<String> checkFolderPassword(FileNode folder) {
         try {
@@ -173,6 +176,7 @@ public class FileNodeController {
      * @param folder
      * @return
      */
+    @RiseLog(operationName = "解密文件夹")
     @RequestMapping(value = "/decryptPassword")
     public Y9Result<String> decryptPassword(FileNode folder) {
         try {
@@ -201,6 +205,7 @@ public class FileNodeController {
      * @param idList
      * @param response
      */
+    @RiseLog(operationName = "下载文件")
     @RequestMapping(value = "/downloadFile")
     public void downloadFile(@RequestParam(required = false) String positionId,
         @RequestParam(name = "ids") List<String> idList, HttpServletResponse response) {
@@ -291,6 +296,7 @@ public class FileNodeController {
      *
      * @return
      */
+    @RiseLog(operationName = "清空回收站")
     @DeleteMapping(value = "/emptyRecycleBin")
     public Y9Result<Object> emptyRecycleBin() {
         fileNodeService.emptyRecycleBin();
@@ -474,6 +480,7 @@ public class FileNodeController {
      * @param idList
      * @return
      */
+    @RiseLog(operationName = "删除文件")
     @DeleteMapping
     public Y9Result<Object> logicDelete(@RequestParam(name = "ids") List<String> idList) {
         fileNodeService.logicDelete(idList);
@@ -519,6 +526,7 @@ public class FileNodeController {
      * @param targetId
      * @return
      */
+    @RiseLog(operationName = "移动文件")
     @PostMapping(value = "/move")
     public Y9Result<Object> moveTo(@RequestParam(name = "ids") List<String> idList, String targetId) {
         fileNodeService.move(idList, targetId);
@@ -575,6 +583,7 @@ public class FileNodeController {
      * @param idList
      * @return
      */
+    @RiseLog(operationName = "彻底删除文件")
     @RequestMapping(value = "/permanently")
     public Y9Result<Object> permanentlyDelete(@RequestParam(name = "ids") List<String> idList) {
         fileNodeShareService.deleteByFileNodeIdList(Y9LoginUserHolder.getUserInfo().getPersonId(), idList);
@@ -624,6 +633,7 @@ public class FileNodeController {
      * @param folder
      * @return
      */
+    @RiseLog(operationName = "重置文件夹密码")
     @RequestMapping(value = "/resetFolderPassword")
     public Y9Result<Object> resetFolderPassword(FileNode folder) {
         try {
@@ -654,6 +664,7 @@ public class FileNodeController {
      * @param idList
      * @return
      */
+    @RiseLog(operationName = "还原文件")
     @RequestMapping(value = "/restore")
     public Y9Result<Object> restore(@RequestParam(name = "ids") List<String> idList) {
         fileNodeService.restore(idList);
@@ -667,6 +678,7 @@ public class FileNodeController {
      * @param folder
      * @return
      */
+    @RiseLog(operationName = "保存文件夹")
     @RequestMapping(value = "/saveFolder")
     public Y9Result<Object> saveFolder(@RequestHeader("positionId") String positionId, FileNode folder) {
         Y9LoginUserHolder.setPositionId(positionId);
@@ -682,6 +694,7 @@ public class FileNodeController {
      * @param parentId
      * @return
      */
+    @RiseLog(operationName = "上传文件")
     @RequestMapping(value = "/uploadFile")
     public Y9Result<Map<String, Object>> saveOrUpdate(@RequestHeader("positionId") String positionId,
         MultipartFile file, String parentId, String listType) {
@@ -696,6 +709,7 @@ public class FileNodeController {
      * @param folder
      * @return
      */
+    @RiseLog(operationName = "保存设置文件夹密码")
     @RequestMapping(value = "/setFolderPassword")
     public Y9Result<Object> setFolderPassword(FileNode folder) {
         try {
@@ -716,6 +730,7 @@ public class FileNodeController {
      * @param id
      * @return
      */
+    @RiseLog(operationName = "设置直链文件密码")
     @RequestMapping(value = "/setLinkPwd")
     public Y9Result<Object> setLinkPwd(String id, boolean encryption, String linkPassword) {
         try {

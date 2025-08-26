@@ -24,6 +24,7 @@ import net.risesoft.controller.dto.FileNodeShareDTO;
 import net.risesoft.entity.FileNode;
 import net.risesoft.entity.FileNodeShare;
 import net.risesoft.enums.platform.org.OrgTypeEnum;
+import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.platform.org.OrgUnit;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
@@ -54,6 +55,7 @@ public class FileNodeShareController {
      * @param fileNodeIdList
      * @return
      */
+    @RiseLog(operationName = "取消分享")
     @DeleteMapping
     public Y9Result<Object> cancelShare(@RequestParam(name = "fileNodeIds") List<String> fileNodeIdList) {
         fileNodeService.cancelShare(fileNodeIdList);
@@ -67,6 +69,7 @@ public class FileNodeShareController {
      * @param publicIdsList
      * @return
      */
+    @RiseLog(operationName = "删除公开人员")
     @DeleteMapping(value = "/deletePublic")
     public Y9Result<Object> deletePublic(@RequestParam(name = "publicIds") List<String> publicIdsList) {
         fileNodeShareService.deleteByFileNodeIdList(publicIdsList);
@@ -141,6 +144,7 @@ public class FileNodeShareController {
      * @param orgUnitIdList
      * @return
      */
+    @RiseLog(operationName = "公开文件")
     @PostMapping("/publicTo")
     public Y9Result<Object> publicTo(@RequestParam(name = "fileNodeIds") List<String> fileNodeIdList,
         @RequestParam(name = "orgUnitIds") List<String> orgUnitIdList) {
@@ -155,6 +159,7 @@ public class FileNodeShareController {
      * @param orgUnitIdList
      * @return
      */
+    @RiseLog(operationName = "分享文件")
     @PostMapping("/share")
     public Y9Result<Object> share(@RequestParam(name = "fileNodeIds") List<String> fileNodeIdList,
         @RequestParam(name = "orgUnitIds") List<String> orgUnitIdList) {

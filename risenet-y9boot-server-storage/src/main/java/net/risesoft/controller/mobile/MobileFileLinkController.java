@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.consts.UtilConsts;
 import net.risesoft.entity.FileNode;
+import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.service.FileNodeService;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.json.Y9JsonUtil;
@@ -48,6 +49,7 @@ public class MobileFileLinkController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "设置直链文件密码")
     @RequestMapping(value = "/setLinkPassword")
     public void setLinkPassword(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String fileId, @RequestParam Boolean encryption,
@@ -85,6 +87,7 @@ public class MobileFileLinkController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "验证文件直链密码")
     @RequestMapping(value = "/checkLinkPassword")
     public void checkLinkPassword(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String fileId, @RequestParam String password,

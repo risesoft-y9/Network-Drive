@@ -27,6 +27,7 @@ import net.risesoft.controller.dto.FileNodeShareDTO;
 import net.risesoft.entity.FileNode;
 import net.risesoft.entity.FileNodeShare;
 import net.risesoft.enums.platform.org.OrgTypeEnum;
+import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.platform.org.OrgUnit;
 import net.risesoft.model.platform.org.Person;
 import net.risesoft.service.FileNodeService;
@@ -50,11 +51,11 @@ import y9.client.rest.platform.org.PersonApiClient;
 @RequestMapping("/mobile/fileNodeShare")
 public class MobileFileShareController {
 
-    protected Logger log = LoggerFactory.getLogger(MobileFileShareController.class);
     private final FileNodeService fileNodeService;
     private final FileNodeShareService fileNodeShareService;
     private final PersonApiClient personApiClient;
     private final OrgUnitApi orgUnitApi;
+    protected Logger log = LoggerFactory.getLogger(MobileFileShareController.class);
 
     /**
      * 获取文件共享记录列表
@@ -81,7 +82,8 @@ public class MobileFileShareController {
                     fileNodeShareDTO.setFileNode(FileNodeDTO.from(fileNode));
 
                     List<FileNodeShare> fileNodeShareList = fileNodeIdAndListMap.get(fileNodeId);
-                    String toOrgUnitNames = fileNodeShareList.stream().map(FileNodeShare::getToOrgUnitName)
+                    String toOrgUnitNames = fileNodeShareList.stream()
+                        .map(FileNodeShare::getToOrgUnitName)
                         .collect(Collectors.joining("，"));
                     fileNodeShareDTO.setToOrgUnitNames(toOrgUnitNames);
                     fileNodeShareDTOList.add(fileNodeShareDTO);
@@ -109,6 +111,7 @@ public class MobileFileShareController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "共享文件")
     @RequestMapping(value = "/shareFile")
     public void shareFile(@RequestHeader("auth-tenantId") String tenantId, @RequestHeader("auth-userId") String userId,
         @RequestParam String fileNodeIds, @RequestParam String orgUnitIds, HttpServletResponse response)
@@ -144,6 +147,7 @@ public class MobileFileShareController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "公共文件公开")
     @RequestMapping(value = "/publicFile")
     public void publicFile(@RequestHeader("auth-tenantId") String tenantId, @RequestHeader("auth-userId") String userId,
         @RequestParam String fileNodeIds, @RequestParam String orgUnitIds, HttpServletResponse response)
@@ -177,6 +181,7 @@ public class MobileFileShareController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "取消共享文件")
     @RequestMapping(value = "/cancelShare")
     public void cancelShare(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String fileNodeIds, HttpServletResponse response)
@@ -263,6 +268,7 @@ public class MobileFileShareController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "删除文件权限的公开人员")
     @RequestMapping(value = "/deletePublicPerson")
     public void deletePublicPerson(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String publicRecordIds, HttpServletResponse response)

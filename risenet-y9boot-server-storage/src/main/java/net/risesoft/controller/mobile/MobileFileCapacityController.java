@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.consts.UtilConsts;
 import net.risesoft.entity.StorageCapacity;
+import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.service.StorageCapacityService;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.json.Y9JsonUtil;
@@ -130,6 +131,7 @@ public class MobileFileCapacityController {
      * @param capacitySize 存储容量大小
      * @param response
      */
+    @RiseLog(operationName = "更新存储空间容量")
     @RequestMapping(value = "/updateCapacity")
     public void updateCapacity(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String id, @RequestParam Long capacitySize,
