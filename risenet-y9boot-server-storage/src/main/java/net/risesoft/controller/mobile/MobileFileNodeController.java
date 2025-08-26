@@ -38,6 +38,7 @@ import net.risesoft.entity.FileDownLoadRecord;
 import net.risesoft.entity.FileNode;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
+import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.platform.org.Person;
 import net.risesoft.model.user.UserInfo;
 import net.risesoft.service.FileDownLoadRecordService;
@@ -345,6 +346,7 @@ public class MobileFileNodeController {
      * @param userId
      * @param response
      */
+    @RiseLog(operationName = "清空回收站")
     @RequestMapping(value = "/clearRecycle")
     public void clearRecycle(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, HttpServletResponse response) {
@@ -371,6 +373,7 @@ public class MobileFileNodeController {
      * @param ids
      * @param response
      */
+    @RiseLog(operationName = "删除回收站文件")
     @RequestMapping(value = "/deleteRecycleFile")
     public void deleteRecycleFile(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String ids, HttpServletResponse response) {
@@ -399,6 +402,7 @@ public class MobileFileNodeController {
      * @param ids
      * @param response
      */
+    @RiseLog(operationName = "还原回收站文件")
     @RequestMapping(value = "/restoreRecycleFile")
     public void restoreRecycleFile(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String ids, HttpServletResponse response) {
@@ -430,6 +434,7 @@ public class MobileFileNodeController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "上传文件")
     @RequestMapping(value = "/uploadFile")
     public void uploadFile(@RequestHeader("auth-tenantId") String tenantId, @RequestHeader("auth-userId") String userId,
         @RequestHeader("auth-positionId") String positionId, @RequestParam(required = false) MultipartFile file,
@@ -462,6 +467,7 @@ public class MobileFileNodeController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "新建文件夹")
     @RequestMapping(value = "/addFolder")
     public void addFolder(@RequestHeader("auth-tenantId") String tenantId, @RequestHeader("auth-userId") String userId,
         @RequestHeader("auth-positionId") String positionId, @RequestParam String name, @RequestParam String parentId,
@@ -498,6 +504,7 @@ public class MobileFileNodeController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "下载文件")
     @RequestMapping(value = "/downloadFile")
     public void downloadFile(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestHeader("auth-positionId") String positionId,
@@ -638,6 +645,7 @@ public class MobileFileNodeController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "删除文件")
     @RequestMapping(value = "/deleteFile")
     public void deleteFile(@RequestHeader("auth-tenantId") String tenantId, @RequestHeader("auth-userId") String userId,
         @RequestHeader("auth-positionId") String positionId, @RequestParam String ids, HttpServletResponse response)
@@ -669,6 +677,7 @@ public class MobileFileNodeController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "移动单个或者多个文件")
     @RequestMapping(value = "/moveFile")
     public void moveFile(@RequestHeader("auth-tenantId") String tenantId, @RequestHeader("auth-userId") String userId,
         @RequestParam String ids, @RequestParam String targetId, HttpServletResponse response) throws Exception {
@@ -701,6 +710,7 @@ public class MobileFileNodeController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "重命名文件或文件夹")
     @RequestMapping(value = "/rename")
     public void rename(@RequestHeader("auth-tenantId") String tenantId, @RequestHeader("auth-userId") String userId,
         @RequestHeader("auth-positionId") String positionId, @RequestParam String id, @RequestParam String name,
@@ -786,6 +796,7 @@ public class MobileFileNodeController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "设置文件夹密码")
     @RequestMapping(value = "/setFolderPassword")
     public void setFolderPassword(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String folderId, @RequestParam String password,
@@ -818,6 +829,7 @@ public class MobileFileNodeController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "取消文件夹密码")
     @RequestMapping(value = "/cancelFolderPassword")
     public void cancelFolderPassword(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String folderId, @RequestParam String password,
@@ -868,6 +880,7 @@ public class MobileFileNodeController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "重置文件夹密码")
     @RequestMapping(value = "/resetFolderPassword")
     public void resetFolderPassword(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String folderId, @RequestParam String password,
@@ -908,6 +921,7 @@ public class MobileFileNodeController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "验证文件夹密码")
     @RequestMapping(value = "/checkFolderPassword")
     public void checkFolderPassword(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String folderId, @RequestParam String password,
@@ -955,6 +969,7 @@ public class MobileFileNodeController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "文件夹解密")
     @RequestMapping(value = "/decryptPassword")
     public void decryptPassword(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String folderId, @RequestParam String password,
@@ -998,6 +1013,7 @@ public class MobileFileNodeController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "收藏文件或者文件夹")
     @RequestMapping(value = "/setCollect")
     public void setCollect(@RequestHeader("auth-tenantId") String tenantId, @RequestHeader("auth-userId") String userId,
         @RequestParam String fileNodeId, HttpServletResponse response) throws Exception {
@@ -1027,6 +1043,7 @@ public class MobileFileNodeController {
      * @param response
      * @throws Exception
      */
+    @RiseLog(operationName = "取消收藏")
     @RequestMapping(value = "/cancelCollect")
     public void cancelCollect(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String fileNodeId, HttpServletResponse response)

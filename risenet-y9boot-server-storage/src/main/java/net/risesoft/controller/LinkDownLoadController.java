@@ -20,6 +20,7 @@ import net.risesoft.entity.FileNode;
 import net.risesoft.entity.FileShareLink;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
+import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.FileDownLoadRecordService;
 import net.risesoft.service.FileNodeService;
@@ -53,6 +54,7 @@ public class LinkDownLoadController {
      * @param tenantId
      * @param response
      */
+    @RiseLog(operationName = "文件链接下载")
     @RequestMapping(value = "/df/{id}/{tenantId}")
     public void downloadFile(@PathVariable String id, @PathVariable String tenantId, HttpServletResponse response) {
         ServletOutputStream os = null;
@@ -96,6 +98,7 @@ public class LinkDownLoadController {
      * @param tenantId
      * @return
      */
+    @RiseLog(operationName = "文件链接密码验证")
     @RequestMapping(value = "/checkPwd")
     public Y9Result<Object> checkPwd(String id, String pwd, String tenantId) {
         Map<String, Object> map = new HashMap<String, Object>();
@@ -112,6 +115,7 @@ public class LinkDownLoadController {
         return Y9Result.success(map);
     }
 
+    @RiseLog(operationName = "验证文件分享链接和密码")
     @RequestMapping(value = "/checkLink")
     public Y9Result<Object> checkLink(String tenantId, String pwd, String linkKey) {
         Map<String, Object> map = new HashMap<String, Object>();
