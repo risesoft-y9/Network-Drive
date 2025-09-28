@@ -1,8 +1,11 @@
 package net.risesoft.util;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +36,60 @@ public class Y9FormDbMetaDataUtil extends DbMetaDataUtil {
         dataSource.setPassword(password);
         dataSource.setDriverClassName(driverClassName);
         return dataSource;
+    }
+    
+    /**
+     * 判断数据库连接状态
+     */
+    public static Boolean getConnection(String driverClass, String userName, String passWord, String url) {
+        boolean flag = false;
+        Connection connection = null;
+        try {
+            Class.forName(driverClass);
+            connection = DriverManager.getConnection(url, userName, passWord);
+            flag = true;
+        } catch (ClassNotFoundException e) {
+        	LOGGER.error(driverClass + "-驱动包不存在");
+        } catch (SQLException e) {
+        	LOGGER.error(url + "-连接失败：" + e.getMessage());
+        } finally {
+            ReleaseResource(connection, null, null, null);
+        }
+        return flag;
+    }
+
+    /**
+     * 释放资源
+     */
+    public static void ReleaseResource(Connection connection, PreparedStatement pstm, ResultSet rs, Statement stmt) {
+        if (rs != null) {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (pstm != null) {
+            try {
+                pstm.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (stmt != null) {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**

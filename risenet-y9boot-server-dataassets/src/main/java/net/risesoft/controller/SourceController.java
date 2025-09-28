@@ -29,7 +29,6 @@ import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.DataSourceService;
 import net.risesoft.util.Y9FormDbMetaDataUtil;
-import net.risesoft.util.db.DbMetaDataUtil;
 import net.risesoft.y9.sqlddl.pojo.DbColumn;
 
 @Validated
@@ -148,7 +147,7 @@ public class SourceController {
     public Y9Result<Boolean> checkStatus(String sourceId) {
         DataSourceEntity source = dataSourceService.getDataSourceById(sourceId);
         if (source != null && source.getType() == 0) {
-            return Y9Result.success(DbMetaDataUtil.getConnection(source.getDriver(), source.getUsername(),
+            return Y9Result.success(Y9FormDbMetaDataUtil.getConnection(source.getDriver(), source.getUsername(),
                 source.getPassword(), source.getUrl()));
         }
         return Y9Result.success(true);
