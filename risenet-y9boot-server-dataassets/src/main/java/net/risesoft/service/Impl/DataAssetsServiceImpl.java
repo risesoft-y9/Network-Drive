@@ -1,7 +1,6 @@
 package net.risesoft.service.Impl;
 
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -21,22 +20,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
-import net.risesoft.entity.CategoryTable;
 import net.risesoft.entity.DataApiOnlineEntity;
 import net.risesoft.entity.DataAssets;
-import net.risesoft.entity.DataAssetsNumberRules;
 import net.risesoft.entity.DataSourceEntity;
 import net.risesoft.entity.DictionaryValue;
 import net.risesoft.entity.FileInfo;
-import net.risesoft.entity.MetadataConfig;
-import net.risesoft.enums.CategoryEnums;
 import net.risesoft.enums.CodePayTypeEnum;
 import net.risesoft.enums.CodeTypeEnum;
 import net.risesoft.enums.MarginTypeEnum;
@@ -45,28 +39,18 @@ import net.risesoft.interfaces.Six;
 import net.risesoft.model.AssetsModel;
 import net.risesoft.model.CodePicBase64;
 import net.risesoft.model.IdcodeRegResult;
-import net.risesoft.model.SearchPage;
-import net.risesoft.model.platform.resource.DataCatalog;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
-import net.risesoft.repository.AudioFileRepository;
 import net.risesoft.repository.DataApiOnlineRepository;
-import net.risesoft.repository.DataAssetsNumberRulesRepository;
 import net.risesoft.repository.DataAssetsRepository;
-import net.risesoft.repository.DocumentFileRepository;
 import net.risesoft.repository.FileInfoRepository;
-import net.risesoft.repository.ImageFileRepository;
-import net.risesoft.repository.MetadataConfigRepository;
-import net.risesoft.repository.VideoFileRepository;
 import net.risesoft.repository.spec.DataAssetsSpecification;
-import net.risesoft.service.CategoryTableService;
 import net.risesoft.service.DataAssetsService;
 import net.risesoft.service.DataSourceService;
 import net.risesoft.service.DictionaryOptionService;
 import net.risesoft.util.Config;
 import net.risesoft.util.DataConstant;
 import net.risesoft.util.FileDataUtil;
-import net.risesoft.util.PageUtil;
 import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.util.Y9BeanUtil;
@@ -74,7 +58,6 @@ import net.risesoft.y9public.entity.Y9FileStore;
 import net.risesoft.y9public.service.Y9FileStoreService;
 
 import y9.client.rest.platform.permission.cache.PersonRoleApiClient;
-import y9.client.rest.platform.resource.DataCatalogApiClient;
 
 import cn.hutool.core.util.NumberUtil;
 
@@ -83,16 +66,6 @@ import cn.hutool.core.util.NumberUtil;
 public class DataAssetsServiceImpl implements DataAssetsService {
 
     private final DataAssetsRepository dataAssetsRepository;
-
-    private final DataCatalogApiClient dataCatalogApiClient;
-    private final DocumentFileRepository documentFileRepository;
-    private final AudioFileRepository audioFileRepository;
-    private final ImageFileRepository imageFileRepository;
-    private final VideoFileRepository videoFileRepository;
-    private final CategoryTableService categoryTableService;
-    private final PageUtil pageUtil;
-    private final MetadataConfigRepository metadataConfigRepository;
-    private final DataAssetsNumberRulesRepository dataAssetsNumberRulesRepository;
     private final FileInfoRepository fileInfoRepository;
     private final Y9FileStoreService y9FileStoreService;
     private final DataApiOnlineRepository dataApiOnlineRepository;
@@ -100,184 +73,9 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     private final PersonRoleApiClient personRoleApiClient;
     private final DictionaryOptionService dictionaryOptionService;
 
-    public static Object getFieldValue(Object entity, String fieldName) {
-        try {
-            Field field = entity.getClass().getDeclaredField(fieldName); // 获取字段
-            field.setAccessible(true); // 设置字段可访问
-            return field.get(entity); // 获取字段值
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace(); // 字段不存在
-        } catch (IllegalAccessException e) {
-            e.printStackTrace(); // 访问字段时异常
-        }
-        return null; // 返回null表示未找到或无法访问
-    }
-
-    @Override
-    public SearchPage<DataAssets> list(String categoryId, Boolean isDeleted, int page, int rows) {
-        Pageable pageable = PageRequest.of(page - 1, rows, Sort.by(Sort.Direction.DESC, "createTime"));
-        Page<DataAssets> pageList = dataAssetsRepository.findByCategoryIdAndIsDeleted(categoryId, isDeleted, pageable);
-        List<DataAssets> list = pageList.getContent();
-        SearchPage<DataAssets> searchPage = SearchPage.<DataAssets>builder()
-            .rows(list)
-            .currpage(page)
-            .size(rows)
-            .totalpages(pageList.getTotalPages())
-            .total(pageList.getTotalElements())
-            .build();
-        return searchPage;
-    }
-
-    @Override
-    public SearchPage<DataAssets> listByColumnNameAndValues(String categoryId, Boolean isDeleted,
-        String columnNameAndValues, int page, int rows) {
-        String tenantId = Y9LoginUserHolder.getTenantId();
-        DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
-        String customId = dataCatalog.getCustomId();
-        String[] arr = columnNameAndValues.split(";");
-        String joinSql = "";
-        String conditionSql = "";
-        for (int i = 0; i < arr.length; i++) {
-            String[] arrTemp = arr[i].split(":");
-            if (arrTemp.length == 2) {
-                String columnNameStr = arrTemp[0];
-                String value = arrTemp[1];
-                MetadataConfig metadataConfig =
-                    metadataConfigRepository.findByViewTypeAndColumnName(customId, columnNameStr);
-                String sign = "";
-                if (null != metadataConfig) {
-                    if (metadataConfig.getFieldOrigin().equals("baseInfo")) {
-                        sign = "T";
-                    } else {
-                        sign = "C";
-                    }
-                }
-                String columnName = arrTemp[0].toUpperCase();
-                if (StringUtils.isBlank(conditionSql)) {
-                    conditionSql += "INSTR(" + sign + "." + columnName + ",'" + value + "') > 0 ";
-                } else {
-                    conditionSql += " AND INSTR(" + sign + "." + columnName + ",'" + value + "') > 0 ";
-                }
-            }
-        }
-        if (customId.equals(CategoryEnums.DOCUMENT.getEnName())) {
-            joinSql = "LEFT JOIN Y9_DATAASSETS_DOCUMENT_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
-        } else if (customId.equals(CategoryEnums.IMAGE.getEnName())) {
-            joinSql = "LEFT JOIN Y9_DATAASSETS_IMAGE_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
-        } else if (customId.equals(CategoryEnums.AUDIO.getEnName())) {
-            joinSql = "LEFT JOIN Y9_DATAASSETS_AUDIO_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
-        } else if (customId.equals(CategoryEnums.VIDEO.getEnName())) {
-            joinSql = "LEFT JOIN Y9_DATAASSETS_VIDEO_FILE C ON T.DATAASSETS_ID = C.DETAIL_ID";
-        } else {
-            CategoryTable categoryTable = categoryTableService.findByCategoryMark(customId);
-            if (null != categoryTable) {
-                joinSql = "LEFT JOIN " + categoryTable.getTableName() + " C ON T.DATAASSETS_ID = C.DETAIL_ID";
-            }
-        }
-        String sql = "SELECT T.* FROM Y9_DATAASSETS_DETAILS T " + joinSql
-            + " WHERE T.CATEGORY_ID = ? AND T.IS_DELETED = ? AND " + conditionSql + " ORDER BY T.CREATE_TIME DESC";
-        String countSql = "SELECT COUNT(T.DATAASSETS_ID) FROM Y9_DATAASSETS_DETAILS T " + joinSql
-            + " WHERE T.CATEGORY_ID = ? AND T.IS_DELETED = ? AND " + conditionSql;
-        System.out.println(sql);
-        System.out.println(countSql);
-        Object[] args = new Object[2];
-        args[0] = categoryId;
-        args[1] = isDeleted;
-        SearchPage<DataAssets> searchPage =
-            pageUtil.page(sql, args, new BeanPropertyRowMapper<>(DataAssets.class), countSql, args, page, rows);
-        return searchPage;
-    }
-
-    @Override
-    public DataAssets save(DataAssets dataAssets) {
-        return dataAssetsRepository.save(dataAssets);
-    }
-
     @Override
     public DataAssets findById(Long id) {
         return dataAssetsRepository.findById(id).orElse(null);
-    }
-
-    @Override
-    @Transactional(readOnly = false)
-    public void delete(String categoryId, Long[] ids) {
-        String tenantId = Y9LoginUserHolder.getTenantId();
-        DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
-        for (Long id : ids) {
-            dataAssetsRepository.deleteById(id);
-            if (dataCatalog.getCustomId().equals(CategoryEnums.DOCUMENT.getEnName())) {
-                documentFileRepository.deleteByDetailId(id);
-            } else if (dataCatalog.getCustomId().equals(CategoryEnums.IMAGE.getEnName())) {
-                imageFileRepository.deleteByDetailId(id);
-            } else if (dataCatalog.getCustomId().equals(CategoryEnums.AUDIO.getEnName())) {
-                audioFileRepository.deleteByDetailId(id);
-            } else if (dataCatalog.getCustomId().equals(CategoryEnums.VIDEO.getEnName())) {
-                videoFileRepository.deleteByDetailId(id);
-            } else {
-                categoryTableService.deleteTableData(dataCatalog.getCustomId(), id.toString());
-            }
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = false)
-    public void signDelete(String categoryId, Long[] ids) {
-        for (Long id : ids) {
-            DataAssets dataAssets = this.findById(id);
-            if (null != dataAssets) {
-                dataAssets.setIsDeleted(true);
-                this.save(dataAssets);
-            }
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = false)
-    public void recordArchiving(Long[] ids) {
-        for (Long id : ids) {
-            DataAssets dataAssets = this.findById(id);
-            if (null != dataAssets) {
-                dataAssets.setStatus(1);
-                this.save(dataAssets);
-            }
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = false)
-    public Y9Result<String> createAssetsNo(String categoryId, Long[] ids) {
-        String tenantId = Y9LoginUserHolder.getTenantId();
-        DataCatalog dataCatalog = dataCatalogApiClient.getTreeRoot(tenantId, categoryId).getData();
-        for (Long id : ids) {
-            DataAssets dataAssets = this.findById(id);
-            List<DataAssetsNumberRules> rulesList =
-                dataAssetsNumberRulesRepository.findByCategoryMark(dataCatalog.getCustomId());
-            if (null != rulesList && rulesList.size() > 0) {
-                String archiveNo = "";
-                for (DataAssetsNumberRules rules : rulesList) {
-                    // TODO 根据规则生成资产号
-                    Object fieldValue = getFieldValue(dataAssets, rules.getFieldName()).toString();
-                    if (null != fieldValue) {
-                        if (StringUtils.isNotBlank(archiveNo) && StringUtils.isNotBlank(rules.getConnectorSymbol())) {
-                            archiveNo += rules.getConnectorSymbol() + fieldValue;
-                        } else {
-                            archiveNo += fieldValue.toString();
-                        }
-                    }
-                }
-                System.out.println("资产编号：" + archiveNo);
-                dataAssets.setCode(archiveNo);
-            } else {
-                return Y9Result.failure("未找到资产号规则");
-            }
-            this.save(dataAssets);
-        }
-        return Y9Result.success("创建资产号成功");
-    }
-
-    @Override
-    public List<DataAssets> findByDataAssetsIdIn(Long[] ids) {
-        return dataAssetsRepository.findByIdIn(ids);
     }
 
     @Override
@@ -323,8 +121,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
         }
         // 判断是否系统管理员
         boolean isAdmin = personRoleApiClient
-            .hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId())
-            .getData();
+            .hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId()).getData();
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "createTime"));
         DataAssetsSpecification spec = new DataAssetsSpecification(categoryId, name, Y9LoginUserHolder.getTenantId(),
             code, false, status, dataState, isAdmin ? "" : Y9LoginUserHolder.getPersonId(), "", "", "", "");
@@ -630,6 +427,9 @@ public class DataAssetsServiceImpl implements DataAssetsService {
             DataAssets dataAssets = findById(id);
             if (dataAssets != null) {
                 dataAssets.setDataState(dataState);
+                if(dataState.equals("out")) {// 出库操作将数据下架
+                	dataAssets.setStatus(0);
+                }
                 dataAssetsRepository.save(dataAssets);
             } else {
                 return Y9Result.failure("保存失败，数据不存在");

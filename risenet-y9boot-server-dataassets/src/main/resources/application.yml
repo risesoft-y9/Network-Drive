@@ -135,7 +135,6 @@ y9:
     internalIp: 192.168.x.x,10.0.x.x,172.20.x.x,10.192.x.x
     app:
         dataAssets:
-            managerRoleName: 管理员角色
             # 数据初始化默认租户Id
             tenantId: c425281829dc4d4496ddddf7fc0198d0
             # 可信空间注册人员默认机构Id
