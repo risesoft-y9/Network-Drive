@@ -49,7 +49,7 @@
 </template>
 <script lang="ts" setup>
     import { reactive, ref } from 'vue';
-    import type { ElLoading, ElMessage } from 'element-plus';
+    import type { ElLoading, ElMessage, FormInstance, FormRules } from 'element-plus';
     import { delOptionClass, getOptionClassList, saveOptionClass } from '@/api/dataAssets/dictionaryOption';
     import OptionValue from '@/views/dictionary/dataDict/optionValue.vue';
 

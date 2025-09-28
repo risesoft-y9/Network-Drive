@@ -19,7 +19,7 @@ import net.risesoft.service.DictionaryOptionService;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/vue/dataDict", produces = MediaType.APPLICATION_JSON_VALUE)
-public class DictionaryOptionRestController {
+public class DictionaryOptionController {
 
     private final DictionaryOptionService dictionaryOptionService;
 

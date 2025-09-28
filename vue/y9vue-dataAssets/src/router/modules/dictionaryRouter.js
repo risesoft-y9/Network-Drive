@@ -10,31 +10,13 @@ const dictionaryRouter = {
     path: '/dictionary',
     component: () => import('@/layouts/index.vue'),
     name:'dictionary',
-    redirect: '/category',
+    redirect: '/label',
     meta: {
         title: '资产字典',
         icon: 'ri-book-marked-line',
         roles: ['systemAdmin']
     },
     children:[
-        {
-            path: '/category',
-            component: () => import('@/views/dictionary/category/index.vue'),
-            name: 'categoryIndex',
-            meta: {
-                title: '目录管理',
-                icon: 'ri-archive-stack-line',
-            },
-        },
-        {
-            path: '/metadata',
-            component: () => import('@/views/dictionary/metadata/manage.vue'),
-            name: 'metadata',
-            meta: {
-                title: '元数据管理',
-                icon: 'ri-database-2-line',
-            },
-        },
         {
             path: '/label',
             component: () => import('@/views/dictionary/label/index.vue'),

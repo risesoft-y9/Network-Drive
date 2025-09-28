@@ -59,8 +59,8 @@
     </el-form>
 </template>
 <script lang="ts" setup>
-    import { defineProps, onMounted, reactive, ref } from 'vue';
-    import type { ElLoading, ElMessage, FormInstance } from 'element-plus';
+    import { defineProps, onMounted, reactive, ref, toRefs } from 'vue';
+    import type { ElLoading, ElMessage, FormInstance, FormRules } from 'element-plus';
     import {
         delOptionValue,
         getOptionValueList,
