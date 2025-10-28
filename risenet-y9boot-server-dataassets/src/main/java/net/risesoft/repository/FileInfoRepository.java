@@ -10,10 +10,10 @@ import net.risesoft.entity.FileInfo;
 
 @Transactional(value = "rsTenantTransactionManager", readOnly = true)
 public interface FileInfoRepository extends JpaRepository<FileInfo, Long>, JpaSpecificationExecutor<FileInfo> {
-	
-	Page<FileInfo> findByAssetsId(Long assetsId, Pageable pageable);
-	
-	Page<FileInfo> findByAssetsIdAndNameContains(Long assetsId, String name, Pageable pageable);
-	
-	long countByAssetsId(Long assetsId);
+
+    Page<FileInfo> findByAssetsId(Long assetsId, Pageable pageable);
+
+    Page<FileInfo> findByAssetsIdAndNameContains(Long assetsId, String name, Pageable pageable);
+
+    long countByAssetsId(Long assetsId);
 }

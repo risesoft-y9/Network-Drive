@@ -12,18 +12,18 @@ import net.risesoft.converter.EncryptConverter;
 
 @Configuration
 public class DataAssetsConfiguration implements WebMvcConfigurer {
-	
-	@Autowired  
-    private ApiAuthInterceptor apiAuthInterceptor; 
 
-	@Override  
+    @Autowired
+    private ApiAuthInterceptor apiAuthInterceptor;
+
+    @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(apiAuthInterceptor).addPathPatterns("/services/rest/**");  
+        registry.addInterceptor(apiAuthInterceptor).addPathPatterns("/services/rest/**");
     }
-	
-	@Bean
-	@DependsOn("y9Context")
-	public EncryptConverter encryptConverter() {
-		return new EncryptConverter();
-	}
+
+    @Bean
+    @DependsOn("y9Context")
+    public EncryptConverter encryptConverter() {
+        return new EncryptConverter();
+    }
 }

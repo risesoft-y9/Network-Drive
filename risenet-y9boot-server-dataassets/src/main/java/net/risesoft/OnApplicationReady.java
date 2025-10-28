@@ -18,6 +18,7 @@ import net.risesoft.y9.Y9LoginUserHolder;
 @RequiredArgsConstructor
 public class OnApplicationReady implements ApplicationListener<ApplicationReadyEvent> {
 
+    private final Environment environment;
     @Value("${y9.app.dataAssets.tenantId}")
     private String tenantId;
 
@@ -26,8 +27,6 @@ public class OnApplicationReady implements ApplicationListener<ApplicationReadyE
         LOGGER.info("DataAssets service ApplicationReady...");
         Y9LoginUserHolder.setTenantId(tenantId);
     }
-    
-    private final Environment environment;
 
     @PostConstruct
     public void init() {

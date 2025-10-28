@@ -12,13 +12,13 @@ import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import net.risesoft.base.BaseEntity;
 
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "Y9_DATAASSETS_FILE_INFO",
-    indexes = {@Index(name = "DATAASSETSFILEID_INDEX", columnList = "ASSETSID")})
+@Table(name = "Y9_DATAASSETS_FILE_INFO", indexes = {@Index(name = "DATAASSETSFILEID_INDEX", columnList = "ASSETSID")})
 @org.hibernate.annotations.Table(comment = "资产挂接信息表", appliesTo = "Y9_DATAASSETS_FILE_INFO")
 public class FileInfo extends BaseEntity {
 

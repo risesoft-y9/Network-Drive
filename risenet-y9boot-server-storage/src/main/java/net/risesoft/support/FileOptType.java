@@ -1,7 +1,8 @@
 package net.risesoft.support;
 
 public enum FileOptType {
-    SHARE("share"), PUBLIC("public");
+    SHARE("share"),
+    PUBLIC("public");
 
     private String value;
 

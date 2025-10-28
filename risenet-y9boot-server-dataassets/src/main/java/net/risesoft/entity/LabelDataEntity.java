@@ -10,6 +10,7 @@ import org.hibernate.annotations.Comment;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import net.risesoft.base.BaseEntity;
 
 @Entity
@@ -19,28 +20,28 @@ import net.risesoft.base.BaseEntity;
 @Data
 public class LabelDataEntity extends BaseEntity {
 
-	private static final long serialVersionUID = 1458969100933524314L;
+    private static final long serialVersionUID = 1458969100933524314L;
 
-	@Id
-	@Column(name = "ID", length = 38, nullable = false)
-	@Comment(value = "主键")
-	private String id;
+    @Id
+    @Column(name = "ID", length = 38, nullable = false)
+    @Comment(value = "主键")
+    private String id;
 
-	@Column(name = "NAME", length = 200, nullable = false)
-	@Comment(value = "名称")
-	private String name;
-	
-	@Column(name = "CODE", length = 100, nullable = false)
-	@Comment(value = "代码")
-	private String code;
-	
-	@Column(name = "PARENTID", length = 38)
-	@Comment(value = "父ID")
-	private String parentId;
-	
-	@Column(name = "TABINDEX")
-	@Comment(value = "排序")
-	@ColumnDefault("1")
-	private Integer tabIndex;
+    @Column(name = "NAME", length = 200, nullable = false)
+    @Comment(value = "名称")
+    private String name;
+
+    @Column(name = "CODE", length = 100, nullable = false)
+    @Comment(value = "代码")
+    private String code;
+
+    @Column(name = "PARENTID", length = 38)
+    @Comment(value = "父ID")
+    private String parentId;
+
+    @Column(name = "TABINDEX")
+    @Comment(value = "排序")
+    @ColumnDefault("1")
+    private Integer tabIndex;
 
 }

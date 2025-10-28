@@ -17,11 +17,11 @@ import net.risesoft.y9.Y9LoginUserHolder;
 @RequestMapping(value = "/service/qrcode")
 public class QrCodeController {
 
-	private final DataAssetsService dataAssetsService;
-    
+    private final DataAssetsService dataAssetsService;
+
     @GetMapping("/getDataByQrCode")
-	public Y9Result<AssetsModel> getDataByQrCode(@RequestParam String qrcode, @RequestParam String tenantId) {
-    	Y9LoginUserHolder.setTenantId(tenantId);
+    public Y9Result<AssetsModel> getDataByQrCode(@RequestParam String qrcode, @RequestParam String tenantId) {
+        Y9LoginUserHolder.setTenantId(tenantId);
         return dataAssetsService.getDataByQrCode(qrcode);
     }
 

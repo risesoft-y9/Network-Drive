@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+
 import net.risesoft.entity.DataDemandEntity;
 import net.risesoft.log.LogLevelEnum;
 import net.risesoft.log.OperationTypeEnum;
@@ -25,66 +26,71 @@ import net.risesoft.service.DataDemandService;
 @RequiredArgsConstructor
 public class DataDemandController {
 
-	private final DataDemandService dataDemandService;
-	
-	@RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取需求信息", logLevel = LogLevelEnum.RSLOG, enable = false)
-	@GetMapping(value = "/getDemandById")
-	public Y9Result<DataDemandEntity> getDemandById(@RequestParam String id) {
+    private final DataDemandService dataDemandService;
+
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取需求信息", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
+    @GetMapping(value = "/getDemandById")
+    public Y9Result<DataDemandEntity> getDemandById(@RequestParam String id) {
         return dataDemandService.getById(id);
     }
-	
-	@RiseLog(operationType = OperationTypeEnum.ADD, operationName = "保存需求信息", logLevel = LogLevelEnum.RSLOG)
-	@PostMapping(value = "/saveData")
-	public Y9Result<String> saveData(DataDemandEntity dataDemandEntity) {
-		return dataDemandService.saveData(dataDemandEntity);
-	}
-	
-	@RiseLog(operationType = OperationTypeEnum.DELETE, operationName = "删除需求数据", logLevel = LogLevelEnum.RSLOG)
-	@PostMapping(value = "/deleteData")
-	public Y9Result<String> deleteData(@RequestParam String id) {
-		return dataDemandService.deleteData(id);
-	}
-	
-	@RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取需求列表", logLevel = LogLevelEnum.RSLOG, enable = false)
-	@GetMapping("/searchPage")
-	public Y9Page<Map<String, Object>> searchPage(String searchText, Integer dataType, Integer industry, Integer budget, 
-			Integer status, Integer sort, Integer page, Integer size) {
+
+    @RiseLog(operationType = OperationTypeEnum.ADD, operationName = "保存需求信息", logLevel = LogLevelEnum.RSLOG)
+    @PostMapping(value = "/saveData")
+    public Y9Result<String> saveData(DataDemandEntity dataDemandEntity) {
+        return dataDemandService.saveData(dataDemandEntity);
+    }
+
+    @RiseLog(operationType = OperationTypeEnum.DELETE, operationName = "删除需求数据", logLevel = LogLevelEnum.RSLOG)
+    @PostMapping(value = "/deleteData")
+    public Y9Result<String> deleteData(@RequestParam String id) {
+        return dataDemandService.deleteData(id);
+    }
+
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取需求列表", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
+    @GetMapping("/searchPage")
+    public Y9Page<Map<String, Object>> searchPage(String searchText, Integer dataType, Integer industry, Integer budget,
+        Integer status, Integer sort, Integer page, Integer size) {
         return dataDemandService.searchPage(searchText, dataType, industry, budget, status, sort, page, size);
     }
-	
-	@RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取需求列表", logLevel = LogLevelEnum.RSLOG, enable = false)
-	@GetMapping("/searchPage2")
-	public Y9Page<Map<String, Object>> searchPage2(String searchText, Integer page, Integer size) {
+
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取需求列表", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
+    @GetMapping("/searchPage2")
+    public Y9Page<Map<String, Object>> searchPage2(String searchText, Integer page, Integer size) {
         return dataDemandService.searchPage2(searchText, page, size);
     }
-	
-	@RiseLog(operationType = OperationTypeEnum.MODIFY, operationName = "审核需求信息", logLevel = LogLevelEnum.RSLOG)
-	@PostMapping(value = "/examineData")
-	public Y9Result<String> examineData(String id, Integer examine) {
-		return dataDemandService.examineData(id, examine);
-	}
-	
-	@RiseLog(operationType = OperationTypeEnum.MODIFY, operationName = "停止需求信息", logLevel = LogLevelEnum.RSLOG)
-	@PostMapping(value = "/stopData")
-	public Y9Result<String> stopData(String id) {
-		return dataDemandService.stopData(id);
-	}
-	
-	@RiseLog(operationType = OperationTypeEnum.ADD, operationName = "保存消息信息", logLevel = LogLevelEnum.RSLOG)
-	@PostMapping(value = "/saveText")
-	public Y9Result<String> saveText(String demandId, String text) {
-		return dataDemandService.saveText(demandId, text);
-	}
-	
-	@RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取需求回复列表", logLevel = LogLevelEnum.RSLOG, enable = false)
-	@GetMapping("/getAskList")
-	public Y9Result<List<Map<String, Object>>> getAskList(String demandId) {
+
+    @RiseLog(operationType = OperationTypeEnum.MODIFY, operationName = "审核需求信息", logLevel = LogLevelEnum.RSLOG)
+    @PostMapping(value = "/examineData")
+    public Y9Result<String> examineData(String id, Integer examine) {
+        return dataDemandService.examineData(id, examine);
+    }
+
+    @RiseLog(operationType = OperationTypeEnum.MODIFY, operationName = "停止需求信息", logLevel = LogLevelEnum.RSLOG)
+    @PostMapping(value = "/stopData")
+    public Y9Result<String> stopData(String id) {
+        return dataDemandService.stopData(id);
+    }
+
+    @RiseLog(operationType = OperationTypeEnum.ADD, operationName = "保存消息信息", logLevel = LogLevelEnum.RSLOG)
+    @PostMapping(value = "/saveText")
+    public Y9Result<String> saveText(String demandId, String text) {
+        return dataDemandService.saveText(demandId, text);
+    }
+
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取需求回复列表", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
+    @GetMapping("/getAskList")
+    public Y9Result<List<Map<String, Object>>> getAskList(String demandId) {
         return dataDemandService.getAskList(demandId);
     }
-	
-	@RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取参与列表", logLevel = LogLevelEnum.RSLOG, enable = false)
-	@GetMapping("/searchPage3")
-	public Y9Page<Map<String, Object>> searchPage3(String searchText, Integer page, Integer size) {
+
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取参与列表", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
+    @GetMapping("/searchPage3")
+    public Y9Page<Map<String, Object>> searchPage3(String searchText, Integer page, Integer size) {
         return dataDemandService.searchPage3(searchText, page, size);
     }
 }

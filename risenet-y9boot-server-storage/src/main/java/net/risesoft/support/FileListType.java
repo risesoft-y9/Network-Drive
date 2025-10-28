@@ -1,7 +1,12 @@
 package net.risesoft.support;
 
 public enum FileListType {
-    MY("my"), SHARED("shared"), PUBLIC("public"), DEPT("dept"), REPORT("report"), REPORTMANAGE("reportManage"),
+    MY("my"),
+    SHARED("shared"),
+    PUBLIC("public"),
+    DEPT("dept"),
+    REPORT("report"),
+    REPORTMANAGE("reportManage"),
     COLLECT("collect");
 
     private String value;

@@ -12,22 +12,23 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.risesoft.y9public.entity.ApiDataCatalogEntity;
 
-public interface ApiDataCatalogRepository extends JpaRepository<ApiDataCatalogEntity, String>, JpaSpecificationExecutor<ApiDataCatalogEntity> {
-	
-	Page<ApiDataCatalogEntity> findByNameContaining(String name, Pageable pageable);
-	
-	List<ApiDataCatalogEntity> findByParentIdOrderByTabIndex(String parentId);
-	
-	@Query("select max(tabIndex) from ApiDataCatalogEntity p where p.parentId = ?1")
-	Integer getMaxTabIndex(String parentId);
-	
-	ApiDataCatalogEntity findByNameAndParentId(String name, String parentId);
-	
-	List<ApiDataCatalogEntity> findByNameContaining(String name);
-	
-	@Transactional
-	@Modifying
-	@Query("delete from ApiDataCatalogEntity p where p.parentId =?1")
-	void deleteByParentId(String parentId);
-	
+public interface ApiDataCatalogRepository
+    extends JpaRepository<ApiDataCatalogEntity, String>, JpaSpecificationExecutor<ApiDataCatalogEntity> {
+
+    Page<ApiDataCatalogEntity> findByNameContaining(String name, Pageable pageable);
+
+    List<ApiDataCatalogEntity> findByParentIdOrderByTabIndex(String parentId);
+
+    @Query("select max(tabIndex) from ApiDataCatalogEntity p where p.parentId = ?1")
+    Integer getMaxTabIndex(String parentId);
+
+    ApiDataCatalogEntity findByNameAndParentId(String name, String parentId);
+
+    List<ApiDataCatalogEntity> findByNameContaining(String name);
+
+    @Transactional
+    @Modifying
+    @Query("delete from ApiDataCatalogEntity p where p.parentId =?1")
+    void deleteByParentId(String parentId);
+
 }

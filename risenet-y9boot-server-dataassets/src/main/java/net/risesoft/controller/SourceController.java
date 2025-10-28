@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
+
 import net.risesoft.api.auth.util.Y9SqlUtil;
 import net.risesoft.entity.DataSourceEntity;
 import net.risesoft.entity.DataSourceTypeEntity;
@@ -39,14 +40,16 @@ public class SourceController {
 
     private final DataSourceService dataSourceService;
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取数据源分类列表", logLevel = LogLevelEnum.RSLOG, enable = false)
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取数据源分类列表", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
     @GetMapping(value = "/findCategoryAll")
     public Y9Result<List<DataSourceTypeEntity>> findCategoryAll() {
         List<DataSourceTypeEntity> list = dataSourceService.findDataCategory();
         return Y9Result.success(list, "获取成功");
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "根据类别获取数据源列表", logLevel = LogLevelEnum.RSLOG, enable = false)
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "根据类别获取数据源列表", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
     @GetMapping(value = "/findByBaseType")
     public Y9Result<List<DataSourceEntity>> findByBaseType(@RequestParam String category) {
         List<DataSourceEntity> list = dataSourceService.findByBaseType(category);
@@ -59,13 +62,15 @@ public class SourceController {
         return Y9Result.success(list, "获取成功");
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "根据获取数据表列表", logLevel = LogLevelEnum.RSLOG, enable = false)
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "根据获取数据表列表", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
     @GetMapping(value = "/getTablePage")
     public Y9Result<List<Map<String, Object>>> getTablePage(String id, String name) {
         return Y9Result.success(dataSourceService.getTablePage(id, name), "获取数据库表成功");
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取表字段信息", logLevel = LogLevelEnum.RSLOG, enable = false)
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取表字段信息", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
     @GetMapping(value = "/findTableColumnsByTableName")
     public Y9Result<List<DbColumn>> findTableColumnsByTableName(String dataSourceId, String tableName) {
         List<DbColumn> list = new ArrayList<>();
@@ -82,7 +87,8 @@ public class SourceController {
         return Y9Result.success(list, "获取表字段信息成功");
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取表字段数据信息", logLevel = LogLevelEnum.RSLOG, enable = false)
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取表字段数据信息", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
     @GetMapping(value = "/findTableDataByTableName")
     public Y9Page<Map<String, Object>> findTableDataByTableName(String dataSourceId, String tableName,
         @RequestParam(required = false) String columnNameAndValues, @RequestParam Integer page,
@@ -101,7 +107,8 @@ public class SourceController {
         return Y9Page.failure(page, rows, 0, null, "获取数据失败", 500);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "搜索数据源列表", logLevel = LogLevelEnum.RSLOG, enable = false)
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "搜索数据源列表", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
     @GetMapping(value = "/searchSource")
     public Y9Result<List<Map<String, Object>>> searchSource(String name) {
         return Y9Result.success(dataSourceService.searchSource(name), "获取成功");
@@ -126,7 +133,8 @@ public class SourceController {
         return Y9Result.successMsg("保存成功");
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "根据id获取数据源信息", logLevel = LogLevelEnum.RSLOG, enable = false)
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "根据id获取数据源信息", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
     @GetMapping(value = "/getDataSource")
     public Y9Result<DataSourceEntity> getDataSource(String id) {
         DataSourceEntity dataSourceEntity = dataSourceService.getDataSourceById(id);
@@ -142,7 +150,8 @@ public class SourceController {
         return dataSourceService.deleteDataSource(id);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "检测数据源状态", logLevel = LogLevelEnum.RSLOG, enable = false)
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "检测数据源状态", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
     @GetMapping(value = "/checkStatus")
     public Y9Result<Boolean> checkStatus(String sourceId) {
         DataSourceEntity source = dataSourceService.getDataSourceById(sourceId);
@@ -152,52 +161,53 @@ public class SourceController {
         }
         return Y9Result.success(true);
     }
-    
+
     @GetMapping(value = "/getTableSelectTree")
-	public Y9Result<List<Map<String, Object>>> getTableSelectTree(String type) {
-		return Y9Result.success(dataSourceService.getTableSelectTree(type));
-	}
-    
+    public Y9Result<List<Map<String, Object>>> getTableSelectTree(String type) {
+        return Y9Result.success(dataSourceService.getTableSelectTree(type));
+    }
+
     @RiseLog(operationType = OperationTypeEnum.CHECK, operationName = "SQL语句测试", logLevel = LogLevelEnum.RSLOG)
     @PostMapping(value = "/testSql")
-	public Y9Result<List<Map<String, Object>>> testSql(ApiServiceModel apiServiceModel) {
-    	List<Map<String, Object>> listMap = new ArrayList<Map<String,Object>>();
-		try {
-			DataSourceEntity dataSourceEntity = dataSourceService.getDataSourceById(apiServiceModel.getDataSourceId());
-			if(dataSourceEntity != null) {
-				if(apiServiceModel.getParams() == null) {
-					listMap = Y9SqlUtil.executeQuery(apiServiceModel.getSqlData(), dataSourceEntity.getUrl(), dataSourceEntity.getUsername(), 
-							dataSourceEntity.getPassword(), dataSourceEntity.getDriver());
-				}else {
-					List<Object> object = new ArrayList<Object>();
-					int page = 0, size = 0;
-					for(Map<String, Object> data : apiServiceModel.getParams()) {
-						// 获取参数名称
-						String name = data.get("name").toString();
-						// 用参数名称获取值
-						Object value = data.get("value");
-						
-						if(name.equals("page")) {
-							page = Integer.parseInt(value.toString());
-						}else if(name.equals("size")) {
-							size = Integer.parseInt(value.toString());
-						}else {
-							object.add(value);
-						}
-					}
-					if(size != 0) {
-						object.add(size);
-						object.add((page - 1) * size);
-					}
-					listMap = Y9SqlUtil.executeQuery(apiServiceModel.getSqlData(), dataSourceEntity.getUrl(), dataSourceEntity.getUsername(), 
-							dataSourceEntity.getPassword(), dataSourceEntity.getDriver(), object.toArray());
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Y9Result.failure("程序出错：" + e.getMessage());
-		}
-		return Y9Result.success(listMap);
-	}
+    public Y9Result<List<Map<String, Object>>> testSql(ApiServiceModel apiServiceModel) {
+        List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+        try {
+            DataSourceEntity dataSourceEntity = dataSourceService.getDataSourceById(apiServiceModel.getDataSourceId());
+            if (dataSourceEntity != null) {
+                if (apiServiceModel.getParams() == null) {
+                    listMap = Y9SqlUtil.executeQuery(apiServiceModel.getSqlData(), dataSourceEntity.getUrl(),
+                        dataSourceEntity.getUsername(), dataSourceEntity.getPassword(), dataSourceEntity.getDriver());
+                } else {
+                    List<Object> object = new ArrayList<Object>();
+                    int page = 0, size = 0;
+                    for (Map<String, Object> data : apiServiceModel.getParams()) {
+                        // 获取参数名称
+                        String name = data.get("name").toString();
+                        // 用参数名称获取值
+                        Object value = data.get("value");
+
+                        if (name.equals("page")) {
+                            page = Integer.parseInt(value.toString());
+                        } else if (name.equals("size")) {
+                            size = Integer.parseInt(value.toString());
+                        } else {
+                            object.add(value);
+                        }
+                    }
+                    if (size != 0) {
+                        object.add(size);
+                        object.add((page - 1) * size);
+                    }
+                    listMap = Y9SqlUtil.executeQuery(apiServiceModel.getSqlData(), dataSourceEntity.getUrl(),
+                        dataSourceEntity.getUsername(), dataSourceEntity.getPassword(), dataSourceEntity.getDriver(),
+                        object.toArray());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Y9Result.failure("程序出错：" + e.getMessage());
+        }
+        return Y9Result.success(listMap);
+    }
 
 }

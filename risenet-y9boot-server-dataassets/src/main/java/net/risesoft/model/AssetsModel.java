@@ -13,14 +13,14 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AssetsModel implements Serializable {
 
-	private static final long serialVersionUID = -2502536327396226990L;
+    private static final long serialVersionUID = -2502536327396226990L;
 
-	private Long id;
+    private Long id;
 
     private String name;
 
     private String code;
-    
+
     private String picture;
 
     private String qrcode;
@@ -66,12 +66,12 @@ public class AssetsModel implements Serializable {
     private String dataProductUrl;
 
     private String dataServiceUrl;
-    
+
     private String mountType;
-    
+
     private String appScenarios;
-    
+
     private String dataZone;
-    
+
     private String productType;
 }

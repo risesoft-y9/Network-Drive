@@ -121,7 +121,8 @@ public class DataAssetsServiceImpl implements DataAssetsService {
         }
         // 判断是否系统管理员
         boolean isAdmin = personRoleApiClient
-            .hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId()).getData();
+            .hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId())
+            .getData();
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "createTime"));
         DataAssetsSpecification spec = new DataAssetsSpecification(categoryId, name, Y9LoginUserHolder.getTenantId(),
             code, false, status, dataState, isAdmin ? "" : Y9LoginUserHolder.getPersonId(), "", "", "", "");
@@ -427,8 +428,8 @@ public class DataAssetsServiceImpl implements DataAssetsService {
             DataAssets dataAssets = findById(id);
             if (dataAssets != null) {
                 dataAssets.setDataState(dataState);
-                if(dataState.equals("out")) {// 出库操作将数据下架
-                	dataAssets.setStatus(0);
+                if (dataState.equals("out")) {// 出库操作将数据下架
+                    dataAssets.setStatus(0);
                 }
                 dataAssetsRepository.save(dataAssets);
             } else {

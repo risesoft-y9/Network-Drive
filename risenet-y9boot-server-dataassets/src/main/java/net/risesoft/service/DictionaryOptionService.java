@@ -101,9 +101,10 @@ public interface DictionaryOptionService {
      * @return
      */
     Y9Result<String> updateOptionValue(String id);
-    
+
     /**
      * 根据代码和类型获取数据名称
+     * 
      * @param code
      * @param type
      * @return

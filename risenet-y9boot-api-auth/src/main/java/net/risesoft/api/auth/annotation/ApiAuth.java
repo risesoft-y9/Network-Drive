@@ -8,22 +8,23 @@ import java.lang.annotation.Target;
 
 /**
  * Api接口权限注解
+ * 
  * @author pzx
  *
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)  
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface ApiAuth {
-	
-	String[] roles() default {};
-	
-	double permitsPerSecond() default 1.0;
-	
-	String value() default "";
-	
+
+    String[] roles() default {};
+
+    double permitsPerSecond() default 1.0;
+
+    String value() default "";
+
     String path() default "";
-    
-    String method() default "";  
+
+    String method() default "";
 
 }

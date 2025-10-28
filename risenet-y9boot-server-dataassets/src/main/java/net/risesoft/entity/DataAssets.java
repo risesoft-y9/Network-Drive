@@ -14,6 +14,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import net.risesoft.base.BaseEntity;
 
 /**
@@ -34,7 +35,7 @@ public class DataAssets extends BaseEntity {
     @GeneratedValue(generator = "IDGENERATOR")
     @GenericGenerator(name = "IDGENERATOR", strategy = "native")
     @Comment("主键id")
-	private Long id;
+    private Long id;
 
     @Column(name = "CATEGORYID", length = 50)
     @Comment(value = "目录ID")
@@ -51,7 +52,7 @@ public class DataAssets extends BaseEntity {
     @Column(name = "CODE", length = 200)
     @Comment(value = "数据资产编码")
     private String code;
-    
+
     @Column(name = "PICTURE")
     @Comment(value = "资产图片")
     private String picture;
@@ -155,31 +156,31 @@ public class DataAssets extends BaseEntity {
     @Column(name = "DATA_SERVICE_URL", length = 100)
     @Comment(value = "数据服务URL")
     private String dataServiceUrl;
-    
+
     @Column(name = "APPSCENARIOS", length = 20)
     @Comment(value = "应用场景")
     private String appScenarios;
-    
+
     @Column(name = "DATAZONE", length = 20)
     @Comment(value = "数据专区")
     private String dataZone;
-    
+
     @Column(name = "PRODUCTTYPE", length = 20)
     @Comment(value = "产品类型")
     private String productType;
-    
+
     @Column(name = "MOUNTTYPE", length = 20)
     @Comment(value = "挂接类型：文件/数据/接口")
     private String mountType;
-    
+
     @Column(name = "DATASTATE")
     @Comment(value = "入库状态: in-入库， out-出库")
     private String dataState;
-    
+
     @Column(name = "CREATOR", length = 50)
     @Comment(value = "创建人")
     private String creator;
-    
+
     @Column(name = "CREATORID", length = 50)
     @Comment(value = "创建人ID")
     private String creatorId;
@@ -187,15 +188,15 @@ public class DataAssets extends BaseEntity {
     @Column(name = "UPDATE_USER", length = 50)
     @Comment(value = "更新人")
     private String updateUser;
-    
+
     @Column(name = "UPDATE_USERID", length = 50)
     @Comment(value = "更新人ID")
     private String updateUserId;
-    
+
     @Column(name = "DELETE_USER", length = 50)
     @Comment(value = "删除人")
     private String deleteUser;
-    
+
     @Column(name = "DELETE_USERID", length = 50)
     @Comment(value = "删除人ID")
     private String deleteUserId;
@@ -204,12 +205,12 @@ public class DataAssets extends BaseEntity {
     @Comment(value = "删除标记")
     @ColumnDefault("0")
     private Boolean isDeleted = false;
-    
+
     @Column(name = "CLICKNUM")
     @Comment(value = "点击次数")
     @ColumnDefault("0")
     private Integer clickNum;
-    
+
     @Transient
     private String labelData;// 标注信息
 

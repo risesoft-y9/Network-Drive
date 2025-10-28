@@ -193,13 +193,13 @@ public class DictionaryOptionServiceImpl implements DictionaryOptionService {
         }
     }
 
-	@Override
-	public String findByCodeAndType(String code, String type) {
-		DictionaryValue dictionaryValue = dictionaryValueRepository.findByCodeAndType(code, type);
-		if(dictionaryValue != null) {
-			return dictionaryValue.getName();
-		}
-		return "";
-	}
+    @Override
+    public String findByCodeAndType(String code, String type) {
+        DictionaryValue dictionaryValue = dictionaryValueRepository.findByCodeAndType(code, type);
+        if (dictionaryValue != null) {
+            return dictionaryValue.getName();
+        }
+        return "";
+    }
 
 }

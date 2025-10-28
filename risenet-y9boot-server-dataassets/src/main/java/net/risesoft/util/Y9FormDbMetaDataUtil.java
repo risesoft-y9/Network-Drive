@@ -37,7 +37,7 @@ public class Y9FormDbMetaDataUtil extends DbMetaDataUtil {
         dataSource.setDriverClassName(driverClassName);
         return dataSource;
     }
-    
+
     /**
      * 判断数据库连接状态
      */
@@ -49,9 +49,9 @@ public class Y9FormDbMetaDataUtil extends DbMetaDataUtil {
             connection = DriverManager.getConnection(url, userName, passWord);
             flag = true;
         } catch (ClassNotFoundException e) {
-        	LOGGER.error(driverClass + "-驱动包不存在");
+            LOGGER.error(driverClass + "-驱动包不存在");
         } catch (SQLException e) {
-        	LOGGER.error(url + "-连接失败：" + e.getMessage());
+            LOGGER.error(url + "-连接失败：" + e.getMessage());
         } finally {
             ReleaseResource(connection, null, null, null);
         }

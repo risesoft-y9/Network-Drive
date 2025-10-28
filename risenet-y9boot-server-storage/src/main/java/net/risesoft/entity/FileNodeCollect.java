@@ -26,7 +26,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class FileNodeCollect implements Serializable {
 
-
     private static final long serialVersionUID = 3258301873386052590L;
     @Id
     @Column(name = "ID", length = 38, nullable = false)
