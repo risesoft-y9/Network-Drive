@@ -10,24 +10,24 @@ import lombok.NoArgsConstructor;
 @Data
 public class ApiServiceModel {
 
-	private String id;
-	
-	private String parentId;
-	
-	private String dataSourceId;
-	
-	private String apiUrl;
-	
-	private String apiName;
-	
-	private String method;
-	
+    private String id;
+
+    private String parentId;
+
+    private String dataSourceId;
+
+    private String apiUrl;
+
+    private String apiName;
+
+    private String method;
+
     private String sqlData;
 
-	private List<Map<String, Object>> params;
-	
-	private String remark;
-	
-	private Integer apiType;
+    private List<Map<String, Object>> params;
+
+    private String remark;
+
+    private Integer apiType;
 
 }

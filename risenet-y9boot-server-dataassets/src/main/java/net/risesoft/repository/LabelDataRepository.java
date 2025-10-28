@@ -10,18 +10,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import net.risesoft.entity.LabelDataEntity;
 
-public interface LabelDataRepository extends JpaRepository<LabelDataEntity, String>, JpaSpecificationExecutor<LabelDataEntity> {
-	
-	Page<LabelDataEntity> findByParentId(String parentId, Pageable pageable);
-	
-	@Query("select max(tabIndex) from LabelDataEntity p where p.parentId = ?1")
-	Integer getMaxTabIndex(String parentId);
-	
-	@Transactional
-	@Modifying
-	@Query("delete from LabelDataEntity p where p.parentId =?1")
-	void deleteByParentId(String parentId);
-	
-	long countByParentId(String parentId);
-	
+public interface LabelDataRepository
+    extends JpaRepository<LabelDataEntity, String>, JpaSpecificationExecutor<LabelDataEntity> {
+
+    Page<LabelDataEntity> findByParentId(String parentId, Pageable pageable);
+
+    @Query("select max(tabIndex) from LabelDataEntity p where p.parentId = ?1")
+    Integer getMaxTabIndex(String parentId);
+
+    @Transactional
+    @Modifying
+    @Query("delete from LabelDataEntity p where p.parentId =?1")
+    void deleteByParentId(String parentId);
+
+    long countByParentId(String parentId);
+
 }

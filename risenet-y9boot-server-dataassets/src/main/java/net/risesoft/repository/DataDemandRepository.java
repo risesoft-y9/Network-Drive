@@ -9,10 +9,12 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import net.risesoft.entity.DataDemandEntity;
 
-public interface DataDemandRepository extends JpaRepository<DataDemandEntity, String>, JpaSpecificationExecutor<DataDemandEntity> {
-	
-	Page<DataDemandEntity> findByIdInAndTitleContainingAndExamine(List<String> id, String title, Integer examine, Pageable pageable);
-	
-	Page<DataDemandEntity> findByIdInAndExamine(List<String> id, Integer examine, Pageable pageable);
+public interface DataDemandRepository
+    extends JpaRepository<DataDemandEntity, String>, JpaSpecificationExecutor<DataDemandEntity> {
+
+    Page<DataDemandEntity> findByIdInAndTitleContainingAndExamine(List<String> id, String title, Integer examine,
+        Pageable pageable);
+
+    Page<DataDemandEntity> findByIdInAndExamine(List<String> id, Integer examine, Pageable pageable);
 
 }

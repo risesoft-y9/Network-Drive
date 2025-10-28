@@ -8,15 +8,19 @@ import org.springframework.data.jpa.repository.Query;
 
 import net.risesoft.entity.DataSourceEntity;
 
-public interface DataSourceRepository extends JpaRepository<DataSourceEntity, String>, JpaSpecificationExecutor<DataSourceEntity> {
+public interface DataSourceRepository
+    extends JpaRepository<DataSourceEntity, String>, JpaSpecificationExecutor<DataSourceEntity> {
 
-    List<DataSourceEntity> findByNameContainingAndBaseTypeAndTenantId(String baseName, String baseType, String tenantId);
-    
-    List<DataSourceEntity> findByNameContainingAndBaseTypeAndTenantIdAndUserId(String baseName, String baseType, String tenantId, String userId);
+    List<DataSourceEntity> findByNameContainingAndBaseTypeAndTenantId(String baseName, String baseType,
+        String tenantId);
+
+    List<DataSourceEntity> findByNameContainingAndBaseTypeAndTenantIdAndUserId(String baseName, String baseType,
+        String tenantId, String userId);
 
     List<DataSourceEntity> findByBaseTypeAndTenantIdOrderByCreateTime(String baseType, String tenantId);
-    
-    List<DataSourceEntity> findByBaseTypeAndTenantIdAndUserIdOrderByCreateTime(String baseType, String tenantId, String userId);
+
+    List<DataSourceEntity> findByBaseTypeAndTenantIdAndUserIdOrderByCreateTime(String baseType, String tenantId,
+        String userId);
 
     long countByBaseType(String baseType);
 

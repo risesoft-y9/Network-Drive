@@ -12,14 +12,14 @@ import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import net.risesoft.base.BaseEntity;
 
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "Y9_DATAASSETS_FILE_INFO",
-    indexes = {@Index(name = "DATAASSETSFILEID_INDEX", columnList = "ASSETSID")})
-@Comment( "资产挂接信息表" )
+@Table(name = "Y9_DATAASSETS_FILE_INFO", indexes = {@Index(name = "DATAASSETSFILEID_INDEX", columnList = "ASSETSID")})
+@Comment("资产挂接信息表")
 public class FileInfo extends BaseEntity {
 
     private static final long serialVersionUID = 2887873103562809956L;

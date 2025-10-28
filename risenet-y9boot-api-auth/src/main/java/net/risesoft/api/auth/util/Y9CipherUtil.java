@@ -1,67 +1,71 @@
 package net.risesoft.api.auth.util;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+
 /**
  * AES加解密
+ * 
  * @author pzx
  *
  */
 public class Y9CipherUtil {
-	
+
     /**
      * 加密
+     * 
      * @param key
      * @param value
      * @return
      * @throws Exception
      */
     public static String encrypt(String key, String value) throws Exception {
-    	// 密钥生成器  
-        KeyGenerator keyGen = KeyGenerator.getInstance("AES");  
+        // 密钥生成器
+        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         // 根据KEY规则初始化密钥生成器生成一个128位的随机源
-		SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
-		secureRandom.setSeed(key.getBytes());
-		keyGen.init(128, secureRandom);
+        SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
+        secureRandom.setSeed(key.getBytes());
+        keyGen.init(128, secureRandom);
         SecretKey secretKey = keyGen.generateKey();
-        
-    	Cipher cipherEncrypt = Cipher.getInstance("AES");  
-        cipherEncrypt.init(Cipher.ENCRYPT_MODE, secretKey);  
-        byte[] encrypted = cipherEncrypt.doFinal(value.getBytes(StandardCharsets.UTF_8));  
-        return Base64.getEncoder().encodeToString(encrypted);  
-    }  
-  
+
+        Cipher cipherEncrypt = Cipher.getInstance("AES");
+        cipherEncrypt.init(Cipher.ENCRYPT_MODE, secretKey);
+        byte[] encrypted = cipherEncrypt.doFinal(value.getBytes(StandardCharsets.UTF_8));
+        return Base64.getEncoder().encodeToString(encrypted);
+    }
+
     /**
      * 解密
+     * 
      * @param key
      * @param value
      * @return
      * @throws Exception
      */
-    public static String decrypt(String key, String value) throws Exception {  
-    	// 密钥生成器  
-        KeyGenerator keyGen = KeyGenerator.getInstance("AES");  
+    public static String decrypt(String key, String value) throws Exception {
+        // 密钥生成器
+        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         // 根据KEY规则初始化密钥生成器生成一个128位的随机源
-		SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
-		secureRandom.setSeed(key.getBytes());
-		keyGen.init(128, secureRandom);
+        SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
+        secureRandom.setSeed(key.getBytes());
+        keyGen.init(128, secureRandom);
         SecretKey secretKey = keyGen.generateKey();
-        
-        Cipher cipherDecrypt = Cipher.getInstance("AES");  
-        cipherDecrypt.init(Cipher.DECRYPT_MODE, secretKey);  
-        byte[] decodedEncrypted = Base64.getDecoder().decode(value);  
-        byte[] decrypted = cipherDecrypt.doFinal(decodedEncrypted);  
+
+        Cipher cipherDecrypt = Cipher.getInstance("AES");
+        cipherDecrypt.init(Cipher.DECRYPT_MODE, secretKey);
+        byte[] decodedEncrypted = Base64.getDecoder().decode(value);
+        byte[] decrypted = cipherDecrypt.doFinal(decodedEncrypted);
         return new String(decrypted, StandardCharsets.UTF_8);
     }
-    
+
     /**
      * 生成appKey
+     * 
      * @return
      */
     public static String generateAppKey() {

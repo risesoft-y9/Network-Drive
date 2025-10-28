@@ -64,8 +64,13 @@ public class FileNodeSpecification implements Specification<FileNode> {
         this.deleted = deleted;
     }
 
-    public FileNodeSpecification(String personId, String parentId, FileNodeType fileType, String listType,
-        String searchName, boolean deleted) {
+    public FileNodeSpecification(
+        String personId,
+        String parentId,
+        FileNodeType fileType,
+        String listType,
+        String searchName,
+        boolean deleted) {
         this.userId = personId;
         this.parentId = parentId;
         this.fileType = fileType;
@@ -74,7 +79,11 @@ public class FileNodeSpecification implements Specification<FileNode> {
         this.deleted = deleted;
     }
 
-    public FileNodeSpecification(String parentId, FileNodeType fileType, String listType, String searchName,
+    public FileNodeSpecification(
+        String parentId,
+        FileNodeType fileType,
+        String listType,
+        String searchName,
         boolean deleted) {
         this.orgId = orgId;
         this.parentId = parentId;
@@ -84,8 +93,13 @@ public class FileNodeSpecification implements Specification<FileNode> {
         this.deleted = deleted;
     }
 
-    public FileNodeSpecification(String parentId, FileNodeType fileType, String listType, String searchName,
-        String orgId, boolean deleted) {
+    public FileNodeSpecification(
+        String parentId,
+        FileNodeType fileType,
+        String listType,
+        String searchName,
+        String orgId,
+        boolean deleted) {
         this.orgId = orgId;
         this.parentId = parentId;
         this.fileType = fileType;
@@ -94,8 +108,14 @@ public class FileNodeSpecification implements Specification<FileNode> {
         this.deleted = deleted;
     }
 
-    public FileNodeSpecification(String parentId, FileNodeType fileType, String listType, String searchName,
-        Date startDate, Date endDate, boolean deleted) {
+    public FileNodeSpecification(
+        String parentId,
+        FileNodeType fileType,
+        String listType,
+        String searchName,
+        Date startDate,
+        Date endDate,
+        boolean deleted) {
         this.parentId = parentId;
         this.fileType = fileType;
         this.name = searchName;

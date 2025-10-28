@@ -32,6 +32,10 @@ public class OrderRequest {
         return orderProp;
     }
 
+    public void setOrderProp(OrderProp orderProp) {
+        this.orderProp = orderProp;
+    }
+
     @Override
     public int hashCode() {
         int result = orderProp != null ? orderProp.hashCode() : 0;
@@ -45,10 +49,6 @@ public class OrderRequest {
 
     public void setOrderAsc(boolean orderAsc) {
         this.orderAsc = orderAsc;
-    }
-
-    public void setOrderProp(OrderProp orderProp) {
-        this.orderProp = orderProp;
     }
 
     @Override

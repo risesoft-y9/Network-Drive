@@ -15,118 +15,124 @@ import net.risesoft.entity.DataDemandEntity;
 
 public class DataDemandSpecification implements Specification<DataDemandEntity> {
 
-	private static final long serialVersionUID = 3960072132630601786L;
-	
-	private Integer industry;
-	private Integer budget;
-	private String publisherId;
-	private Integer examine;
-	private Integer dataType;
-	private Integer status;
-	private String searchText;
-	
-	public DataDemandSpecification() {
-		super();
-	}
+    private static final long serialVersionUID = 3960072132630601786L;
 
-	public DataDemandSpecification(String searchText, Integer dataType, Integer industry, Integer budget, 
-			Integer status, String publisherId, Integer examine) {
-		super();
-		this.industry = industry;
-		this.budget = budget;
-		this.publisherId = publisherId;
-		this.examine = examine;
-		this.status = status;
-		this.searchText = searchText;
-		this.dataType = dataType;
-	}
+    private Integer industry;
+    private Integer budget;
+    private String publisherId;
+    private Integer examine;
+    private Integer dataType;
+    private Integer status;
+    private String searchText;
 
-	@Override
-	public Predicate toPredicate(Root<DataDemandEntity> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-		Predicate predicate = cb.conjunction();
-		List<Expression<Boolean>> expressions = predicate.getExpressions();
+    public DataDemandSpecification() {
+        super();
+    }
 
-		if (industry != null) {
-			expressions.add(cb.equal(root.get("industry").as(Integer.class), industry));
-		}
-		if (budget != null) {
-			expressions.add(cb.equal(root.get("budget").as(Integer.class), budget));
-		}
-		if (status != null) {
-			expressions.add(cb.equal(root.get("status").as(Integer.class), status));
-		}
-		if (examine != null) {
-			expressions.add(cb.equal(root.get("examine").as(Integer.class), examine));
-		}
-		if (dataType != null) {
-			expressions.add(cb.equal(root.get("dataType").as(Integer.class), dataType));
-		}
-		if (StringUtils.isNotBlank(publisherId)) {
-			expressions.add(cb.equal(root.get("publisherId").as(String.class), publisherId));
-		}
-		if(StringUtils.isNotBlank(searchText)) {
-			expressions.add(cb.or(cb.like(root.get("title").as(String.class), "%" + searchText + "%"), 
-					cb.like(root.get("scenario").as(String.class), "%" + searchText + "%"), 
-					cb.like(root.get("description").as(String.class), "%" + searchText + "%"), 
-					cb.like(root.get("company").as(String.class), "%" + searchText + "%")));
-		}
-		return predicate;
-	}
+    public DataDemandSpecification(
+        String searchText,
+        Integer dataType,
+        Integer industry,
+        Integer budget,
+        Integer status,
+        String publisherId,
+        Integer examine) {
+        super();
+        this.industry = industry;
+        this.budget = budget;
+        this.publisherId = publisherId;
+        this.examine = examine;
+        this.status = status;
+        this.searchText = searchText;
+        this.dataType = dataType;
+    }
 
-	public Integer getIndustry() {
-		return industry;
-	}
+    @Override
+    public Predicate toPredicate(Root<DataDemandEntity> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+        Predicate predicate = cb.conjunction();
+        List<Expression<Boolean>> expressions = predicate.getExpressions();
 
-	public void setIndustry(Integer industry) {
-		this.industry = industry;
-	}
+        if (industry != null) {
+            expressions.add(cb.equal(root.get("industry").as(Integer.class), industry));
+        }
+        if (budget != null) {
+            expressions.add(cb.equal(root.get("budget").as(Integer.class), budget));
+        }
+        if (status != null) {
+            expressions.add(cb.equal(root.get("status").as(Integer.class), status));
+        }
+        if (examine != null) {
+            expressions.add(cb.equal(root.get("examine").as(Integer.class), examine));
+        }
+        if (dataType != null) {
+            expressions.add(cb.equal(root.get("dataType").as(Integer.class), dataType));
+        }
+        if (StringUtils.isNotBlank(publisherId)) {
+            expressions.add(cb.equal(root.get("publisherId").as(String.class), publisherId));
+        }
+        if (StringUtils.isNotBlank(searchText)) {
+            expressions.add(cb.or(cb.like(root.get("title").as(String.class), "%" + searchText + "%"),
+                cb.like(root.get("scenario").as(String.class), "%" + searchText + "%"),
+                cb.like(root.get("description").as(String.class), "%" + searchText + "%"),
+                cb.like(root.get("company").as(String.class), "%" + searchText + "%")));
+        }
+        return predicate;
+    }
 
-	public Integer getBudget() {
-		return budget;
-	}
+    public Integer getIndustry() {
+        return industry;
+    }
 
-	public void setBudget(Integer budget) {
-		this.budget = budget;
-	}
+    public void setIndustry(Integer industry) {
+        this.industry = industry;
+    }
 
-	public String getPublisherId() {
-		return publisherId;
-	}
+    public Integer getBudget() {
+        return budget;
+    }
 
-	public void setPublisherId(String publisherId) {
-		this.publisherId = publisherId;
-	}
+    public void setBudget(Integer budget) {
+        this.budget = budget;
+    }
 
-	public Integer getExamine() {
-		return examine;
-	}
+    public String getPublisherId() {
+        return publisherId;
+    }
 
-	public void setExamine(Integer examine) {
-		this.examine = examine;
-	}
+    public void setPublisherId(String publisherId) {
+        this.publisherId = publisherId;
+    }
 
-	public Integer getDataType() {
-		return dataType;
-	}
+    public Integer getExamine() {
+        return examine;
+    }
 
-	public void setDataType(Integer dataType) {
-		this.dataType = dataType;
-	}
+    public void setExamine(Integer examine) {
+        this.examine = examine;
+    }
 
-	public Integer getStatus() {
-		return status;
-	}
+    public Integer getDataType() {
+        return dataType;
+    }
 
-	public void setStatus(Integer status) {
-		this.status = status;
-	}
+    public void setDataType(Integer dataType) {
+        this.dataType = dataType;
+    }
 
-	public String getSearchText() {
-		return searchText;
-	}
+    public Integer getStatus() {
+        return status;
+    }
 
-	public void setSearchText(String searchText) {
-		this.searchText = searchText;
-	}
-	
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public String getSearchText() {
+        return searchText;
+    }
+
+    public void setSearchText(String searchText) {
+        this.searchText = searchText;
+    }
+
 }

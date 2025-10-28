@@ -17,12 +17,12 @@ public interface DataAssetsRepository extends JpaRepository<DataAssets, Long>, J
     Page<DataAssets> findByCategoryIdAndIsDeleted(String categoryId, Boolean isDeleted, Pageable pageable);
 
     List<DataAssets> findByIdIn(Long[] ids);
-    
+
     @Query("select max(orderNum) from DataAssets p where p.categoryId = ?1")
-	Integer getMaxOrderNum(String categoryId);
-    
+    Integer getMaxOrderNum(String categoryId);
+
     @Query("select max(code) from DataAssets p where p.categoryId = ?1")
-	String getMaxCode(String categoryId);
-    
+    String getMaxCode(String categoryId);
+
     DataAssets findByCodeGlobalAndIsDeleted(String codeGlobal, Boolean isDeleted);
 }

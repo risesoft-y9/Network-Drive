@@ -47,7 +47,8 @@ public class DataAssetsController {
         return dataAssetsService.saveDataAssets(dataAssets);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取资产数据列表", logLevel = LogLevelEnum.RSLOG, enable = false)
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取资产数据列表", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
     @GetMapping("/searchPage")
     public Y9Page<DataAssets> searchPage(String name, String code, String categoryId, Integer status, String dataState,
         Integer page, Integer size) {
@@ -56,7 +57,8 @@ public class DataAssetsController {
             item.setLabelData(labelService.getLabelData(item.getId()));
             return item;
         }).collect(Collectors.toList());
-        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(), "获取数据成功");
+        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(),
+            "获取数据成功");
     }
 
     @RiseLog(operationType = OperationTypeEnum.DELETE, operationName = "删除数据资产信息", logLevel = LogLevelEnum.RSLOG)
@@ -89,11 +91,13 @@ public class DataAssetsController {
         return dataAssetsService.genCode(categoryId, pCode);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取资产数据挂接文件列表", logLevel = LogLevelEnum.RSLOG, enable = false)
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取资产数据挂接文件列表", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
     @GetMapping("/getFilePage")
     public Y9Page<FileInfo> getFilePage(String name, Long id, Integer page, Integer size) {
         Page<FileInfo> pageList = dataAssetsService.getFilePage(id, name, page, size);
-        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(), "获取数据成功");
+        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(),
+            "获取数据成功");
     }
 
     @RiseLog(operationType = OperationTypeEnum.SEND, operationName = "下载文件", logLevel = LogLevelEnum.RSLOG)
@@ -132,20 +136,23 @@ public class DataAssetsController {
         return dataAssetsService.deleteMountData(id);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "可信数据空间-分页获取数据列表", logLevel = LogLevelEnum.RSLOG, enable = false)
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "可信数据空间-分页获取数据列表", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
     @GetMapping("/getDataPage")
     public Y9Page<Map<String, Object>> getDataPage(String searchText, String appScenarios, String dataZone,
         String productType, Integer sort, Integer page, Integer size) {
         return dataAssetsService.searchPage2(searchText, appScenarios, dataZone, productType, sort, page, size);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "可信数据空间-获取数据信息", logLevel = LogLevelEnum.RSLOG, enable = false)
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "可信数据空间-获取数据信息", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
     @GetMapping("/getDataById")
     public Y9Result<AssetsModel> getDataById(Long id) {
         return dataAssetsService.getDataById(id);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "可信数据空间-获取过滤条件", logLevel = LogLevelEnum.RSLOG, enable = false)
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "可信数据空间-获取过滤条件", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
     @GetMapping("/getDataFilter")
     public Y9Result<List<Map<String, Object>>> getDataFilter() {
         return dataAssetsService.getDataFilter();
