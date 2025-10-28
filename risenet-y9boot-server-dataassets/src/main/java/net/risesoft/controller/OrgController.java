@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 
 import net.risesoft.api.platform.org.PersonApi;
-import net.risesoft.api.platform.org.dto.CreatePersonDTO;
+import net.risesoft.dto.platform.CreatePersonDTO;
 import net.risesoft.enums.platform.org.OrgTreeTypeEnum;
 import net.risesoft.log.LogLevelEnum;
 import net.risesoft.log.OperationTypeEnum;
