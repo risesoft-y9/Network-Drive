@@ -9,8 +9,6 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.api.platform.org.OrgUnitApi;
+import net.risesoft.api.platform.user.UserApi;
 import net.risesoft.consts.UtilConsts;
 import net.risesoft.controller.dto.FileNodeDTO;
 import net.risesoft.controller.dto.FileNodeShareDTO;
@@ -29,15 +28,13 @@ import net.risesoft.entity.FileNodeShare;
 import net.risesoft.enums.platform.org.OrgTypeEnum;
 import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.platform.org.OrgUnit;
-import net.risesoft.model.platform.org.Person;
+import net.risesoft.model.user.UserInfo;
 import net.risesoft.service.FileNodeService;
 import net.risesoft.service.FileNodeShareService;
 import net.risesoft.support.FileOptType;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.json.Y9JsonUtil;
 import net.risesoft.y9.util.Y9Util;
-
-import y9.client.rest.platform.org.PersonApiClient;
 
 /**
  * 文件共享处理接口
@@ -53,9 +50,9 @@ public class MobileFileShareController {
 
     private final FileNodeService fileNodeService;
     private final FileNodeShareService fileNodeShareService;
-    private final PersonApiClient personApiClient;
+
     private final OrgUnitApi orgUnitApi;
-    protected Logger log = LoggerFactory.getLogger(MobileFileShareController.class);
+    private final UserApi userApi;
 
     /**
      * 获取文件共享记录列表
@@ -117,9 +114,9 @@ public class MobileFileShareController {
         @RequestParam String fileNodeIds, @RequestParam String orgUnitIds, HttpServletResponse response)
         throws Exception {
         Y9LoginUserHolder.setTenantId(tenantId);
-        Y9LoginUserHolder.setPersonId(userId);
-        Person person = personApiClient.get(tenantId, userId).getData();
-        Y9LoginUserHolder.setUserInfo(person.toUserInfo());
+        UserInfo userInfo = userApi.get(tenantId, userId).getData();
+        Y9LoginUserHolder.setUserInfo(userInfo);
+
         List<String> fileNodeIdList = Y9Util.stringToList(fileNodeIds, ",");
         List<String> orgUnitIdList = Y9Util.stringToList(orgUnitIds, ",");
         Map<String, Object> map = new HashMap<String, Object>(16);
@@ -153,9 +150,9 @@ public class MobileFileShareController {
         @RequestParam String fileNodeIds, @RequestParam String orgUnitIds, HttpServletResponse response)
         throws Exception {
         Y9LoginUserHolder.setTenantId(tenantId);
-        Y9LoginUserHolder.setPersonId(userId);
-        Person person = personApiClient.get(tenantId, userId).getData();
-        Y9LoginUserHolder.setUserInfo(person.toUserInfo());
+        UserInfo userInfo = userApi.get(tenantId, userId).getData();
+        Y9LoginUserHolder.setUserInfo(userInfo);
+
         List<String> fileNodeIdList = Y9Util.stringToList(fileNodeIds, ",");
         List<String> orgUnitIdList = Y9Util.stringToList(orgUnitIds, ",");
         Map<String, Object> map = new HashMap<String, Object>(16);
@@ -187,9 +184,9 @@ public class MobileFileShareController {
         @RequestHeader("auth-userId") String userId, @RequestParam String fileNodeIds, HttpServletResponse response)
         throws Exception {
         Y9LoginUserHolder.setTenantId(tenantId);
-        Y9LoginUserHolder.setPersonId(userId);
-        Person person = personApiClient.get(tenantId, userId).getData();
-        Y9LoginUserHolder.setUserInfo(person.toUserInfo());
+        UserInfo userInfo = userApi.get(tenantId, userId).getData();
+        Y9LoginUserHolder.setUserInfo(userInfo);
+
         List<String> fileNodeIdList = Y9Util.stringToList(fileNodeIds, ",");
         Map<String, Object> map = new HashMap<String, Object>(16);
         try {
@@ -221,9 +218,9 @@ public class MobileFileShareController {
         @RequestHeader("auth-userId") String userId, @RequestParam String fileId, @RequestParam Integer page,
         @RequestParam Integer rows, HttpServletResponse response) throws Exception {
         Y9LoginUserHolder.setTenantId(tenantId);
-        Y9LoginUserHolder.setPersonId(userId);
-        Person person = personApiClient.get(tenantId, userId).getData();
-        Y9LoginUserHolder.setUserInfo(person.toUserInfo());
+        UserInfo userInfo = userApi.get(tenantId, userId).getData();
+        Y9LoginUserHolder.setUserInfo(userInfo);
+
         List<Map<String, Object>> items = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Map<String, Object> ret_map = new HashMap<String, Object>(16);
@@ -274,9 +271,9 @@ public class MobileFileShareController {
         @RequestHeader("auth-userId") String userId, @RequestParam String publicRecordIds, HttpServletResponse response)
         throws Exception {
         Y9LoginUserHolder.setTenantId(tenantId);
-        Y9LoginUserHolder.setPersonId(userId);
-        Person person = personApiClient.get(tenantId, userId).getData();
-        Y9LoginUserHolder.setUserInfo(person.toUserInfo());
+        UserInfo userInfo = userApi.get(tenantId, userId).getData();
+        Y9LoginUserHolder.setUserInfo(userInfo);
+
         List<String> publicRecordIdList = Y9Util.stringToList(publicRecordIds, ",");
         Map<String, Object> map = new HashMap<String, Object>(16);
         try {
