@@ -16,7 +16,7 @@ import net.risesoft.base.BaseEntity;
 
 @Entity
 @Table(name = "Y9_DATAASSETS_DEMAND")
-@Comment( "数据需求信息表")
+@Comment("数据需求信息表")
 @NoArgsConstructor
 @Data
 public class DataDemandEntity extends BaseEntity {
