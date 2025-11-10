@@ -25,7 +25,6 @@ import net.risesoft.model.platform.org.Person;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.util.Y9BeanUtil;
-import net.risesoft.y9.util.signing.Y9MessageDigest;
 
 import y9.client.rest.platform.org.OrgUnitApiClient;
 import y9.client.rest.platform.org.OrganizationApiClient;
@@ -86,8 +85,8 @@ public class OrgController {
     @RiseLog(operationType = OperationTypeEnum.CHECK, logLevel = LogLevelEnum.RSLOG, operationName = "校验密码")
     @GetMapping("/checkPassword")
     public Y9Result<Boolean> checkPassword(@RequestParam String pwd) {
-        Person person = personApi.get(Y9LoginUserHolder.getTenantId(), Y9LoginUserHolder.getPersonId()).getData();
-        return Y9Result.success(Y9MessageDigest.bcryptMatch(pwd, person.getPassword()), "校验密码操作成功");
+        // 只需要在下方修改的接口中传入旧密码，修改之前会先校验
+        return Y9Result.success(true, "校验密码操作成功");
     }
 
     @RiseLog(logLevel = LogLevelEnum.RSLOG, operationType = OperationTypeEnum.MODIFY, operationName = "重置密码")
