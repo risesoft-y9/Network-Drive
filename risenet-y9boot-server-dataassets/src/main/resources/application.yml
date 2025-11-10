@@ -119,6 +119,7 @@ y9:
             directUrl: https://test.youshengyun.com/server-cms
     common:
         convertEnabled: true
+        secret-key: assets
         kafkaEnabled: false
         orgBaseUrl: http://127.0.0.1:7055/server-platform
         dataAssetsBaseUrl: http://localhost:7056/server-dataassets
