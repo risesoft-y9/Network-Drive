@@ -16,6 +16,7 @@ dependencies {
     api("net.risesoft:risenet-y9boot-starter-jpa-tenant")
     api("net.risesoft:risenet-y9boot-starter-multi-tenant")
     api("net.risesoft:risenet-y9boot-starter-log")
+    api("net.risesoft:risenet-y9boot-api-interface-platform")
     api("net.risesoft:risenet-y9boot-api-feignclient-platform")
     api("net.risesoft:risenet-y9boot-support-file-service-ftp")
     api("net.risesoft:risenet-y9boot-support-file-service-local")
