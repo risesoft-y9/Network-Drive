@@ -120,7 +120,6 @@ y9:
     common:
         convertEnabled: true
         secret-key: assets
-        kafkaEnabled: false
         orgBaseUrl: http://127.0.0.1:7055/server-platform
         dataAssetsBaseUrl: http://localhost:7056/server-dataassets
         logBaseUrl: http://localhost:7056/server-log

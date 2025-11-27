@@ -122,7 +122,6 @@ y9:
         org:
             directUrl: http://localhost:7055
     common:
-        kafkaEnabled: false
         orgBaseUrl: http://127.0.0.1:7055/server-platform
         jodconverterBaseUrl: https://www.youshengyun.com/jodconverter/onlinePreview?url=
         storageBaseUrl: http://localhost:7058/server-storage
