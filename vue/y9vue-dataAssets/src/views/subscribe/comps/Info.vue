@@ -304,14 +304,50 @@
                     备注
                 </template>
                 <el-form-item label="" prop="reason">
-                    <el-input 
-                        placeholder="不通过时不能为空，请填写不通过原因" 
-                        v-model="reason" 
-                        type="textarea" 
+                    <el-input
+                        placeholder="提供方式为应用地址审核通过时需填写访问地址和访问账号密码，为线下交流审核通过时需填写相关信息。审核不通过时不能为空，请填写不通过原因"
+                        v-model="reason"
+                        type="textarea"
                         :autosize="{ minRows: 2 }"
                         v-if="type == 3"
                     ></el-input>
                     <span v-else>{{ reason }}</span>
+                </el-form-item>
+            </el-descriptions-item>
+        </el-descriptions>
+
+        <el-divider content-position="left" border-style="dashed" v-if="provideType == '库表推送' && userRole == 'systemAdmin'">推送信息</el-divider>
+        <el-descriptions border v-if="provideType == '库表推送' && userRole == 'systemAdmin'" :column="2">
+            <el-descriptions-item :span="2">
+                <template #label>
+                    连接信息
+                </template>
+                <el-form-item label="">
+                    <span>{{ baseForm.url }}</span>
+                </el-form-item>
+            </el-descriptions-item>
+            <el-descriptions-item>
+                <template #label>
+                    用户名
+                </template>
+                <el-form-item label="">
+                    <span>{{ baseForm.username }}</span>
+                </el-form-item>
+            </el-descriptions-item>
+            <el-descriptions-item>
+                <template #label>
+                    密码
+                </template>
+                <el-form-item label="">
+                    <span>{{ baseForm.password }}</span>
+                </el-form-item>
+            </el-descriptions-item>
+            <el-descriptions-item>
+                <template #label>
+                    备注
+                </template>
+                <el-form-item label="">
+                    <span>{{ baseForm.remark }}</span>
                 </el-form-item>
             </el-descriptions-item>
         </el-descriptions>
@@ -328,7 +364,7 @@
 import { ref, onMounted, watch, nextTick, computed } from 'vue';
 import { FormInstance, Action, ElNotification } from 'element-plus';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { getDataById, getSubscribeById, reviewData, saveSubscribe } from '@/api/pretreat';
+import { getDataById, getSubscribeBaseById, getSubscribeById, reviewData, saveSubscribe } from '@/api/pretreat';
 import { getOptionValueList } from '@/api/dataAssets/dictionaryOption';
 import y9_storage from '@/utils/storage';
 import settings from '@/settings';
@@ -348,6 +384,8 @@ const props = defineProps({
         }
     }
 });
+
+const userRole = sessionStorage.getItem('userRole');
 
 let provideType = ref('');// 提供方式
 let purpose = ref('');// 用途说明
@@ -466,8 +504,21 @@ async function getData() {
                     reviewStatus.value = res2.data.reviewStatus
                 }
                 reason.value = res2.data.reason == null ? '' : res2.data.reason;
+
+                if(userRole == 'systemAdmin' && provideType.value == '库表推送') {
+                    getSubscribeBase();
+                }
             }
         }
+    }
+}
+
+const baseForm = ref({});
+// 根据id获取订阅-库表推送信息
+async function getSubscribeBase() {
+    let result = await getSubscribeBaseById(props.subscribeId);
+    if (result.success) {
+        baseForm.value = result.data;
     }
 }
 

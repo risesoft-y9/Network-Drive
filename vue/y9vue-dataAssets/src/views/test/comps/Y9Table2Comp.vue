@@ -143,7 +143,7 @@
     .y9-table-2 {
         width: 100%;
         .y9-table-2__header {
-            width: 100%;
+            width: 96%;
             height: 32px;
             display: flex;
             align-items: center;
@@ -158,9 +158,9 @@
         .y9-table-2__body {
             width: 100%;
             height: v-bind('Y9Table2BodyHeight +"px"');
-            overflow: scroll;
+            overflow: auto;
             .y9-table-2__item {
-                width: 100%;
+                width: 96%;
                 display: flex;
                 align-items: center;
                 padding: 0 15px;

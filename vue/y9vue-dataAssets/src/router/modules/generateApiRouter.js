@@ -6,9 +6,18 @@ const generateApiRouter = {
     meta: {
         title: 'API服务',
         icon: 'ri-terminal-box-line',
-        roles: ['systemAdmin']
+        //roles: ['systemAdmin']
     },
     children:[
+        {
+            path: '/dataApiTable',
+            component: () => import('@/views/dataApiTable/index.vue'),
+            name: 'dataApiTable',
+            meta: {
+                title: '接口资源申请',
+                icon: 'ri-git-pull-request-line',
+            },
+        },
         {
             path: '/api',
             component: () => import('@/views/api/index.vue'),
@@ -16,6 +25,7 @@ const generateApiRouter = {
             meta: {
                 title: 'API管理',
                 icon: 'ri-device-line',
+                roles: ['systemAdmin']
             },
         },
         {
@@ -25,6 +35,7 @@ const generateApiRouter = {
             meta: {
                 title: 'API权限',
                 icon: 'ri-bring-to-front',
+                roles: ['systemAdmin']
             },
         },
         {
@@ -34,6 +45,7 @@ const generateApiRouter = {
             meta: {
                 title: 'API监控',
                 icon: 'ri-bar-chart-box-line',
+                roles: ['systemAdmin']
             },
         }
     ]

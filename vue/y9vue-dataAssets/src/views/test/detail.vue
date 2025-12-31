@@ -717,7 +717,7 @@
                 border-radius: 5px;
                 .mainContainer {
                     height: v-bind('contentHeight+"px"');
-                    overflow: scroll;
+                    overflow: auto;
                     background-color: var(--el-bg-color);
                     border-radius: 5px;
                     padding: 0 25px;

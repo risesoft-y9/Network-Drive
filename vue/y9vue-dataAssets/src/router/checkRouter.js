@@ -63,6 +63,10 @@ async function check() {
     let result = await getUserRole();
     if(result) {
         userRole = ['systemAdmin'];
+        sessionStorage.setItem('userRole', 'systemAdmin');
+    } else {
+        userRole = ['user'];
+        sessionStorage.setItem('userRole', 'user');
     }
 
     isRoleValid = (await checkRole(userRole)) ? true : false;

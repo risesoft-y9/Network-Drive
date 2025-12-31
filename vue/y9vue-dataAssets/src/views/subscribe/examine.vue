@@ -70,7 +70,7 @@
                 { title: computed(() => t('提供方式')), key: 'provideType' },
                 { title: computed(() => t('审核状态')), key: 'reviewStatus', slot: 'reviewStatus' },
                 { title: computed(() => t('备注')), key: 'reason' },
-                { title: computed(() => t('审核人')), key: 'reviewName' },
+                { title: computed(() => t('订阅人')), key: 'userName' },
                 { title: computed(() => t('订阅时间')), key: 'createTime', width: settingStore.getDatetimeSpan },
                 { title: computed(() => t('审核时间')), key: 'reviewDate' },
                 {
@@ -189,7 +189,6 @@
 
     const close = () => {
         dialogConfig.value.show = false;
-        tableConfig.value.pageConfig.currentPage = 1;
         searchData();
     };
 </script>
