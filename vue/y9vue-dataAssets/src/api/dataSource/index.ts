@@ -203,3 +203,11 @@ export const checkDataStatus = async (params) => {
         params: params
     });
 };
+
+export const getDataBase = async () => {
+    return await platformRequest({
+        url: '/vue/source/getDataBase',
+        method: 'GET',
+        cType: false
+    });
+};

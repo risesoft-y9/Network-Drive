@@ -151,3 +151,58 @@ export const testSql = async (params) => {
         data
     });
 };
+
+export const getOwners = async () => {
+    return await dataRequest({
+        url: '/vue/api/getAllUsers',
+        method: 'GET',
+        cType: false
+    });
+};
+
+
+// DataApiTable相关API
+export const getDataApiTablePage = async (params) => {
+    return await dataRequest({
+        url: '/vue/dataApiTable/page',
+        method: 'GET',
+        cType: false,
+        params
+    });
+};
+
+export const saveDataApiTable = async (params) => {
+    return await dataRequest({
+        url: '/vue/dataApiTable/save',
+        method: 'POST',
+        cType: false,
+        JSON: true,
+        data: params
+    });
+};
+
+export const deleteDataApiTable = async (id) => {
+    return await dataRequest({
+        url: `/vue/dataApiTable/${id}`,
+        method: 'DELETE',
+        cType: false
+    });
+};
+
+export const getDataApiTableById = async (id) => {
+    return await dataRequest({
+        url: `/vue/dataApiTable/${id}`,
+        method: 'GET',
+        cType: false
+    });
+};
+
+// 获取表的外键
+export const getTableForeignKeys = async (tableName, dataSourceId) => {
+    return await dataRequest({
+        url: `/vue/dataApiTable/foreignKeys/${tableName}`,
+        method: 'GET',
+        cType: false,
+        params: { dataSourceId }
+    });
+};

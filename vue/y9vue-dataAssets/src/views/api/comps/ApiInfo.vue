@@ -129,6 +129,7 @@ import java.util.Base64;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
@@ -160,7 +161,7 @@ public class Test {
             // 每次都要获取最新时间戳,时效性3分钟
             String timeStamp = String.valueOf(System.currentTimeMillis() / 1000);
             //计算sign
-            String sign = encrypt(appName, tenantId + "&" + timeStamp);
+            String sign = generateSign(appName, tenantId + "&" + timeStamp);
 
             // 创建CloseableHttpClient
             CloseableHttpClient client = HttpClientBuilder.create().build();
@@ -177,7 +178,7 @@ public class Test {
 		// 每次都要获取最新时间戳,时效性3分钟
 		String timeStamp = String.valueOf(System.currentTimeMillis() / 1000);
 		//计算sign
-		String sign = encrypt(appName, tenantId + "&" + timeStamp);
+		String sign = generateSign(appName, tenantId + "&" + timeStamp);
 
 		// 创建CloseableHttpClient
 		CloseableHttpClient client = HttpClientBuilder.create().build();
@@ -187,7 +188,7 @@ public class Test {
 		httpPost.setHeader("Content-Type", "application/json");
 		
 		if(StringUtils.isNotBlank(json)) {
-			HttpEntity entity = new StringEntity(json);
+			HttpEntity entity = new StringEntity(json, ContentType.APPLICATION_JSON);
 			httpPost.setEntity(entity);
 		}
 
@@ -196,20 +197,41 @@ public class Test {
 		return obj;
 	}
 	
-	public static String encrypt(String key, String value) throws Exception {
-            // 密钥生成器  
-            KeyGenerator keyGen = KeyGenerator.getInstance("AES");  
-            // 根据KEY规则初始化密钥生成器生成一个128位的随机源
-            SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
-            secureRandom.setSeed(key.getBytes());
-            keyGen.init(128, secureRandom);
-            SecretKey secretKey = keyGen.generateKey();
-            
-            Cipher cipherEncrypt = Cipher.getInstance("AES");  
-            cipherEncrypt.init(Cipher.ENCRYPT_MODE, secretKey);  
-            byte[] encrypted = cipherEncrypt.doFinal(value.getBytes(StandardCharsets.UTF_8));  
-            return Base64.getEncoder().encodeToString(encrypted);  
-        }
+	/**
+     * 生成签名
+     */
+    private static final int GCM_IV_LENGTH = 12;
+    // 标签长度
+    private static final int GCM_TAG_LENGTH = 16;
+    private static String generateSign(String key, String value) {
+        // 密钥生成器
+        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+        // 根据KEY规则初始化密钥生成器生成一个128位的随机源
+        SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
+        secureRandom.setSeed(key.getBytes());
+        keyGen.init(128, secureRandom);
+        SecretKey secretKey = keyGen.generateKey();
+        
+        // 生成随机IV
+        byte[] iv = new byte[GCM_IV_LENGTH];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(iv);
+
+        // 初始化加密器
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        GCMParameterSpec parameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, parameterSpec);
+        
+        // 加密明文
+        byte[] ciphertext = cipher.doFinal(value.getBytes(StandardCharsets.UTF_8));
+
+        // 组合IV、密文+标签
+        ByteBuffer byteBuffer = ByteBuffer.allocate(iv.length + ciphertext.length);
+        byteBuffer.put(iv);
+        byteBuffer.put(ciphertext);
+        byte[] encryptedData = byteBuffer.array();
+        return Base64.getEncoder().encodeToString(encryptedData);
+    }
 }`);
 </script>
 

@@ -250,3 +250,22 @@ export const getSubscribeById = async (id) => {
         params: { id: id }
     });
 };
+
+export const saveSubscribeBase = async (params) => {
+    const data = qs.stringify(params);
+    return await dataRequest({
+        url: '/vue/detail/saveSubscribeBase',
+        method: 'post',
+        cType: false,
+        data
+    });
+};
+
+export const getSubscribeBaseById = async (id) => {
+    return await dataRequest({
+        url: '/vue/detail/getSubscribeBaseById',
+        method: 'GET',
+        cType: false,
+        params: { id: id }
+    });
+};

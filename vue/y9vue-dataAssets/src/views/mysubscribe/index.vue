@@ -30,7 +30,17 @@
             :id="assetsId"
             :subscribeId="subscribeId"
             :type="2"
+            @close="close"
         ></Info>
+    </y9Dialog>
+    <y9Dialog v-model:config="dialogConfig2">
+        <ItemData
+            v-if="dialogConfig2.show"
+            :assetsId="assetsId"
+        ></ItemData>
+    </y9Dialog>
+    <y9Dialog v-model:config="dialogConfig3">
+        <y9Form ref="ruleFormRef" :config="formConfig"></y9Form>
     </y9Dialog>
 </template>
 
@@ -41,8 +51,11 @@
     import settings from '@/settings';
     import router from '@/router';
     import { getStoragePageSize } from '@/utils';
-    import { searchSubscribePage } from '@/api/pretreat';
+    import { getSubscribeBaseById, saveSubscribeBase, searchSubscribePage } from '@/api/pretreat';
     import Info from '@/views/subscribe/comps/Info.vue';
+    import y9_storage from '@/utils/storage';
+    import ItemData from '@/views/pretreat/comps/ItemData.vue';
+    import { ElNotification } from 'element-plus';
 
     const settingStore = useSettingStore();
     // 注入 字体对象
@@ -74,7 +87,7 @@
                 {
                     title: computed(() => t('操作')),
                     fixed: 'right',
-                    width: '120px',
+                    width: '180px',
                     render: (row) => {
                         let editActions = [
                             h(
@@ -98,11 +111,119 @@
                                 },
                                 [
                                     h('i', { class: 'ri-eye-line', style: { marginRight: '2px' } }),
-                                    h('span', t('查看'))
+                                    h('span', t('详情'))
                                 ]
                             )
                         ];
-                        return h('span', editActions);
+                        if(row.reviewStatus == '通过') {
+                            if(row.provideType == '文件下载') {
+                                editActions.push(
+                                    h(
+                                        'span',
+                                        {
+                                            style: {
+                                                cursor: 'pointer',
+                                                marginLeft: '10px',
+                                        },
+                                        class: 'global-btn-success',
+                                        onClick: async () => {
+                                            assetsId.value = row.assetsId;
+                                            Object.assign(dialogConfig2.value, {
+                                                show: true,
+                                                width: '60%',
+                                                title: computed(() => t('下载列表')),
+                                                showFooter: false
+                                            });
+                                        }
+                                    },
+                                    [
+                                        h('i', { class: 'ri-download-2-line', style: { marginRight: '2px' } }),
+                                        h('span', t('下载'))
+                                    ]
+                                ))
+                            }
+                            if(row.provideType == '在线查看') {
+                                editActions.push(
+                                    h(
+                                        'span',
+                                        {
+                                            style: {
+                                                cursor: 'pointer',
+                                                marginLeft: '10px',
+                                        },
+                                        class: 'global-btn-success',
+                                        onClick: async () => {
+                                            assetsId.value = row.assetsId;
+                                            Object.assign(dialogConfig2.value, {
+                                                show: true,
+                                                width: '60%',
+                                                title: computed(() => t('在线预览')),
+                                                showFooter: false
+                                            });
+                                        }
+                                    },
+                                    [
+                                        h('i', { class: 'ri-window-line', style: { marginRight: '2px' } }),
+                                        h('span', t('预览'))
+                                    ]
+                                ))
+                            }
+                            if(row.provideType == '接口请求') {
+                                editActions.push(
+                                    h(
+                                        'span',
+                                        {
+                                            style: {
+                                                cursor: 'pointer',
+                                                marginLeft: '10px',
+                                        },
+                                        class: 'global-btn-success',
+                                        onClick: async () => {
+                                            assetsId.value = row.assetsId;
+                                            Object.assign(dialogConfig2.value, {
+                                                show: true,
+                                                width: '60%',
+                                                title: computed(() => t('接口详情')),
+                                                showFooter: false
+                                            });
+                                        }
+                                    },
+                                    [
+                                        h('i', { class: 'ri-link', style: { marginRight: '2px' } }),
+                                        h('span', t('接口'))
+                                    ]
+                                ))
+                            }
+                            if(row.provideType == '库表推送') {
+                                editActions.push(
+                                    h(
+                                        'span',
+                                        {
+                                            style: {
+                                                cursor: 'pointer',
+                                                marginLeft: '10px',
+                                        },
+                                        class: 'global-btn-success',
+                                        onClick: async () => {
+                                            subscribeId.value = row.id;
+                                            await getSubscribeBase();
+                                            Object.assign(dialogConfig3.value, {
+                                                show: true
+                                            });
+                                        }
+                                    },
+                                    [
+                                        h('i', { class: 'ri-edit-box-line', style: { marginRight: '2px' } }),
+                                        h('span', t('填报'))
+                                    ]
+                                ))
+                            }
+                        }
+                        if(row.id) {
+                            return h('span', editActions);
+                        } else {
+                            return '';
+                        }
                     }
                 }
             ],
@@ -142,6 +263,10 @@
         dialogConfig: {
             show: false,
             title: ''
+        },
+        dialogConfig2: {
+            show: false,
+            title: ''
         }
     });
 
@@ -150,6 +275,7 @@
         tableConfig,
         filterConfig,
         dialogConfig,
+        dialogConfig2,
     } = toRefs(state);
 
     onMounted(() => {
@@ -182,6 +308,108 @@
     function onPageSizeChange(pageSize) {
         tableConfig.value.pageConfig.pageSize = pageSize;
         searchData();
+    }
+
+    const close = () => {
+        dialogConfig.value.show = false;
+        searchData();
+    };
+
+    // 菜单表单ref
+    const ruleFormRef = ref();
+    // 菜单 表单
+    let formConfig = ref({
+        model: {},
+        rules: {
+            url: [{ required: true, message: computed(() => t('请输入数据库连接信息')), trigger: 'blur' }],
+            username: [{ required: true, message: computed(() => t('请输入用户名')), trigger: 'blur' }],
+            password: [{ required: true, message: computed(() => t('请输入密码')), trigger: 'blur' }],
+            remark: [{ required: true, message: computed(() => t('请输入备注')), trigger: 'blur' }],
+        },
+        itemList: [
+            {
+                type: 'input',
+                prop: 'url',
+                label: computed(() => t('连接信息')),
+                required: true,
+                props: {
+                    placeholder: `例：jdbc:mysql://{host}:{port}/{database}`
+                }
+            },
+            {
+                type: 'input',
+                prop: 'username',
+                label: computed(() => t('用户名')),
+                required: true,
+            },
+            {
+                type: 'input',
+                prop: 'password',
+                label: computed(() => t('密码')),
+                required: true,
+                props: {
+                    type: 'password',
+                    showPassword: true
+                }
+            },
+            {
+                type: 'textarea',
+                prop: 'remark',
+                label: computed(() => t('备注')),
+                rows: 3,
+                required: true,
+                props: {
+                    placeholder: `填写数据推送的详细信息，如表名称、需要的数据信息等`
+                }
+            }
+        ],
+        descriptionsFormConfig: {
+            labelWidth: '200px',
+            labelAlign: 'center'
+        }
+    });
+
+    // 增加菜单 弹框的变量配置 控制
+    let dialogConfig3 = ref({
+        show: false,
+        title: computed(() => t('库表信息')),
+        width: '40%',
+        onOk: (config) => {
+            return new Promise<void>(async (resolve, reject) => {
+                const ruleFormInstance = ruleFormRef.value?.elFormRef;
+                await ruleFormInstance.validate(async (valid) => {
+                    if (valid) {
+                        let params = {
+                            ...ruleFormRef.value.model,
+                            subscribeId: subscribeId.value
+                        };
+
+                        let result = await saveSubscribeBase(params);
+                        if (result.success) {
+                            searchData();
+                        }
+                        ElNotification({
+                            title: result.success ? t('成功') : t('失败'),
+                            message: result.msg,
+                            type: result.success ? 'success' : 'error',
+                            duration: 2000,
+                            offset: 80
+                        });
+                        resolve();
+                    } else {
+                        reject();
+                    }
+                });
+            });
+        }
+    });
+
+    // 根据id获取订阅-库表推送信息
+    async function getSubscribeBase() {
+        let result = await getSubscribeBaseById(subscribeId.value);
+        if (result.success) {
+            formConfig.value.model = result.data || {};
+        }
     }
 </script>
 <style lang="scss" scoped>

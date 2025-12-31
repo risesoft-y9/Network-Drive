@@ -54,8 +54,6 @@
     import { useI18n } from 'vue-i18n';
     import { useSettingStore } from '@/store/modules/settingStore';
     import { deleteApiRoleData, saveApiRoleData, searchRolePage } from '@/api/apiService';
-    import settings from '@/settings';
-    import router from '@/router';
     import { getStoragePageSize } from '@/utils';
     import Transfer from './transfer.vue';
 
@@ -179,6 +177,7 @@
                     }
                 }
             ],
+            loading: false,
             border: false,
             headerBackground: true,
             tableData: [],
@@ -238,6 +237,7 @@
 
     // 请求 列表接口
     async function searchData() {
+        tableConfig.value.loading = true;
         let params = {
             page: tableConfig.value.pageConfig.currentPage,
             size: tableConfig.value.pageConfig.pageSize,
@@ -249,6 +249,7 @@
             tableConfig.value.tableData = res.rows;
             tableConfig.value.pageConfig.total = res.total;
         }
+        tableConfig.value.loading = false;
     }
 
     // 分页操作
@@ -269,7 +270,8 @@
     let formConfig = ref({
         model: {},
         rules: {
-            appName: [{ required: true, message: computed(() => t('请输入调用者名称')), trigger: 'blur' }]
+            appName: [{ required: true, message: computed(() => t('请输入调用者名称')), trigger: 'blur' }],
+            permitsPerSecond: [{ required: true, message: computed(() => t('请输入每秒请求数')), trigger: 'blur' }]
         },
         itemList: [
             {
@@ -287,6 +289,15 @@
                 type: 'input',
                 prop: 'ipAddr',
                 label: computed(() => t('白名单IP'))
+            },
+            {
+                type: 'input',
+                prop: 'permitsPerSecond',
+                label: computed(() => t('每秒请求数')),
+                required: true,
+                props: {
+                    type: 'number'
+                }
             },
             {
                 type: 'textarea',
