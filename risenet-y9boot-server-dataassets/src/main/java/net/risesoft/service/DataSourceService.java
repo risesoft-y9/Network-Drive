@@ -87,4 +87,11 @@ public interface DataSourceService {
      */
     List<Map<String, Object>> getTablePage(String id, String name);
 
+    /**
+     * 获取数据库列表-不分权限
+     * 
+     * @return
+     */
+    List<Map<String, Object>> getDataBase();
+
 }

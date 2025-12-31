@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 import net.risesoft.entity.DataAssets;
 import net.risesoft.entity.FileInfo;
+import net.risesoft.entity.SubscribeBaseEntity;
 import net.risesoft.entity.SubscribeEntity;
 import net.risesoft.log.LogLevelEnum;
 import net.risesoft.log.OperationTypeEnum;
@@ -180,6 +181,18 @@ public class DataAssetsController {
     @GetMapping("/getSubscribeById")
     public Y9Result<Map<String, Object>> getSubscribeById(String id) {
         return Y9Result.success(dataAssetsService.getSubscribeById(id));
+    }
+
+    @RiseLog(operationType = OperationTypeEnum.ADD, operationName = "保存订阅-库表推送信息", logLevel = LogLevelEnum.RSLOG)
+    @PostMapping(value = "/saveSubscribeBase")
+    public Y9Result<String> saveSubscribeBase(SubscribeBaseEntity subscribeBaseEntity) {
+        return dataAssetsService.saveSubscribeBase(subscribeBaseEntity);
+    }
+    
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "根据id获取订阅-库表推送信息", logLevel = LogLevelEnum.RSLOG)
+    @GetMapping("/getSubscribeBaseById")
+    public Y9Result<SubscribeBaseEntity> getSubscribeBaseById(String id) {
+        return Y9Result.success(dataAssetsService.getSubscribeBaseById(id));
     }
 
 }

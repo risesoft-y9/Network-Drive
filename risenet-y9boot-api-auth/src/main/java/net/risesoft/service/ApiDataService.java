@@ -143,4 +143,11 @@ public interface ApiDataService {
      */
     Y9Result<String> saveApiRole(String ids, String appName);
 
+    /**
+     * 获取所有用户
+     * 
+     * @return
+     */
+    List<String> getAllUsers();
+
 }

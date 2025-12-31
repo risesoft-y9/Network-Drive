@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
@@ -377,6 +378,11 @@ public class ApiDataServiceImpl implements ApiDataService {
             return Y9Result.failure("保存失败：" + e.getMessage());
         }
         return Y9Result.successMsg("保存成功");
+    }
+
+    @Override
+    public List<String> getAllUsers() {
+        return apiRoleRepository.findAll().stream().map(ApiRoleEntity::getAppName).collect(Collectors.toList());
     }
 
 }

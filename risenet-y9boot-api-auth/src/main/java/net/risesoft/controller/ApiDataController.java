@@ -114,4 +114,8 @@ public class ApiDataController {
         return apiDataService.getApiRole(appName);
     }
 
+    @GetMapping(value = "/getAllUsers")
+    public Y9Result<List<String>> getAllUsers() {
+        return Y9Result.success(apiDataService.getAllUsers());
+    }
 }

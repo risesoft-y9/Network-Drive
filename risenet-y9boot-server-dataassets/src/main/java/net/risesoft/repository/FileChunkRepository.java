@@ -5,4 +5,4 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import net.risesoft.entity.Chunk;
 
-public interface FileChunkRepository extends JpaRepository<Chunk, String>, JpaSpecificationExecutor<Chunk> {}
+public interface FileChunkRepository extends JpaRepository<Chunk, Long>, JpaSpecificationExecutor<Chunk> {}

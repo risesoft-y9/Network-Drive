@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.risesoft.entity.DataAssets;
 import net.risesoft.entity.FileInfo;
+import net.risesoft.entity.SubscribeBaseEntity;
 import net.risesoft.entity.SubscribeEntity;
 import net.risesoft.model.AssetsModel;
 import net.risesoft.pojo.Y9Page;
@@ -207,5 +208,19 @@ public interface DataAssetsService {
      * @return
      */
     Map<String, Object> getSubscribeById(String id);
+
+    /**
+     * 保存订阅-库表推送信息
+     * @param subscribeBaseEntity
+     * @return
+     */
+    Y9Result<String> saveSubscribeBase(SubscribeBaseEntity subscribeBaseEntity);
+
+    /**
+     * 根据id获取订阅-库表推送信息
+     * @param id
+     * @return
+     */
+    SubscribeBaseEntity getSubscribeBaseById(String id);
 
 }

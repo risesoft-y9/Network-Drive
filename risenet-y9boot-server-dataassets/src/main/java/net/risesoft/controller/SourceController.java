@@ -62,7 +62,7 @@ public class SourceController {
         return Y9Result.success(list, "获取成功");
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "根据获取数据表列表", logLevel = LogLevelEnum.RSLOG,
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取数据表列表", logLevel = LogLevelEnum.RSLOG,
         enable = false)
     @GetMapping(value = "/getTablePage")
     public Y9Result<List<Map<String, Object>>> getTablePage(String id, String name) {
@@ -208,6 +208,11 @@ public class SourceController {
             return Y9Result.failure("程序出错：" + e.getMessage());
         }
         return Y9Result.success(listMap);
+    }
+
+    @GetMapping(value = "/getDataBase")
+    public Y9Result<List<Map<String, Object>>> getDataBase() {
+        return Y9Result.success(dataSourceService.getDataBase());
     }
 
 }

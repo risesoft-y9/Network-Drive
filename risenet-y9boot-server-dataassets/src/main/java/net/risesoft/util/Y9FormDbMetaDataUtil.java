@@ -99,30 +99,35 @@ public class Y9FormDbMetaDataUtil extends DbMetaDataUtil {
         List<Map<String, Object>> tableNames = new ArrayList<>();
 
         ResultSet rs = null;
-        String sql = "show tables";
+        String sql = "";
         try (Connection connection = dataSource.getConnection(); Statement stmt = connection.createStatement()) {
 
             String dialect = getDatabaseDialectNameByConnection(connection);
             switch (dialect) {
                 case SqlConstants.DBTYPE_ORACLE:
-                    sql = "SELECT table_name FROM all_tables";
+                    sql = "SELECT table_name, comments AS REMARKS FROM all_tab_comments";
                     break;
                 case SqlConstants.DBTYPE_DM:
-                    sql = "SELECT table_name FROM all_tables";
+                    sql = "SELECT table_name, comments AS REMARKS FROM all_tab_comments";
                     break;
                 case SqlConstants.DBTYPE_KINGBASE:
-                    sql = "SELECT table_name FROM all_tables";
+                    sql = "SELECT table_name, comments AS REMARKS FROM all_tab_comments";
+                    break;
+                case SqlConstants.DBTYPE_MYSQL:
+                    sql = "SELECT table_name, table_comment AS REMARKS FROM information_schema.TABLES WHERE table_schema = DATABASE()";
                     break;
                 default:
-                    sql = "show tables";
+                    sql = "SELECT table_name, table_comment AS REMARKS FROM information_schema.TABLES WHERE table_schema = DATABASE()";
                     break;
             }
             rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                String tableName = rs.getString(1);
-                // mysql中不处理视图
+                String tableName = rs.getString("TABLE_NAME");
+                // 获取表的中文名称
+                String tableCname = rs.getString("REMARKS");
                 Map<String, Object> al = new HashMap<>(16);
                 al.put("name", tableName);
+                al.put("cname", tableCname);
                 tableNames.add(al);
             }
         } catch (Exception ex) {
