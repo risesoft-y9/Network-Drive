@@ -39,7 +39,7 @@ public class DataAssetsCatalogController {
      */
     @GetMapping("/getCatelogTree")
     public Y9Result<List<DataCatalog>> getCatelogTree(@RequestParam(required = false) String parentId) {
-        String tenantId = Y9LoginUserHolder.getTenantId(), userId = Y9LoginUserHolder.getUserInfo().getPersonId();
+        String tenantId = Y9LoginUserHolder.getTenantId(), userId = Y9LoginUserHolder.getPersonId();
         return dataCatalogApiClient.getTree("asset", parentId, false, tenantId, userId, AuthorityEnum.BROWSE);
     }
 
@@ -51,7 +51,7 @@ public class DataAssetsCatalogController {
      */
     @GetMapping("/searchCatelogTree")
     public Y9Result<List<DataCatalog>> searchCatelogTree(@RequestParam(required = false) String name) {
-        String tenantId = Y9LoginUserHolder.getTenantId(), userId = Y9LoginUserHolder.getUserInfo().getPersonId();
+        String tenantId = Y9LoginUserHolder.getTenantId(), userId = Y9LoginUserHolder.getPersonId();
         return dataCatalogApiClient.treeSearch("asset", name, tenantId, userId, AuthorityEnum.BROWSE);
     }
 
@@ -65,6 +65,30 @@ public class DataAssetsCatalogController {
     public Y9Result<Boolean> hasRole() {
         String tenantId = Y9LoginUserHolder.getTenantId(), userId = Y9LoginUserHolder.getUserInfo().getPersonId();
         return personRoleApiClient.hasRole(tenantId, "dataAssets", null, "系统管理员", userId);
+    }
+    
+    /**
+     * 不分权限获取数据底座-数据资产的数据目录
+     * 
+     * @param parentId
+     * @return
+     */
+    @GetMapping("/getCatelogTree2")
+    public Y9Result<List<DataCatalog>> getCatelogTree2(@RequestParam(required = false) String parentId) {
+        String tenantId = Y9LoginUserHolder.getTenantId();
+        return dataCatalogApiClient.getTree("asset", parentId, false, tenantId, "", null);
+    }
+
+    /**
+     * 不分权限搜索树
+     * 
+     * @param name
+     * @return
+     */
+    @GetMapping("/searchCatelogTree2")
+    public Y9Result<List<DataCatalog>> searchCatelogTree2(@RequestParam(required = false) String name) {
+        String tenantId = Y9LoginUserHolder.getTenantId();
+        return dataCatalogApiClient.treeSearch("asset", name, tenantId, "", null);
     }
 
 }

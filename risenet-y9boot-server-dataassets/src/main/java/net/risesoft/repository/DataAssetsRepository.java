@@ -25,4 +25,7 @@ public interface DataAssetsRepository extends JpaRepository<DataAssets, Long>, J
     String getMaxCode(String categoryId);
 
     DataAssets findByCodeGlobalAndIsDeleted(String codeGlobal, Boolean isDeleted);
+    
+    @Query("select p.id from DataAssets p where p.name like ?1")
+    List<Long> findIdByNameLike(String name);
 }

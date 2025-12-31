@@ -17,9 +17,9 @@ import java.util.Base64;
  */
 public class Y9CipherUtil {
 	
-	// GCM模式推荐的IV长度（12字节=96位）
+	// GCM模式推荐的IV长度
     private static final int GCM_IV_LENGTH = 12;
-    // 标签长度（16字节=128位）
+    // 标签长度
     private static final int GCM_TAG_LENGTH = 16;
 	
     /**
@@ -38,7 +38,7 @@ public class Y9CipherUtil {
 		keyGen.init(128, secureRandom);
         SecretKey secretKey = keyGen.generateKey();
         
-        // 生成随机IV（12字节）
+        // 生成随机IV
         byte[] iv = new byte[GCM_IV_LENGTH];
         SecureRandom random = new SecureRandom();
         random.nextBytes(iv);
@@ -48,10 +48,10 @@ public class Y9CipherUtil {
         GCMParameterSpec parameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, parameterSpec);
         
-        // 加密明文，结果包含密文+认证标签（GCM模式自动生成标签）
+        // 加密明文，结果包含密文+认证标签，GCM模式自动生成标签
         byte[] ciphertext = cipher.doFinal(value.getBytes(StandardCharsets.UTF_8));
 
-        // 组合IV、密文+标签（格式：IV(12字节) + 密文+标签(n字节)）
+        // 组合IV、密文+标签，格式：IV(12字节) + 密文+标签(n字节)
         ByteBuffer byteBuffer = ByteBuffer.allocate(iv.length + ciphertext.length);
         byteBuffer.put(iv);
         byteBuffer.put(ciphertext);

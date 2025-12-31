@@ -31,19 +31,23 @@ import net.risesoft.entity.DataAssets;
 import net.risesoft.entity.DataSourceEntity;
 import net.risesoft.entity.DictionaryValue;
 import net.risesoft.entity.FileInfo;
+import net.risesoft.entity.SubscribeEntity;
 import net.risesoft.enums.CodePayTypeEnum;
 import net.risesoft.enums.CodeTypeEnum;
 import net.risesoft.enums.MarginTypeEnum;
+import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.interfaces.Four;
 import net.risesoft.interfaces.Six;
 import net.risesoft.model.AssetsModel;
 import net.risesoft.model.CodePicBase64;
 import net.risesoft.model.IdcodeRegResult;
+import net.risesoft.model.platform.resource.DataCatalog;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.repository.DataApiOnlineRepository;
 import net.risesoft.repository.DataAssetsRepository;
 import net.risesoft.repository.FileInfoRepository;
+import net.risesoft.repository.SubscribeRepository;
 import net.risesoft.repository.spec.DataAssetsSpecification;
 import net.risesoft.service.DataAssetsService;
 import net.risesoft.service.DataSourceService;
@@ -58,7 +62,7 @@ import net.risesoft.y9public.entity.Y9FileStore;
 import net.risesoft.y9public.service.Y9FileStoreService;
 
 import y9.client.rest.platform.permission.cache.PersonRoleApiClient;
-
+import y9.client.rest.platform.resource.DataCatalogApiClient;
 import cn.hutool.core.util.NumberUtil;
 
 @Service
@@ -72,6 +76,8 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     private final DataSourceService dataSourceService;
     private final PersonRoleApiClient personRoleApiClient;
     private final DictionaryOptionService dictionaryOptionService;
+    private final SubscribeRepository subscribeRepository;
+    private final DataCatalogApiClient dataCatalogApiClient;
 
     @Override
     public DataAssets findById(Long id) {
@@ -468,7 +474,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     }
 
     @Override
-    public Y9Page<Map<String, Object>> searchPage2(String searchText, String appScenarios, String dataZone,
+    public Y9Page<Map<String, Object>> searchPage2(String searchText, String categoryId, String appScenarios, String dataZone,
         String productType, Integer sort, int page, int size) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
@@ -480,14 +486,16 @@ public class DataAssetsServiceImpl implements DataAssetsService {
         } else if (sort == 2) {
             pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "clickNum"));
         }
-        DataAssetsSpecification spec = new DataAssetsSpecification("", "", Y9LoginUserHolder.getTenantId(), "", false,
+        DataAssetsSpecification spec = new DataAssetsSpecification(categoryId, "", Y9LoginUserHolder.getTenantId(), "", false,
             1, "in", "", searchText, appScenarios, dataZone, productType);
         Page<DataAssets> assetsPage = dataAssetsRepository.findAll(spec, pageable);
         for (DataAssets dataAssets : assetsPage) {
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("id", dataAssets.getId());
             map.put("title", dataAssets.getName());
+            map.put("code", dataAssets.getCode());
             map.put("unit", dataAssets.getDataProvider());
+            map.put("mountType", dataAssets.getMountType());
             map.put("description", dataAssets.getRemark());
             map.put("src", dataAssets.getPicture());
             map.put("date", sdf.format(dataAssets.getCreateTime()));
@@ -597,5 +605,116 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 
         return Y9Result.success(listMap);
     }
+
+	@Override
+	@Transactional(readOnly = false)
+	public Y9Result<String> saveSubscribe(SubscribeEntity subscribeEntity) {
+		try {
+			if(StringUtils.isBlank(subscribeEntity.getProvideType())) {
+				return Y9Result.failure("订阅失败，提供方式不能为空");
+			}
+			if(StringUtils.isBlank(subscribeEntity.getId())) {
+				// 判断是否存在已订阅信息
+				SubscribeEntity subscribeEntity2 = subscribeRepository.findByAssetsIdAndProvideTypeAndUserId(subscribeEntity.getAssetsId(), 
+						subscribeEntity.getProvideType(), Y9LoginUserHolder.getPersonId());
+				if(subscribeEntity2 != null) {
+					return Y9Result.failure("订阅失败，已存在相同的订阅");
+				}
+				subscribeEntity.setId(Y9IdGenerator.genId());
+			} else {
+				SubscribeEntity subscribeEntity2 = subscribeRepository.findById(subscribeEntity.getId()).orElse(null);
+				if(subscribeEntity2 != null && !subscribeEntity2.getReviewStatus().equals("待审核")) {
+					return Y9Result.failure("已进入审核阶段，无法再修改");
+				}
+			}
+			subscribeEntity.setReviewStatus("待审核");
+			subscribeEntity.setTenantId(Y9LoginUserHolder.getTenantId());
+			subscribeEntity.setUserId(Y9LoginUserHolder.getPersonId());
+			subscribeEntity.setUserName(Y9LoginUserHolder.getUserInfo().getName());
+			subscribeRepository.save(subscribeEntity);
+			return Y9Result.successMsg("保存成功");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Y9Result.failure("保存失败：" + e.getMessage());
+		}
+	}
+
+	@Override
+	public Y9Page<Map<String, Object>> searchSubscribePage(String type, String name, int page, int size) {
+		if (page < 0) {
+            page = 1;
+        }
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createTime"));
+        List<Long> ids = dataAssetsRepository.findIdByNameLike("%" + name + "%");
+        Page<SubscribeEntity> pageList = null;
+        if(StringUtils.isNotBlank(type) && type.equals("admin")) {// 审核列表
+        	pageList = subscribeRepository.findByAssetsIdIn(ids, pageable);
+        } else {
+        	pageList = subscribeRepository.findByUserIdAndAssetsIdIn(Y9LoginUserHolder.getPersonId(), ids, pageable);
+        }
+        List<Map<String, Object>> listMap = new ArrayList<Map<String,Object>>();
+        for(SubscribeEntity subscribeEntity : pageList) {
+        	Map<String, Object> map = new HashMap<String, Object>();
+        	DataAssets dataAssets = findById(subscribeEntity.getAssetsId());
+        	if(dataAssets.getIsDeleted()) {
+        		map.put("assetsName", "资产数据已删除！");
+        	} else {
+        		map.put("id", subscribeEntity.getId());
+        		map.put("assetsId", subscribeEntity.getAssetsId());
+        		map.put("assetsName", dataAssets.getName());
+            	DataCatalog dataCatalog = dataCatalogApiClient.getById(Y9LoginUserHolder.getTenantId(), dataAssets.getCategoryId()).getData();
+            	if(dataCatalog != null) {
+            		String catalog = dataCatalog.getName();
+            		if(StringUtils.isNotBlank(dataCatalog.getParentId())) {
+            			catalog = dataCatalogApiClient.getById(Y9LoginUserHolder.getTenantId(), 
+            					dataCatalog.getParentId()).getData().getName() + "/" + catalog;
+            		}
+            		map.put("catalog", catalog);
+            	} else {
+            		map.put("catalog", "");
+            	}
+            	map.put("provideType", dictionaryOptionService.findByCodeAndType(subscribeEntity.getProvideType(), "provideType"));
+            	map.put("reviewStatus", subscribeEntity.getReviewStatus());
+            	map.put("reason", subscribeEntity.getReason());
+            	map.put("purpose", subscribeEntity.getPurpose());
+            	map.put("createTime", sdf.format(subscribeEntity.getCreateTime()));
+            	map.put("reviewName", subscribeEntity.getReviewName());
+            	map.put("reviewDate", subscribeEntity.getReviewDate());
+        	}
+        	listMap.add(map);
+        }
+        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), listMap, "获取数据成功");
+	}
+
+	@Override
+	@Transactional(readOnly = false)
+	public Y9Result<String> review(String id, String reviewStatus, String reason) {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		SubscribeEntity subscribeEntity = subscribeRepository.findById(id).orElse(null);
+		if(subscribeEntity == null) {
+			return Y9Result.failure("保存失败，信息不存在");
+		}
+		subscribeEntity.setReason(reason);
+		subscribeEntity.setReviewStatus(reviewStatus);
+		subscribeEntity.setReviewId(Y9LoginUserHolder.getPersonId());
+		subscribeEntity.setReviewName(Y9LoginUserHolder.getUserInfo().getName());
+		subscribeEntity.setReviewDate(sdf.format(new Date()));
+		subscribeRepository.save(subscribeEntity);
+		return Y9Result.successMsg("保存成功");
+	}
+
+	@Override
+	public Map<String, Object> getSubscribeById(String id) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		SubscribeEntity subscribeEntity = subscribeRepository.findById(id).orElse(null);
+		if(subscribeEntity != null) {
+			map.put("provideType", dictionaryOptionService.findByCodeAndType(subscribeEntity.getProvideType(), "provideType"));
+			map.put("reviewStatus", subscribeEntity.getReviewStatus());
+			map.put("reason", subscribeEntity.getReason());
+			map.put("purpose", subscribeEntity.getPurpose());
+		}
+		return map;
+	}
 
 }

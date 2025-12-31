@@ -74,4 +74,6 @@ public class AssetsModel implements Serializable {
     private String dataZone;
 
     private String productType;
+    
+    private String provideType;
 }
