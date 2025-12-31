@@ -31,6 +31,7 @@ import net.risesoft.entity.DataAssets;
 import net.risesoft.entity.DataSourceEntity;
 import net.risesoft.entity.DictionaryValue;
 import net.risesoft.entity.FileInfo;
+import net.risesoft.entity.SubscribeBaseEntity;
 import net.risesoft.entity.SubscribeEntity;
 import net.risesoft.enums.CodePayTypeEnum;
 import net.risesoft.enums.CodeTypeEnum;
@@ -47,6 +48,7 @@ import net.risesoft.pojo.Y9Result;
 import net.risesoft.repository.DataApiOnlineRepository;
 import net.risesoft.repository.DataAssetsRepository;
 import net.risesoft.repository.FileInfoRepository;
+import net.risesoft.repository.SubscribeBaseRepository;
 import net.risesoft.repository.SubscribeRepository;
 import net.risesoft.repository.spec.DataAssetsSpecification;
 import net.risesoft.service.DataAssetsService;
@@ -68,7 +70,9 @@ import cn.hutool.core.util.NumberUtil;
 @Service
 @RequiredArgsConstructor
 public class DataAssetsServiceImpl implements DataAssetsService {
-
+    
+    private final SubscribeBaseRepository subscribeBaseRepository;
+    
     private final DataAssetsRepository dataAssetsRepository;
     private final FileInfoRepository fileInfoRepository;
     private final Y9FileStoreService y9FileStoreService;
@@ -519,7 +523,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
             model.setProductType(dictionaryOptionService.findByCodeAndType(dataAssets.getProductType(), "productType"));
 
             // 保存点击次数
-            dataAssets.setClickNum(dataAssets.getClickNum() + 1);
+            dataAssets.setClickNum(dataAssets.getClickNum() == null ? 1 : dataAssets.getClickNum() + 1);
             dataAssetsRepository.save(dataAssets);
         }
         return Y9Result.success(model);
@@ -657,7 +661,9 @@ public class DataAssetsServiceImpl implements DataAssetsService {
         for(SubscribeEntity subscribeEntity : pageList) {
         	Map<String, Object> map = new HashMap<String, Object>();
         	DataAssets dataAssets = findById(subscribeEntity.getAssetsId());
-        	if(dataAssets.getIsDeleted()) {
+            if(dataAssets.getStatus() == 0) {
+            	map.put("assetsName", "资产数据已下架！");
+            } else if(dataAssets.getIsDeleted()) {
         		map.put("assetsName", "资产数据已删除！");
         	} else {
         		map.put("id", subscribeEntity.getId());
@@ -681,6 +687,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
             	map.put("createTime", sdf.format(subscribeEntity.getCreateTime()));
             	map.put("reviewName", subscribeEntity.getReviewName());
             	map.put("reviewDate", subscribeEntity.getReviewDate());
+                map.put("userName", subscribeEntity.getUserName());
         	}
         	listMap.add(map);
         }
@@ -716,5 +723,20 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 		}
 		return map;
 	}
+
+    @Override
+    @Transactional(readOnly = false)
+    public Y9Result<String> saveSubscribeBase(SubscribeBaseEntity subscribeBaseEntity) {
+        if(subscribeBaseEntity.getId() == null) {
+            subscribeBaseEntity.setId(Y9IdGenerator.genId());
+        }
+        subscribeBaseRepository.save(subscribeBaseEntity);
+        return Y9Result.successMsg("保存成功");
+    }
+
+    @Override
+    public SubscribeBaseEntity getSubscribeBaseById(String id) {
+        return subscribeBaseRepository.findBySubscribeId(id);
+    }
 
 }

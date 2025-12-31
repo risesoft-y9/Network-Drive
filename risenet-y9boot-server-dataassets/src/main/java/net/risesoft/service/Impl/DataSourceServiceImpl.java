@@ -254,9 +254,40 @@ public class DataSourceServiceImpl implements DataSourceService {
                     }
                     Map<String, Object> map = new HashMap<>();
                     map.put("name", tableName);
+                    map.put("cname", table.get("cname").toString());
                     map.put("sourceId", id);
                     listMap.add(map);
                 }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return listMap;
+    }
+
+    @Override
+    public List<Map<String, Object>> getDataBase() {
+        List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+        try {
+            List<DataSourceTypeEntity> dataSourceTypeEntities = findDataCategory();
+            for (DataSourceTypeEntity entity : dataSourceTypeEntities) {
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("value", entity.getId());
+                map.put("label", entity.getName());
+                map.put("disabled", true);
+
+                List<Map<String, Object>> child1 = new ArrayList<>();
+                List<DataSourceEntity> list = datasourceRepository.findByBaseTypeAndTenantIdOrderByCreateTime(entity.getName(),
+                Y9LoginUserHolder.getTenantId());
+                for (DataSourceEntity info : list) {
+                    Map<String, Object> map2 = new HashMap<String, Object>();
+                    map2.put("value", info.getId());
+                    map2.put("label", info.getName());
+
+                    child1.add(map2);
+                }
+                map.put("children", child1);
+                listMap.add(map);
             }
         } catch (Exception e) {
             e.printStackTrace();

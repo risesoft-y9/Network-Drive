@@ -11,10 +11,14 @@ public abstract class Y9ApiThreadHoder {
     private static final TransmittableThreadLocal<String> BODY_HOLDER = new TransmittableThreadLocal<String>();
     private static final TransmittableThreadLocal<String> APIIDS_HOLDER = new TransmittableThreadLocal<String>();
 
+    // 存储请求者appName
+    private static final TransmittableThreadLocal<String> APPNAME_HOLDER = new TransmittableThreadLocal<String>();
+
     public static void clear() {
         PARAMS_HOLDER.remove();
         BODY_HOLDER.remove();
         APIIDS_HOLDER.remove();
+        APPNAME_HOLDER.remove();
     }
 
     public static Map<String, String> getParams() {
@@ -39,5 +43,13 @@ public abstract class Y9ApiThreadHoder {
 
     public static void setApiIds(final String apiIds) {
         APIIDS_HOLDER.set(apiIds);
+    }
+
+    public static String getAppName() {
+        return APPNAME_HOLDER.get();
+    }
+
+    public static void setAppName(final String appName) {
+        APPNAME_HOLDER.set(appName);
     }
 }

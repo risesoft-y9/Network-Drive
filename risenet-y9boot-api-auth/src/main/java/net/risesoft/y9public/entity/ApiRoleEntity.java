@@ -42,6 +42,10 @@ public class ApiRoleEntity extends BaseEntity {
     @Comment(value = "备注")
     private String remark;
 
+    @Column(name = "PERMITS_PER_SECOND", nullable = false)
+    @Comment(value = "每秒请求数")
+    private double permitsPerSecond;
+
     @Column(name = "STATUS", nullable = false)
     @Comment(value = "状态：1-禁用，0-未禁用")
     private Integer status;

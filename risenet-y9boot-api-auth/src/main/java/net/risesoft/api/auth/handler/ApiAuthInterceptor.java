@@ -55,6 +55,7 @@ public class ApiAuthInterceptor implements HandlerInterceptor {
 
         String ip = Y9Context.getIpAddr(request);// 请求者ip
         String appName = "", ipAddr = "";
+        Double permitsPerSecond = 2.0;
         // 认证逻辑（检查API密钥）
         String apiKey = request.getHeader("x-api-key");
         if (StringUtils.isBlank(apiKey)) {
@@ -70,6 +71,7 @@ public class ApiAuthInterceptor implements HandlerInterceptor {
             } else {
                 appName = apiRoleEntity.getAppName();
                 ipAddr = apiRoleEntity.getIpAddr();
+                permitsPerSecond = apiRoleEntity.getPermitsPerSecond();
                 Y9ApiThreadHoder.setApiIds(apiRoleEntity.getApiIds());
             }
         }
@@ -115,12 +117,12 @@ public class ApiAuthInterceptor implements HandlerInterceptor {
         }
 
         // 检查调用者是否超过了请求速率
-        double permitsPerSecond = 2.0;
         if (!rateLimitService.tryAcquire(appName, permitsPerSecond)) {
             saveApiLogService.asyncSave(appName, requestUrl, ip, requestParams, "请求频率太快");
             errorMsg(response, HttpServletResponse.SC_NOT_IMPLEMENTED, "Too Many Requests");
             return false;
         }
+        Y9ApiThreadHoder.setAppName(appName);
 
         // if (apiAuthRequired != null) {
         //
