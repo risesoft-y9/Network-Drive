@@ -206,7 +206,7 @@
             </el-descriptions-item>
         </el-descriptions>
 
-        <el-divider content-position="left" border-style="dashed"> 基础属性</el-divider>
+        <el-divider content-position="left" border-style="dashed">基础属性</el-divider>
         <el-descriptions border :column="2">
             <el-descriptions-item
                 :span="2"
@@ -214,7 +214,7 @@
             >
                 <el-form-item label="" prop="remark">
                     <span v-if="disabled">{{ form.remark }}</span>
-                    <el-input v-else v-model="form.remark" type="textarea"></el-input>
+                    <el-input v-else v-model="form.remark" type="textarea" :autosize="{ minRows: 2 }"></el-input>
                 </el-form-item>
             </el-descriptions-item>
 
@@ -317,6 +317,22 @@
                     </el-select>
                 </el-form-item>
             </el-descriptions-item>
+
+            <el-descriptions-item>
+                <template #label>
+                    数据提供方式
+                </template>
+                <el-form-item label="" prop="provideType">
+                    <el-select :disabled="disabled" v-model="form.provideType" clearable multiple>
+                        <el-option
+                            v-for="item in provideTypeList"
+                            :key="item.code"
+                            :label="item.name"
+                            :value="item.code"
+                        />
+                    </el-select>
+                </el-form-item>
+            </el-descriptions-item>
         </el-descriptions>
 
         <el-form-item style="float: right; margin-top: 15px;" v-if="!disabled">
@@ -383,6 +399,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         formEl.validate((valid) => {
             if (valid) {
                 saveLoading.value = true;
+                form.value.provideType = form.value.provideType.join(",");
                 let params: any = Object.assign({}, form.value);
                 saveData(params)
                     .then((res: any) => {
@@ -426,9 +443,12 @@ const genCode = () => {
 
 watch(
     () => props.entity,
-    (nv, ov) => {
-        if (props.entity) {
-            form.value = props.entity;
+    async (new_, old_) => {
+        if (new_ && new_ !== old_) {
+            if (props.entity) {
+                form.value = props.entity;
+                form.value.provideType = form.value.provideType.split(",");
+            }
         }
     },
     { immediate: true }
@@ -449,6 +469,7 @@ let dataTypeList = ref([]);// 数据格式类型
 let appScenariosList = ref([]);// 应用场景
 let dataZoneList = ref([]);// 数据专区
 let productTypeList = ref([]);// 产品类型
+let provideTypeList = ref([]);// 数据提供方式
 const getDataType = () => {
     getOptionValueList('assetsType').then((res) => {
         dataTypeList.value = res.data;
@@ -464,6 +485,14 @@ const getDataType = () => {
     });
     getOptionValueList('productType').then((res) => {
         productTypeList.value = res.data;
+    });
+    getOptionValueList('provideType').then((res) => {
+        provideTypeList.value = res.data;
+        if (!props.entity) {
+            // 设置默认选中
+            const itemData = provideTypeList.value.find(item => item.defaultSelected === 1);
+            form.value.provideType = itemData.code.split(",");
+        }
     });
 };
 

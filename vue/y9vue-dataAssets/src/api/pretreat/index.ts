@@ -173,3 +173,80 @@ export const getDataByQrCode = async (params) => {
         params
     });
 };
+
+export const getDataById = async (id) => {
+    return await dataRequest({
+        url: '/vue/detail/getDataById',
+        method: 'GET',
+        cType: false,
+        params: { id: id }
+    });
+};
+
+// 订阅模块
+export const dataCatalogTree2 = async (params) => {
+    return await dataRequest({
+        url: '/vue/catalog/getCatelogTree2',
+        method: 'get',
+        cType: false,
+        params
+    });
+};
+
+export const searchCatelogTree2 = async (params) => {
+    return await dataRequest({
+        url: '/vue/catalog/searchCatelogTree2',
+        method: 'get',
+        cType: false,
+        params
+    });
+};
+
+export const searchPage2 = async (params) => {
+    return await dataRequest({
+        url: '/vue/detail/searchPage2',
+        method: 'GET',
+        cType: false,
+        params
+    });
+};
+
+// 保存订阅信息
+export const saveSubscribe = async (params) => {
+    const data = qs.stringify(params);
+    return await dataRequest({
+        url: '/vue/detail/saveSubscribe',
+        method: 'post',
+        cType: false,
+        data
+    });
+};
+
+export const searchSubscribePage = async (params) => {
+    return await dataRequest({
+        url: '/vue/detail/searchSubscribePage',
+        method: 'GET',
+        cType: false,
+        params
+    });
+};
+
+// 审核订阅
+export const reviewData = async (params) => {
+    const data = qs.stringify(params);
+    return await dataRequest({
+        url: '/vue/detail/review',
+        method: 'post',
+        cType: false,
+        data
+    });
+};
+
+export const getSubscribeById = async (id) => {
+    return await dataRequest({
+        url: '/vue/detail/getSubscribeById',
+        method: 'GET',
+        cType: false,
+        params: { id: id }
+    });
+};
