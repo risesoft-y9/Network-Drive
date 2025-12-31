@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import net.risesoft.entity.DataAssets;
 import net.risesoft.entity.FileInfo;
+import net.risesoft.entity.SubscribeEntity;
 import net.risesoft.model.AssetsModel;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
@@ -149,7 +150,7 @@ public interface DataAssetsService {
      * @param size
      * @return
      */
-    Y9Page<Map<String, Object>> searchPage2(String searchText, String appScenarios, String dataZone, String productType,
+    Y9Page<Map<String, Object>> searchPage2(String searchText, String categoryId, String appScenarios, String dataZone, String productType,
         Integer sort, int page, int size);
 
     /**
@@ -174,5 +175,37 @@ public interface DataAssetsService {
      * @return
      */
     Y9Result<List<Map<String, Object>>> getDataFilter();
+    
+    /**
+     * 保存订阅信息
+     * @param subscribeEntity
+     * @return
+     */
+    Y9Result<String> saveSubscribe(SubscribeEntity subscribeEntity);
+    
+    /**
+     * 获取订阅列表
+     * @param name 资产名称
+     * @param page
+     * @param size
+     * @return
+     */
+    Y9Page<Map<String, Object>> searchSubscribePage(String type, String name, int page, int size);
+    
+    /**
+     * 审核订阅信息
+     * @param id
+     * @param reviewStatus
+     * @param reason
+     * @return
+     */
+    Y9Result<String> review(String id, String reviewStatus, String reason);
+    
+    /**
+     * 根据id获取订阅信息
+     * @param id
+     * @return
+     */
+    Map<String, Object> getSubscribeById(String id);
 
 }
