@@ -1,3 +1,10 @@
+<!--
+ * @Author: your name
+ * @Date: 2022-01-13 17:31:19
+ * @LastEditTime: 2023-08-03 09:46:26
+ * @LastEditors: mengjuhua
+ * @Description:    卡片式标签页
+-->
 <template>
     <div id="kernel-tabs">
         <el-tabs
@@ -21,7 +28,7 @@
                 </template>
             </el-tab-pane>
         </el-tabs>
-        <el-tooltip :content="$t('关闭所有Tab')" effect="light">
+        <el-tooltip content="关闭所有Tab" effect="light">
             <i
                 v-show="settingStore.getLabelStyle === 'top'"
                 class="ri-close-fill close-all-icon"
@@ -68,12 +75,10 @@
         }
         Timer = setTimeout(() => {
             if (count === 1) {
-                // console.log('单击', event.props.name);
                 routerStore.$patch({
                     activeRoute: event.props.name
                 });
             } else {
-                // console.log('双击', event);
                 removeTab(event.props.name, tabPosition.value);
             }
             count = 0;

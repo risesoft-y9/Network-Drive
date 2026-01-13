@@ -23,7 +23,7 @@
             </div>
             <div class="toolbar-right">
                 <el-form :inline="true" @submit.native.prevent>
-                    <el-form-item :label="$t('文件名称')">
+                    <el-form-item>
                         <el-input
                             v-model="searchKey"
                             :placeholder="$t('输入文件名搜索')"
@@ -239,8 +239,8 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, defineProps, onMounted, watch, computed, reactive, toRefs, nextTick } from 'vue';
-    import type { ElMessage, ElMessageBox, UploadInstance } from 'element-plus';
+    import { ref, onMounted, watch, computed, reactive, toRefs, nextTick } from 'vue';
+    import type { UploadInstance } from 'element-plus';
     import FileApi from '@/api/storage/file';
     import FileNameWithIcon from '@/components/storage/FileNameWithIcon/index.vue';
     import FileLink from '@/components/file/FileLink.vue';
@@ -345,11 +345,25 @@
                         }
                     }
                 },
-                { title: computed(() => t('文件名')), key: 'name', align: 'left', width: 'auto',sortable: true, slot: 'name' },
-                { title: computed(() => t('收藏')), key: 'collect', align: 'center', width: '70',sortable: true, slot: 'collect' },
-                { title: computed(() => t('所有者')), key: 'userName', align: 'left', sortable: true,width: '170' },
-                { title: computed(() => t('大小')), key: 'fileSize', width: '120',sortable: true, slot: 'fileSize' },
-                { title: computed(() => t('共享日期')), key: 'createTime',sortable: true, width: '170' }
+                {
+                    title: computed(() => t('文件名')),
+                    key: 'name',
+                    align: 'left',
+                    width: 'auto',
+                    sortable: true,
+                    slot: 'name'
+                },
+                {
+                    title: computed(() => t('收藏')),
+                    key: 'collect',
+                    align: 'center',
+                    width: '80',
+                    sortable: true,
+                    slot: 'collect'
+                },
+                { title: computed(() => t('所有者')), key: 'userName', align: 'left', sortable: true, width: '170' },
+                { title: computed(() => t('大小')), key: 'fileSize', width: '120', sortable: true, slot: 'fileSize' },
+                { title: computed(() => t('共享日期')), key: 'createTime', sortable: true, width: '200' }
             ],
             tableData: []
         },
@@ -926,7 +940,7 @@
     }
 
     .search-input {
-        width: 250px;
+        width: 14vw;
         margin-right: 10px;
         font-size: v-bind('fontSizeObj.baseFontSize');
     }

@@ -146,6 +146,10 @@ export const useSettingStore = defineStore('settingStore', {
                 ? 326
                 : 310;
         },
+        // 根据字号 获取对应的icon宽度大小
+        getLogoWidth: (state) => {
+            return state.fontSize == 'small' ? '30px' : state.fontSize === 'default' ? '36px' : '45px';
+        },
         getThemeName: (state) => {
             return state.themeName;
         },

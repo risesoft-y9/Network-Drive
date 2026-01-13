@@ -60,14 +60,13 @@
                     {{ fileSize.row.fileSize ? fileSize.row.fileSize : '-' }}
                 </template>
             </el-table-column>
-            <el-table-column :label="$t('删除时间')" prop="updateTime" width="170"></el-table-column>
+            <el-table-column :label="$t('删除时间')" prop="updateTime" width="200"></el-table-column>
         </el-table>
     </y9Card>
 </template>
 
 <script lang="ts" setup>
     import { onMounted, reactive, toRefs } from 'vue';
-    import type { ElMessage, ElMessageBox } from 'element-plus';
     import FileApi from '@/api/storage/file';
     import FileNameWithIcon from '@/components/storage/FileNameWithIcon/index.vue';
     import { useI18n } from 'vue-i18n';
@@ -98,7 +97,7 @@
 
     function toggleSelection(rows) {
         if (rows) {
-                multipleTable.value.toggleRowSelection(rows);
+            multipleTable.value.toggleRowSelection(rows);
         } else {
             multipleTable.value.clearSelection();
         }

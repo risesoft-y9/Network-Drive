@@ -4,7 +4,7 @@
  * @LastEditors: yihong yihong@risesoft.net
  * @LastEditTime: 2024-09-19 16:53:37
  * @FilePath: \y9vue-app\y9-vue\y9vue-storage\src\router\index.ts
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @Description: 这是默认设置,请设置`customMade`
  */
 import { routerBeforeEach } from '@/router/checkRouter';
 import NProgress from 'nprogress';
@@ -45,14 +45,6 @@ export const constantRoutes: Array<any> = [
             title: 'Not Found'
         },
         component: () => import('@/views/404/index.vue')
-    },
-    {
-        path: '/LicenseExpired',
-        hidden: true,
-        meta: {
-            title: 'LicenseExpired'
-        },
-        component: () => import('@/views/License/index.vue')
     },
     {
         path: '/link',

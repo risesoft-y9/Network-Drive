@@ -75,11 +75,15 @@
         overflow: hidden;
         padding: 0 11px;
         min-width: 5px;
-        display: flex;
-        align-items: center;
+        color: var(--el-menu-text-color);
+        cursor: pointer;
+        line-height: 60px;
+        position: relative;
+        border: none;
 
         i {
             position: relative;
+            font-size: v-bind('fontSizeObj.extraLargeFont');
             // top: 4px;
         }
 
@@ -89,14 +93,44 @@
         }
 
         &:hover {
-            cursor: pointer;
-            outline: none;
             color: var(--el-color-primary);
         }
 
+        &:hover {
+            cursor: pointer;
+            border-bottom: none; // 鼠标划过或点击时不显示下划线
+        }
+
+        .name {
+            color: var(--el-text-color-primary);
+            border: none;
+
+            & > div {
+                span {
+                    line-height: 60px;
+                    text-align: end;
+                }
+            }
+
+            i {
+                line-height: 20px;
+            }
+
+            .badge {
+                margin-left: 5px;
+            }
+
+            &:hover {
+                cursor: pointer;
+                border: none; // 鼠标划过或点击时不显示下划线
+                color: var(--el-color-primary);
+            }
+        }
+
+        /**当前岗位 */
         &.notify {
             .badge {
-                top: -4px;
+                // top: -4px;
                 z-index: 1;
 
                 & > .el-badge__content--danger {
@@ -112,7 +146,7 @@
         height: $headerHeight;
         text-align: center;
         line-height: 50px;
-        font-size: v-bind('fontSizeObj.largeFontSize');
+        font-size: v-bind('fontSizeObj.extraLargeFont');
 
         :deep(.el-dropdown--default) {
             display: flex;
@@ -127,10 +161,15 @@
         span {
             margin-left: 5px;
         }
+        &:hover {
+            cursor: pointer;
+            border: none; // 鼠标划过或点击时不显示下划线
+            color: var(--el-color-primary);
+        }
 
         .badge {
             // position: absolute;
-            top: -4px;
+            //top: -4px;
             margin-left: 7px;
             z-index: 1;
 
@@ -147,16 +186,13 @@
             padding: 0 5px;
             top: 2px;
             left: -5px;
+            border: none;
         }
     }
 
     :deep(.el-badge) {
         .el-badge__content {
             border: none;
-        }
-
-        sup {
-            top: 0;
         }
     }
 </style>
