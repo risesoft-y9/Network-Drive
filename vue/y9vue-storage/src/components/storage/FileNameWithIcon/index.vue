@@ -26,7 +26,7 @@
                 ></div>
                 <div v-else class="file-icon-div dir-lock-small"></div>
             </span>
-            <span class="file-name" @click="folderClick(fileNodeObj)">{{ fileNodeObj.name }}</span>
+            <span class="file-name" @click="folderClick(fileNodeObj)" :title="fileNodeObj.name">{{ fileNodeObj.name }}</span>
         </div>
         <div v-else-if="fileNodeObj.fileType === 1">
             <span class="file-icon">
@@ -36,13 +36,13 @@
                     @click="viewImg(fileNodeObj.fileUrl)"
                 />
             </span>
-            <span class="file-name" @click="fileClick">{{ fileNodeObj.name }}</span>
+            <span class="file-name" @click="fileClick" :title="fileNodeObj.name">{{ fileNodeObj.name }}</span>
         </div>
         <div v-else>
             <span class="file-icon">
                 <div class="file-icon-div" v-bind:class="fileTypeClass(fileNodeObj.fileSuffix)"></div>
             </span>
-            <span class="file-name" @click="fileClick">{{ fileNodeObj.name }}</span>
+            <span class="file-name" @click="fileClick" :title="fileNodeObj.name">{{ fileNodeObj.name }}</span>
         </div>
     </div>
 </template>

@@ -12,8 +12,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, defineProps, onMounted, watch, computed, reactive, toRefs } from 'vue';
-    import { ElMessage, ElMessageBox } from 'element-plus';
+    import { ref, onMounted, watch, computed, reactive, toRefs } from 'vue';
     import FileApi from '@/api/storage/file';
     import FileShareApi from '@/api/storage/fileNodeShare';
     import { useI18n } from 'vue-i18n';

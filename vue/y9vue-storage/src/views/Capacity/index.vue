@@ -36,9 +36,7 @@
                 </el-form>
             </div>
         </div>
-        <y9Table :config="tableConfig"
-        @on-curr-page-change="onCurrPageChange"
-        @on-page-size-change="onPageSizeChange">
+        <y9Table :config="tableConfig" @on-curr-page-change="onCurrPageChange" @on-page-size-change="onPageSizeChange">
             <template #capacitySlot="{ row, column, index }">
                 <el-form ref="capacityForm" :model="formData" class="formClass">
                     <el-form-item v-if="editIndex === index" prop="name">
@@ -89,8 +87,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, defineProps, onMounted, watch, computed, reactive, toRefs, inject } from 'vue';
-    import type { ElMessage, ElMessageBox } from 'element-plus';
+    import { onMounted, computed, reactive, toRefs, inject } from 'vue';
     import CapacityApi from '@/api/storage/capacity';
     import { useI18n } from 'vue-i18n';
 
@@ -105,10 +102,16 @@
             columns: [
                 { title: computed(() => t('序号')), type: 'index', width: '60' },
                 { title: computed(() => t('所属人')), key: 'capacityOwnerName', width: 'auto' },
-                { title: computed(() => t('总存储空间')), key: 'capacitySize', width: '200', sortable: true,slot: 'capacitySlot' },
-                { title: computed(() => t('剩余存储空间')), key: 'remainingLength',sortable: true, width: '150' },
-                { title: computed(() => t('创建时间')), key: 'createTime',sortable: true, width: '180' },
-                { title: computed(() => t('修改时间')), key: 'updateTime',sortable: true, width: '180' },
+                {
+                    title: computed(() => t('总存储空间')),
+                    key: 'capacitySize',
+                    width: '200',
+                    sortable: true,
+                    slot: 'capacitySlot'
+                },
+                { title: computed(() => t('剩余存储空间')), key: 'remainingLength', sortable: true, width: '150' },
+                { title: computed(() => t('创建时间')), key: 'createTime', sortable: true, width: '180' },
+                { title: computed(() => t('修改时间')), key: 'updateTime', sortable: true, width: '180' },
                 { title: computed(() => t('操作')), key: 'opt', width: '180', slot: 'opt' }
             ],
             tableData: [],

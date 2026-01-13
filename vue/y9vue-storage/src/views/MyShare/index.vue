@@ -51,8 +51,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, defineProps, onMounted, watch, computed, reactive, toRefs } from 'vue';
-    import type { ElMessage, ElMessageBox } from 'element-plus';
+    import { ref, onMounted, reactive, toRefs, inject } from 'vue';
     import FileNodeShareApi from '@/api/storage/fileNodeShare';
     import FileNameWithIcon from '@/components/storage/FileNameWithIcon/index.vue';
     import { useI18n } from 'vue-i18n';

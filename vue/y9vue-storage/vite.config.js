@@ -69,6 +69,14 @@ export default (serve) => {
                 referrer: 'http://localhost:7058/storage/s/'
             }
         },
+        css: {
+            preprocessorOptions: {
+                scss: {
+                    api: 'modern-compiler',
+                    silenceDeprecations: ['legacy-js-api', 'import']
+                }
+            }
+        },
         plugins: [
             vue(),
             AutoImport({
@@ -110,6 +118,10 @@ export default (serve) => {
                         {
                             scopeName: 'theme-dark',
                             path: path.resolve('src/theme/dark/dark.scss')
+                        },
+                        {
+                            scopeName: 'theme-red',
+                            path: path.resolve('src/theme/red/red.scss')
                         }
                     ],
                     // css中不是由主题色变量生成的颜色，也让它抽取到主题css内，可以提高权重

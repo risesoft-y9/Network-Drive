@@ -1,3 +1,10 @@
+<!--
+ * @Author: your name
+ * @Date: 2022-01-13 17:31:19
+ * @LastEditTime: 2023-08-03 09:44:01
+ * @LastEditors: mengjuhua
+ * @Description:   屏幕锁定
+-->
 <script lang="ts" setup>
     import { useSettingStore } from '@/store/modules/settingStore';
     import { computed, ref, watch } from 'vue-demi';
@@ -5,8 +12,8 @@
 
     const settingStore = useSettingStore();
     const unlockScreenPwd = computed(() => settingStore.getUnlockScreenPwd);
+
     const lockStatus = computed(() => settingStore.getLockScreen);
-    const fontSizeObj: any = inject('sizeObjInfo') || {};
     // 绑定输入数据
     const inputPwd = ref('');
     // 密码错误提示
@@ -89,13 +96,7 @@
                 @change="checkPwdFunc"
                 @focus="showError = false"
             />
-            <el-button
-                :size="fontSizeObj.buttonSize"
-                :style="{ fontSize: fontSizeObj.baseFontSize }"
-                type="primary"
-                @click="checkPwdFunc"
-                @mousemove="toopTipsVisible = false"
-            >
+            <el-button type="primary" @click="checkPwdFunc" @mousemove="toopTipsVisible = false">
                 <i class="ri-lock-unlock-line"></i>{{ $t('解锁') }}
             </el-button>
         </div>

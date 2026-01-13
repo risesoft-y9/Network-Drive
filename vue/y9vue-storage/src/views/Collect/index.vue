@@ -23,7 +23,7 @@
             </div>
             <div class="toolbar-right">
                 <el-form :inline="true">
-                    <el-form-item :label="$t('文件名称')">
+                    <el-form-item>
                         <el-input
                             v-model="searchKey"
                             :placeholder="$t('输入文件名搜索')"
@@ -202,8 +202,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, defineProps, onMounted, watch, computed, reactive, toRefs, nextTick } from 'vue';
-    import type { ElMessage, ElMessageBox } from 'element-plus';
+    import { ref, onMounted, watch, computed, reactive, toRefs, nextTick, inject } from 'vue';
     import FileApi from '@/api/storage/file';
     import FileNameWithIcon from '@/components/storage/FileNameWithIcon/index.vue';
     import FileLink from '@/components/file/FileLink.vue';
@@ -244,6 +243,8 @@
             tableHeight.value = useSettingStore().getWindowHeight - 260 - 25;
         })();
     };
+    const multipleTable = ref();
+
     const data = reactive({
         uploadShowBtn: '',
         y9UserInfo: {},
@@ -263,7 +264,6 @@
         listType: '',
         fileForm: '',
         formData: { id: '', parentId: '', name: '' },
-        multipleTable: '',
         isFile: false,
         recursiveToRootFileNodeList: [],
         orderProp: 'CREATE_TIME',
@@ -285,11 +285,24 @@
                         }
                     }
                 },
-                { title: computed(() => t('文件名')), key: 'name', align: 'left', width: 'auto', sortable: true,slot: 'name' },
-                { title: computed(() => t('所有者')), key: 'userName', align: 'left',sortable: true, width: '170' },
-                { title: computed(() => t('大小')), key: 'fileSize', width: '120',sortable: true, slot: 'fileSize' },
-                { title: computed(() => t('收藏路径')), key: 'collectRoute', width: '150',sortable: true, slot: 'collectRoute' },
-                { title: computed(() => t('创建日期')), key: 'createTime',sortable: true, width: '170' }
+                {
+                    title: computed(() => t('文件名')),
+                    key: 'name',
+                    align: 'left',
+                    width: 'auto',
+                    sortable: true,
+                    slot: 'name'
+                },
+                { title: computed(() => t('所有者')), key: 'userName', align: 'left', sortable: true, width: '170' },
+                { title: computed(() => t('大小')), key: 'fileSize', width: '120', sortable: true, slot: 'fileSize' },
+                {
+                    title: computed(() => t('收藏路径')),
+                    key: 'collectRoute',
+                    width: '150',
+                    sortable: true,
+                    slot: 'collectRoute'
+                },
+                { title: computed(() => t('创建日期')), key: 'createTime', sortable: true, width: '170' }
             ],
             tableData: []
         },
@@ -319,7 +332,6 @@
         percentage,
         fileForm,
         formData,
-        multipleTable,
         isFile,
         buttonMore,
         recursiveToRootFileNodeList,

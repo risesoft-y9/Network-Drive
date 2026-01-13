@@ -18,76 +18,77 @@
                         ><i class="ri-upload-cloud-2-line"></i>{{ $t('上传') }}
                     </el-button>
                 </el-upload>
-
-                <el-button
-                    v-if="!fileNodeType && parentId !== 'shared'"
-                    :size="fontSizeObj.buttonSize"
-                    :style="{ fontSize: fontSizeObj.baseFontSize }"
-                    class="global-btn-second"
-                    plain
-                    v-on:click="createFolder"
-                >
-                    <i class="ri-folder-add-line"></i>{{ $t('新建文件夹') }}
-                </el-button>
-                <el-button
-                    v-if="multipleSelection.length"
-                    :size="fontSizeObj.buttonSize"
-                    :style="{ fontSize: fontSizeObj.baseFontSize }"
-                    class="global-btn-second"
-                    plain
-                    v-on:click="download"
-                >
-                    <i class="ri-download-2-line"></i>{{ $t('下载') }}
-                </el-button>
-                <el-button
-                    v-if="multipleSelection.length"
-                    :disabled="notCurrentSelectedOwner"
-                    :size="fontSizeObj.buttonSize"
-                    :style="{ fontSize: fontSizeObj.baseFontSize }"
-                    class="global-btn-second"
-                    plain
-                    v-on:click="deleteSelect"
-                >
-                    <i class="ri-delete-bin-line"></i> {{ $t('删除') }}
-                </el-button>
-                <el-button
-                    v-if="multipleSelection.length"
-                    :disabled="notCurrentSelectedOwner"
-                    :size="fontSizeObj.buttonSize"
-                    :style="{ fontSize: fontSizeObj.baseFontSize }"
-                    class="global-btn-second"
-                    plain
-                    v-on:click="move"
-                >
-                    <i class="ri-login-box-line"></i> {{ $t('移动到') }}
-                </el-button>
-                <!-- <el-button :size="fontSizeObj.buttonSize"
+                <el-button-group>
+                    <el-button
+                        v-if="!fileNodeType && parentId !== 'shared'"
+                        :size="fontSizeObj.buttonSize"
+                        :style="{ fontSize: fontSizeObj.baseFontSize }"
+                        class="global-btn-second"
+                        plain
+                        v-on:click="createFolder"
+                    >
+                        <i class="ri-folder-add-line"></i>{{ $t('新建文件夹') }}
+                    </el-button>
+                    <el-button
+                        v-if="multipleSelection.length"
+                        :size="fontSizeObj.buttonSize"
+                        :style="{ fontSize: fontSizeObj.baseFontSize }"
+                        class="global-btn-second"
+                        plain
+                        v-on:click="download"
+                    >
+                        <i class="ri-download-2-line"></i>{{ $t('下载') }}
+                    </el-button>
+                    <el-button
+                        v-if="multipleSelection.length"
+                        :disabled="notCurrentSelectedOwner"
+                        :size="fontSizeObj.buttonSize"
+                        :style="{ fontSize: fontSizeObj.baseFontSize }"
+                        class="global-btn-second"
+                        plain
+                        v-on:click="deleteSelect"
+                    >
+                        <i class="ri-delete-bin-line"></i> {{ $t('删除') }}
+                    </el-button>
+                    <el-button
+                        v-if="multipleSelection.length"
+                        :disabled="notCurrentSelectedOwner"
+                        :size="fontSizeObj.buttonSize"
+                        :style="{ fontSize: fontSizeObj.baseFontSize }"
+                        class="global-btn-second"
+                        plain
+                        v-on:click="move"
+                    >
+                        <i class="ri-login-box-line"></i> {{ $t('移动到') }}
+                    </el-button>
+                    <!-- <el-button :size="fontSizeObj.buttonSize"
         :style="{ fontSize: fontSizeObj.baseFontSize }" v-if="multipleSelection.length === 1" :disabled="notCurrentSelectedOwner" class="global-btn-second" v-on:click="share" plain>
                   <i class="ri-share-fill"></i>共享
                 </el-button> -->
-                <el-button
-                    v-if="multipleSelection.length === 1"
-                    :disabled="notCurrentSelectedOwner"
-                    :size="fontSizeObj.buttonSize"
-                    :style="{ fontSize: fontSizeObj.baseFontSize }"
-                    class="global-btn-second"
-                    plain
-                    v-on:click="renameOutBtn"
-                >
-                    <i class="ri-edit-2-line"></i>{{ $t('重命名') }}
-                </el-button>
-                <el-button
-                    :size="fontSizeObj.buttonSize"
-                    :style="{ fontSize: fontSizeObj.baseFontSize }"
-                    class="global-btn-second"
-                    plain
-                    @click="loadList"
-                    ><i class="ri-refresh-line"></i>{{ $t('刷新') }}
-                </el-button>
+                    <el-button
+                        v-if="multipleSelection.length === 1"
+                        :disabled="notCurrentSelectedOwner"
+                        :size="fontSizeObj.buttonSize"
+                        :style="{ fontSize: fontSizeObj.baseFontSize }"
+                        class="global-btn-second"
+                        plain
+                        v-on:click="renameOutBtn"
+                    >
+                        <i class="ri-edit-2-line"></i>{{ $t('重命名') }}
+                    </el-button>
+                    <el-button
+                        :size="fontSizeObj.buttonSize"
+                        :style="{ fontSize: fontSizeObj.baseFontSize }"
+                        class="global-btn-second"
+                        plain
+                        @click="loadList"
+                        ><i class="ri-refresh-line"></i>{{ $t('刷新') }}
+                    </el-button>
+                </el-button-group>
             </div>
             <div class="toolbar-right">
                 <el-form :inline="true">
-                    <el-form-item :label="$t('文件名称')">
+                    <el-form-item>
                         <el-input
                             v-model="searchKey"
                             :placeholder="$t('输入文件名搜索')"
@@ -191,7 +192,7 @@
                             ref="nameSign"
                             v-model="formData.name"
                             clearable
-                            style="width: 500px; margin-left: 15px"
+                            style="width: 25vw; margin-left: 15px"
                             @keyup.enter.native="saveData(fileForm)"
                         />
                         <el-button
@@ -213,10 +214,10 @@
                         ></el-button>
                     </el-form-item>
                     <el-row v-else @mouseenter="titleHover(row.id)" @mouseleave="titleLeave(row.id)">
-                        <el-col :span="19" class="fileName">
+                        <el-col :span="18" class="fileName">
                             <FileNameWithIcon :file-node="row" @fileClick="openFile(row)" @folderClick="subList" />
                         </el-col>
-                        <el-col :span="5">
+                        <el-col :span="6">
                             <div v-if="optButtonShow == row.id" class="optButtonCss">
                                 <template v-if="row.filePassword == '' || row.filePassword == null">
                                     <el-tooltip
@@ -256,7 +257,7 @@
                                     placement="top-start">
                                     <i class="ri-share-line" @click="share"></i>
                                   </el-tooltip> -->
-                                <el-tooltip
+                                <!-- <el-tooltip
                                     v-if="row.fileType == 0 && positionId == row.userId"
                                     :content="$t('加密')"
                                     class="box-item"
@@ -264,7 +265,7 @@
                                     placement="top-start"
                                 >
                                     <i class="ri-lock-2-line" @click="setPassword(row)"></i>
-                                </el-tooltip>
+                                </el-tooltip> -->
                             </div>
                         </el-col>
                     </el-row>
@@ -345,9 +346,8 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, defineProps, onMounted, watch, computed, reactive, toRefs, nextTick } from 'vue';
-    import type { ElMessage, ElMessageBox } from 'element-plus';
-    import { Search } from '@element-plus/icons-vue';
+    import { ref, onMounted, watch, computed, reactive, toRefs, nextTick, inject } from 'vue';
+    import type { FormRules } from 'element-plus';
     import FileApi from '@/api/storage/file';
     import FileNameWithIcon from '@/components/storage/FileNameWithIcon/index.vue';
     import OrgUnitSelector from '@/components/storage/OrgUnitSelector/index.vue';
@@ -460,11 +460,32 @@
                         }
                     }
                 },
-                { title: computed(() => t('文件名')), key: 'name', align: 'left', width: '800',sortable: true, slot: 'name' },
-                { title: computed(() => t('收藏')), key: 'collect', align: 'center', width: '70', sortable: true,slot: 'collect' },
-                { title: computed(() => t('所有者')), key: 'userName', align: 'left',sortable: true, width: '170' },
-                { title: computed(() => t('大小')), key: 'fileSize', width: 'auto',sortable: true, slot: 'fileSize' },
-                { title: computed(() => t('日期')), key: 'time', width: '170',sortable: true, slot: 'time', headerSlot: 'fileDate' }
+                {
+                    title: computed(() => t('文件名')),
+                    key: 'name',
+                    align: 'left',
+                    minWidth: '500',
+                    sortable: true,
+                    slot: 'name'
+                },
+                {
+                    title: computed(() => t('收藏')),
+                    key: 'collect',
+                    align: 'center',
+                    width: '80',
+                    sortable: true,
+                    slot: 'collect'
+                },
+                { title: computed(() => t('所有者')), key: 'userName', align: 'left', sortable: true, width: '170' },
+                { title: computed(() => t('大小')), key: 'fileSize', width: 'auto', sortable: true, slot: 'fileSize' },
+                {
+                    title: computed(() => t('日期')),
+                    key: 'time',
+                    width: '200',
+                    sortable: true,
+                    slot: 'time',
+                    headerSlot: 'fileDate'
+                }
             ],
             tableData: []
         },
@@ -1129,7 +1150,7 @@
     .optButtonCss i {
         color: var(--el-color-primary);
         font-size: 20px;
-        margin-left: 15px;
+        margin-left: 0.5vw;
     }
 
     :deep(.y9-dialog-content) {
@@ -1212,7 +1233,7 @@
     }
 
     .search-input {
-        width: 250px;
+        width: 12vw;
         margin-right: 10px;
         font-size: v-bind('fontSizeObj.baseFontSize');
     }
@@ -1257,5 +1278,17 @@
 
     .location span:last-child {
         color: black;
+    }
+    :deep(.el-button) {
+        min-width: 32px;
+        font-size: 12px;
+        height: $btnHeight;
+        line-height: $btnHeight;
+        box-shadow: $boxShadow;
+        padding: 0.4vw;
+
+        i {
+            margin-right: 4px;
+        }
     }
 </style>
