@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.risesoft.entity.DataDemandEntity;
+import net.risesoft.entity.DataDemandEntity2;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 
@@ -99,5 +100,31 @@ public interface DataDemandService {
      * @return
      */
     Y9Page<Map<String, Object>> searchPage3(String searchText, int page, int size);
+
+
+    /**
+     * 保存数据
+     * 
+     * @return
+     */
+    Y9Result<String> saveData2(DataDemandEntity2 dataDemandEntity);
+
+    /**
+     * 删除数据
+     * 
+     * @param id
+     * @return
+     */
+    Y9Result<String> deleteData2(String id);
+
+    /**
+     * 分页查询
+     * 
+     * @param searchText
+     * @param page
+     * @param size
+     * @return
+     */
+    Y9Page<DataDemandEntity2> searchDemandPage(String searchText, String pageType, int page, int size);
 
 }

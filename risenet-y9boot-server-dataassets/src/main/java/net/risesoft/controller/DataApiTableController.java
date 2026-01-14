@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 
 import net.risesoft.entity.DataApiTableEntity;
-import net.risesoft.entity.TableForeignKeyEntity;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.DataApiTableService;
@@ -33,11 +32,12 @@ public class DataApiTableController {
 
     @GetMapping(value = "/page")
     public Y9Page<DataApiTableEntity> page(@RequestParam(required = false) String tableName,
-                                                   @RequestParam(defaultValue = "1") int page, 
-                                                   @RequestParam(defaultValue = "10") int size) {
+                                                   @RequestParam(defaultValue = "1") int page,
+                                                   @RequestParam(defaultValue = "10") int size,
+                                                   @RequestParam String subscribeId) {
         try {
             Pageable pageable = PageRequest.of(page - 1, size);
-            Page<DataApiTableEntity> pageList = dataApiTableService.findByTableName(tableName, pageable);
+            Page<DataApiTableEntity> pageList = dataApiTableService.findByTableNameAndSubscribeId(tableName, subscribeId, pageable);
             return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(),
             "获取数据成功");
         } catch (Exception e) {
@@ -79,8 +79,7 @@ public class DataApiTableController {
     }
 
     @GetMapping(value = "/foreignKeys/{tableName}")
-    public Y9Result<List<String>> findForeignKeysByTableName(@PathVariable String tableName,
-                                                                             @RequestParam String dataSourceId) {
+    public Y9Result<List<String>> findForeignKeysByTableName(@PathVariable String tableName, @RequestParam String dataSourceId) {
         try {
             List<String> foreignKeys = dataApiTableService.findForeignKeysByTableName(tableName, dataSourceId);
             return Y9Result.success(foreignKeys);

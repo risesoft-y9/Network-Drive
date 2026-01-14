@@ -173,7 +173,7 @@ public class DataAssets extends BaseEntity {
     @Comment(value = "挂接类型：文件/数据/接口")
     private String mountType;
     
-    @Column(name = "PROVIDETYPE", length = 20)
+    @Column(name = "PROVIDETYPE", length = 200)
     @Comment(value = "数据提供方式：文件下载/在线查看/接口请求/库表推送/应用地址")
     private String provideType;
 

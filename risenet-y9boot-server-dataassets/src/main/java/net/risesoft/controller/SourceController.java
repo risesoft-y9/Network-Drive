@@ -215,4 +215,19 @@ public class SourceController {
         return Y9Result.success(dataSourceService.getDataBase());
     }
 
+    @GetMapping(value = "/getDataSourceByAssetsId")
+    public Y9Result<List<Map<String, Object>>> getDataSourceByAssetsId(Long assetsId) {
+        return Y9Result.success(dataSourceService.getDataSourceByAssetsId(assetsId));
+    }
+
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "根据资产id获取挂接的数据表", logLevel = LogLevelEnum.RSLOG)
+    @GetMapping(value = "/getTableByAssetsId")
+    public Y9Result<List<Map<String, Object>>> getTableByAssetsId(Long assetsId, String identifier) {
+        List<String> list = dataSourceService.getTableByAssetsId(assetsId, identifier);
+        List<Map<String, Object>> listMap = dataSourceService.getTablePage(identifier, "");
+        // 过滤掉listMap里name值不在list的元素
+        listMap = listMap.stream().filter((item) -> list.contains(item.get("name").toString())).collect(Collectors.toList());
+        return Y9Result.success(listMap, "获取数据库表成功");
+    }
+
 }

@@ -14,13 +14,16 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
-
+import net.risesoft.entity.DataRecentEntity;
 import net.risesoft.entity.DataSourceEntity;
 import net.risesoft.entity.DataSourceTypeEntity;
+import net.risesoft.entity.FileInfo;
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.repository.DataSourceRepository;
 import net.risesoft.repository.DataSourceTypeRepository;
+import net.risesoft.repository.FileInfoRepository;
+import net.risesoft.service.DataRecentService;
 import net.risesoft.service.DataSourceService;
 import net.risesoft.util.Y9FormDbMetaDataUtil;
 import net.risesoft.y9.Y9LoginUserHolder;
@@ -36,19 +39,29 @@ public class DataSourceServiceImpl implements DataSourceService {
     private final DataSourceRepository datasourceRepository;
     private final DataSourceTypeRepository dataSourceTypeRepository;
     private final PersonRoleApiClient personRoleApiClient;
+    private final FileInfoRepository fileInfoRepository;
+    private final DataRecentService dataRecentService;
 
     @Override
     @Transactional(readOnly = false)
     public DataSourceEntity saveDataSource(DataSourceEntity entity) {
         DataSourceEntity df = null;
         if (entity != null) {
+            // 保存最近操作数据
+            DataRecentEntity dataRecentEntity = new DataRecentEntity();
+            dataRecentEntity.setOperator(Y9LoginUserHolder.getUserInfo().getName());
+            dataRecentEntity.setOperationType("库表注册");
+
             if (StringUtils.isBlank(entity.getId())) {
                 entity.setId(Y9IdGenerator.genId());
+
+                dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 注册了数据源：" + entity.getName());
             } else {
                 df = datasourceRepository.findById(entity.getId()).orElse(null);
                 if (df != null && entity.getPassword().equals("******")) {
                     entity.setPassword(df.getPassword());
                 }
+                dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 修改了数据源信息：" + entity.getName());
             }
             if (entity.getIsLook() == null) {
                 entity.setIsLook(0);
@@ -72,6 +85,9 @@ public class DataSourceServiceImpl implements DataSourceService {
             entity.setTenantId(Y9LoginUserHolder.getTenantId());
             entity.setUserId(Y9LoginUserHolder.getPersonId());
             df = datasourceRepository.save(entity);
+
+            // 保存最近操作数据
+            dataRecentService.saveAsync(dataRecentEntity);
         }
         return df;
     }
@@ -84,7 +100,19 @@ public class DataSourceServiceImpl implements DataSourceService {
     @Override
     @Transactional(readOnly = false)
     public Y9Result<String> deleteDataSource(String id) {
+        DataSourceEntity dataSourceEntity = datasourceRepository.findById(id).orElse(null);
+        if (dataSourceEntity == null) {
+            return Y9Result.failure("数据源不存在，删除失败");
+        }
         datasourceRepository.deleteById(id);
+
+        // 保存最近操作数据
+        DataRecentEntity dataRecentEntity = new DataRecentEntity();
+        dataRecentEntity.setOperator(Y9LoginUserHolder.getUserInfo().getName());
+        dataRecentEntity.setOperationType("库表注册");
+        dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 删除了注册的数据源：" + dataSourceEntity.getName());
+        dataRecentService.saveAsync(dataRecentEntity);
+
         return Y9Result.successMsg("删除成功");
     }
 
@@ -291,6 +319,57 @@ public class DataSourceServiceImpl implements DataSourceService {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        return listMap;
+    }
+
+    @Override
+    public List<Map<String, Object>> getDataSourceByAssetsId(Long assetsId) {
+        List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+        // 根据资产id获取挂接的数据库
+        List<FileInfo> fileInfoList = fileInfoRepository.findByAssetsIdAndFileType(assetsId, "数据库");
+        for (FileInfo fileInfo : fileInfoList) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("id", fileInfo.getIdentifier());
+            map.put("name", fileInfo.getName());
+            map.put("type", "数据库");
+            listMap.add(map);
+        }
+        // 根据资产id获取挂接的数据库表
+        List<FileInfo> fileInfoList2 = fileInfoRepository.findByAssetsIdAndFileType(assetsId, "数据表");
+        for (FileInfo fileInfo : fileInfoList2) {
+            // 获取表所对应的数据源信息
+            DataSourceEntity dataSourceEntity = datasourceRepository.findById(fileInfo.getIdentifier()).orElse(null);
+            if (dataSourceEntity == null) {
+                continue;
+            }
+            // 判断是否已存在
+            boolean isExist = false;
+            for (Map<String, Object> item : listMap) {
+                if (item.get("id").equals(dataSourceEntity.getId())) {
+                    isExist = true;
+                    break;
+                }
+            }
+            if (isExist) {
+                continue;
+            }
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("id", dataSourceEntity.getId());
+            map.put("name", dataSourceEntity.getName());
+            map.put("type", "数据表");
+            listMap.add(map);
+        }
+        return listMap;
+    }
+
+    @Override
+    public List<String> getTableByAssetsId(Long assetsId, String identifier) {
+        List<String> listMap = new ArrayList<String>();
+        // 根据资产id获取挂接的数据表
+        List<FileInfo> fileInfoList = fileInfoRepository.findByAssetsIdAndIdentifierAndFileType(assetsId, identifier, "数据表");
+        for (FileInfo fileInfo : fileInfoList) {
+            listMap.add(fileInfo.getName());
         }
         return listMap;
     }

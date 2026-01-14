@@ -257,13 +257,13 @@
         </el-descriptions>
 
         <el-divider content-position="left" border-style="dashed">订阅信息</el-divider>
-        <el-descriptions border>
+        <el-descriptions border :column="2">
             <el-descriptions-item>
                 <template #label>
                     数据提供方式
                 </template>
                 <el-form-item label="" prop="provideType">
-                    <span v-if="type == 3 || (type == 2 && reviewStatus != '待审核')">{{ provideType }}</span>
+                    <span v-if="type == '3' || (type == '2' && reviewStatus != '待审核')">{{ provideType }}</span>
                     <el-select v-model="provideType" clearable v-else>
                         <el-option
                             v-for="item in provideTypeList"
@@ -279,20 +279,33 @@
                     用途说明
                 </template>
                 <el-form-item label="" prop="purpose">
-                    <span v-if="type == 3 || (type == 2 && reviewStatus != '待审核')">{{ purpose }}</span>
+                    <span v-if="type == '3' || (type == '2' && reviewStatus != '待审核')">{{ purpose }}</span>
                     <el-input v-model="purpose" type="textarea" :autosize="{ minRows: 2 }" v-else></el-input>
+                </el-form-item>
+            </el-descriptions-item>
+            <el-descriptions-item :span="2" v-if="provideType == '接口生成' || provideType == 'generate'">
+                <template #label>
+                    接口信息
+                </template>
+                <el-form-item label="">
+                    <el-checkbox-group>
+                        <el-checkbox-button @click="handleClick">
+                            {{ type == '3' || reviewStatus == '通过' ? '接口资源' : '点击设置需要的接口资源' }}
+                        </el-checkbox-button>
+                    </el-checkbox-group>
+                    <span style="color: #ff4949;margin-left: 5px;" v-if="type != '3' && reviewStatus != '通过'">(不设置会影响订阅审核结果)</span>
                 </el-form-item>
             </el-descriptions-item>
         </el-descriptions>
 
-        <el-divider content-position="left" border-style="dashed" v-if="type != 1">审核信息</el-divider>
-        <el-descriptions border v-if="type != 1">
+        <el-divider content-position="left" border-style="dashed" v-if="type != '1'">审核信息</el-divider>
+        <el-descriptions border v-if="type != '1'">
             <el-descriptions-item>
                 <template #label>
                     审核结果
                 </template>
                 <el-form-item label="" prop="reviewStatus">
-                    <el-select v-model="reviewStatus" v-if="type == 3">
+                    <el-select v-model="reviewStatus" v-if="type == '3'">
                         <el-option label="通过" value="通过" />
                         <el-option label="不通过" value="不通过" />
                     </el-select>
@@ -309,7 +322,7 @@
                         v-model="reason"
                         type="textarea"
                         :autosize="{ minRows: 2 }"
-                        v-if="type == 3"
+                        v-if="type == '3'"
                     ></el-input>
                     <span v-else>{{ reason }}</span>
                 </el-form-item>
@@ -352,22 +365,31 @@
             </el-descriptions-item>
         </el-descriptions>
 
-        <el-form-item style="float: right; margin-top: 20px;" v-if="type != 2 || (type == 2 && reviewStatus == '待审核')">
+        <el-form-item style="float: right; margin-top: 20px;" v-if="type != '2' || (type == '2' && reviewStatus == '待审核')">
             <el-button type="primary" @click="submitForm(formRef)">提交</el-button>
         </el-form-item>
     </el-form>
     <!-- 制造loading效果 -->
     <el-button v-loading.fullscreen.lock="saveLoading" style="display: none"></el-button>
+
+    <y9Dialog v-model:config="dialogConfig">
+        <DataApiTable
+            v-if="dialogConfig.show"
+            :subscribeId="subId"
+            :assetsId="id"
+            :type="type"
+            :isShow="isShow"
+        ></DataApiTable>
+    </y9Dialog>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch, nextTick, computed } from 'vue';
-import { FormInstance, Action, ElNotification } from 'element-plus';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ref, onMounted, watch } from 'vue';
+import { FormInstance, ElNotification } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import { getDataById, getSubscribeBaseById, getSubscribeById, reviewData, saveSubscribe } from '@/api/pretreat';
 import { getOptionValueList } from '@/api/dataAssets/dictionaryOption';
-import y9_storage from '@/utils/storage';
-import settings from '@/settings';
+import DataApiTable from '@/views/dataApiTable/index.vue';
 
 const emits = defineEmits(['close']);
 const props = defineProps({
@@ -391,9 +413,12 @@ let provideType = ref('');// 提供方式
 let purpose = ref('');// 用途说明
 let reviewStatus = ref('');// 审核结果
 let reason = ref('');// 备注
+let subId = ref('');// 订阅id
 
 let formRef = ref<FormInstance>();
 const form = ref({});
+
+let isClose = ref(true);
 
 let saveLoading = ref(false);
 const submitForm = async (formEl: FormInstance | undefined) => {
@@ -405,22 +430,37 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         formEl.validate((valid) => {
             if (valid) {
                 if(props.type == '1' || props.type == '2') {// 提交订阅信息
+                    if(provideType.value == '' || purpose.value == '') {
+                        ElNotification({
+                            title: '失败',
+                            message: "提供方式和用途说明不能为空",
+                            type: 'error',
+                            duration: 2000,
+                            offset: 80
+                        });
+                        return;
+                    }
                     saveLoading.value = true;
                     let params: any = Object.assign({'provideType': provideType.value, 'purpose': purpose.value, 
-                    'assetsId': form.value.id, 'id': props.subscribeId});
+                    'assetsId': form.value.id, 'id': subId.value});
                     saveSubscribe(params)
                         .then((res: any) => {
                             saveLoading.value = false;
                             if (res.success) {
-                                emits('close');
+                                subId.value = res.data;
+                                if(isClose.value) {
+                                    emits('close');
+                                }
                             }
-                            ElNotification({
-                                title: res.success ? '成功' : '失败',
-                                message: res.msg,
-                                type: res.success ? 'success' : 'error',
-                                duration: 2000,
-                                offset: 80
-                            });
+                            if(isClose.value || !res.success) {
+                                ElNotification({
+                                    title: res.success ? '成功' : '失败',
+                                    message: res.msg,
+                                    type: res.success ? 'success' : 'error',
+                                    duration: 2000,
+                                    offset: 80
+                                });
+                            }
                             resolve();
                         })
                         .catch((e: any) => {
@@ -481,6 +521,7 @@ watch(
 );
 
 onMounted(() => {
+    subId.value = props.subscribeId;
     getData();
 });
 
@@ -496,12 +537,12 @@ async function getData() {
         if(props.type != '1') {
             let res2 = await getSubscribeById(props.subscribeId);
             if(res2.success) {
-                provideType.value = res2.data.provideType;
+                provideType.value = res2.data.reviewStatus == '待审核' && props.type != '3' ? res2.data.provideType : res2.data.provideTypeName;
                 purpose.value = res2.data.purpose;
                 if(props.type == '3' && res2.data.reviewStatus == '待审核') {
                     reviewStatus.value = '通过';
                 } else {
-                    reviewStatus.value = res2.data.reviewStatus
+                    reviewStatus.value = res2.data.reviewStatus;
                 }
                 reason.value = res2.data.reason == null ? '' : res2.data.reason;
 
@@ -522,6 +563,39 @@ async function getSubscribeBase() {
     }
 }
 
+let dialogConfig = ref({
+    show: false,
+    title: ''
+});
+
+let isShow = ref(true);// 弹窗页面里是否显示新增和禁用按钮
+function handleClick() {
+    if(props.type == '1' && subId.value == '') {
+        isClose.value = false;
+        // 先提交订阅信息，再打开弹窗
+        submitForm(formRef.value).then(() => {
+            if(subId.value == '') {
+                return;
+            }
+            isClose.value = true;
+            openDialog();
+        });
+    } else {
+        openDialog();
+    }
+}
+
+function openDialog() {
+    if(props.type == '3' || reviewStatus.value == '通过' || (props.type == '2' && reviewStatus.value != '待审核')) {
+        isShow.value = false;
+    }
+    Object.assign(dialogConfig.value, {
+        show: true,
+        width: '60%',
+        title: '接口资源申请',
+        showFooter: false
+    });
+}
 </script>
 
 <style lang="scss" scoped>

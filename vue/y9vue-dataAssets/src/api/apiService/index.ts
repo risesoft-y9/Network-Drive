@@ -160,6 +160,15 @@ export const getOwners = async () => {
     });
 };
 
+export const getApiRoleById = async (id) => {
+    return await dataRequest({
+        url: '/vue/api/getApiRoleById',
+        method: 'GET',
+        cType: false,
+        params: { id: id }
+    });
+};
+
 
 // DataApiTable相关API
 export const getDataApiTablePage = async (params) => {

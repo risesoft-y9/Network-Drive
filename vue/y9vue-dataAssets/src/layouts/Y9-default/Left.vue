@@ -13,7 +13,7 @@
                 <img alt="y9-logo" v-if="menuCollapsed" src="@/assets/images/yun.png" />
                 <span class="logo-title" v-if="!menuCollapsed">
                     <!-- <img alt="y9-logo" src="@/assets/images/yun.png" /> -->
-                    <span style="margin-left: 5px; vertical-align: middle">{{ $t('数据资产') }}</span>
+                    <span style="margin-left: 5px; vertical-align: middle">{{ $t('数据资产管理') }}</span>
                 </span>
             </router-link>
         </div>

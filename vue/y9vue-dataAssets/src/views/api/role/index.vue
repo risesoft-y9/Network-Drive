@@ -78,7 +78,7 @@
                 { title: computed(() => t('序号')), type: 'index', width: 60, fixed: 'left' },
                 { title: computed(() => t('名称')), key: 'appName' },
                 { title: computed(() => t('密钥')), key: 'appKey' },
-                // { title: computed(() => t('权限')), key: 'apiIds' },
+                { title: computed(() => t('过期日期')), key: 'expireDate' },
                 { title: computed(() => t('白名单')), key: 'ipAddr' },
                 { title: computed(() => t('备注')), key: 'remark' },
                 { title: computed(() => t('状态')), key: 'status', slot: 'status' },
@@ -280,11 +280,11 @@
                 label: computed(() => t('名称（英文）')),
                 required: true
             },
-            // {
-            //     type: 'input',
-            //     prop: 'apiIds',
-            //     label: computed(() => t('接口权限'))
-            // },
+            {
+                type: 'date',
+                prop: 'expireDate',
+                label: computed(() => t('过期日期'))
+            },
             {
                 type: 'input',
                 prop: 'ipAddr',

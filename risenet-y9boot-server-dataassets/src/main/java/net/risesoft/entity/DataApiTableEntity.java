@@ -6,6 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
@@ -86,4 +87,11 @@ public class DataApiTableEntity extends BaseEntity {
     @Comment(value = "删除标记")
     @ColumnDefault("0")
     private Boolean isDeleted = false;
+
+    @Column(name = "SUBSCRIBE_ID", length = 38)
+    @Comment(value = "订阅ID")
+    private String subscribeId;
+
+    @Transient
+    private String incrementField;
 }

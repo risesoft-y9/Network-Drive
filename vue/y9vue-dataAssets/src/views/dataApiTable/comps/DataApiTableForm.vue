@@ -3,15 +3,20 @@
         <y9Form ref="ruleRef" :config="formConfig">
             <!-- 数据源选择 -->
             <template #dataSourceId>
-                <el-tree-select
+                <el-select
                     v-model="formData.dataSourceId"
-                    :data="dataSourceList"
                     filterable
-                    check-strictly
-                    :render-after-expand="false"
+                    clearable
                     @change="handleDataSourceChange"
-                    :disabled="disabled"
-                ></el-tree-select>
+                    :disabled="disabled || entity != null"
+                >
+                    <el-option
+                        v-for="item in dataSourceList"
+                        :key="item.id"
+                        :label="item.name"
+                        :value="item.id"
+                    ></el-option>
+                </el-select>
             </template>
 
             <!-- 所属者选择 -->
@@ -44,7 +49,7 @@
                         >
                             + 添加数据表
                         </el-button>
-                        <span style="color: #FF4D4F;"> (如需增量查询,请勾选入库时间字段做为查询字段,传入日期值模糊查询当天数据)</span>
+                        <span style="color: #FF4D4F;"> (可批量添加)</span>
                     </div>
                     
                     <!-- 表配置列表 - 使用折叠面板 -->
@@ -57,7 +62,7 @@
                             <!-- 表配置头部 - 包含删除按钮 -->
                             <template #title>
                                 <div class="table-config-header">
-                                    <span class="config-index">表配置 {{ index + 1 }} - {{ config.tableName || '未选择' }}</span>
+                                    <span class="config-index">{{ config.tableName || '未选择' }}</span>
                                     <el-button 
                                         type="danger" 
                                         size="small" 
@@ -74,7 +79,7 @@
                                 <label class="form-label required">表名称</label>
                                 <el-select
                                     v-model="config.tableName"
-                                    :disabled="disabled || !formData.dataSourceId"
+                                    :disabled="disabled || entity != null"
                                     placeholder="请选择表"
                                     clearable
                                     filterable
@@ -91,29 +96,45 @@
                         
                             <!-- 查询字段 -->
                             <div class="form-item">
-                                <label class="form-label">查询字段</label>
+                                <label class="form-label required">查询字段</label>
                                 <div v-if="config.tableName && formData.dataSourceId">
-                                    <el-scrollbar height="200px" class="field-scrollbar">
-                                        <el-checkbox-group 
-                                            v-model="config.queryFields" 
+                                    <div class="select-with-actions">
+                                        <el-select
+                                            v-model="config.queryFields"
+                                            multiple
+                                            filterable
+                                            collapse-tags
+                                            collapse-tags-tooltip
+                                            :max-collapse-tags="2"
+                                            placeholder="请选择查询字段"
+                                            class="field-select"
                                             :disabled="disabled"
-                                            class="field-checkbox-group"
                                         >
-                                            <el-checkbox 
-                                                v-for="field in getTableFields(config.tableName)" 
+                                            <el-option
+                                                v-for="field in getTableFields(config.tableName)"
                                                 :key="field.columnName"
-                                                :label="field.columnName"
-                                                class="field-checkbox"
+                                                :label="`${field.columnName} ${field.comment ? `(${field.comment})` : ''} ${field.typeName}${field.dataLength ? `(${field.dataLength})` : ''}`"
+                                                :value="field.columnName"
                                             >
-                                                <div class="field-info">
-                                                    <span class="field-name">{{ field.columnName }}</span>
-                                                    <span v-if="field.comment" class="field-comment">({{ field.comment }})</span>
-                                                    <span class="field-type">{{ field.typeName }}</span>
-                                                    <span v-if="field.dataLength" class="field-length">({{ field.dataLength }})</span>
-                                                </div>
-                                            </el-checkbox>
-                                        </el-checkbox-group>
-                                    </el-scrollbar>
+                                            </el-option>
+                                        </el-select>
+                                        <el-button 
+                                            type="primary" 
+                                            size="small" 
+                                            @click="selectAllFields(config, 'queryFields')"
+                                            :disabled="disabled || getTableFields(config.tableName).length === 0"
+                                        >
+                                            全选
+                                        </el-button>
+                                        <el-button 
+                                            type="info" 
+                                            size="small" 
+                                            @click="clearAllFields(config, 'queryFields')"
+                                            :disabled="disabled || config.queryFields.length === 0"
+                                        >
+                                            清空
+                                        </el-button>
+                                    </div>
                                 </div>
                                 <div v-else class="text-muted">请先选择表</div>
                             </div>
@@ -122,28 +143,43 @@
                             <div class="form-item">
                                 <label class="form-label required">返回字段</label>
                                 <div v-if="config.tableName && formData.dataSourceId">
-                                    <el-scrollbar height="200px" class="field-scrollbar">
-                                        <el-checkbox-group 
-                                            v-model="config.returnFields" 
+                                    <div class="select-with-actions">
+                                        <el-select
+                                            v-model="config.returnFields"
+                                            multiple
+                                            filterable
+                                            collapse-tags
+                                            collapse-tags-tooltip
+                                            :max-collapse-tags="2"
+                                            placeholder="请选择返回字段"
+                                            class="field-select"
                                             :disabled="disabled"
-                                            class="field-checkbox-group"
                                         >
-                                            <el-checkbox 
-                                                v-for="field in getTableFields(config.tableName)" 
+                                            <el-option
+                                                v-for="field in getTableFields(config.tableName)"
                                                 :key="field.columnName"
-                                                :label="field.columnName"
-                                                class="field-checkbox"
-                                                checked
+                                                :label="`${field.columnName} ${field.comment ? `(${field.comment})` : ''} ${field.typeName}${field.dataLength ? `(${field.dataLength})` : ''}`"
+                                                :value="field.columnName"
                                             >
-                                                <div class="field-info">
-                                                    <span class="field-name">{{ field.columnName }}</span>
-                                                    <span v-if="field.comment" class="field-comment">({{ field.comment }})</span>
-                                                    <span class="field-type">{{ field.typeName }}</span>
-                                                    <span v-if="field.dataLength" class="field-length">({{ field.dataLength }})</span>
-                                                </div>
-                                            </el-checkbox>
-                                        </el-checkbox-group>
-                                    </el-scrollbar>
+                                            </el-option>
+                                        </el-select>
+                                        <el-button 
+                                            type="primary" 
+                                            size="small" 
+                                            @click="selectAllFields(config, 'returnFields')"
+                                            :disabled="disabled || getTableFields(config.tableName).length === 0"
+                                        >
+                                            全选
+                                        </el-button>
+                                        <el-button 
+                                            type="info" 
+                                            size="small" 
+                                            @click="clearAllFields(config, 'returnFields')"
+                                            :disabled="disabled || config.returnFields.length === 0"
+                                        >
+                                            清空
+                                        </el-button>
+                                    </div>
                                 </div>
                                 <div v-else class="text-muted">请先选择表</div>
                             </div>
@@ -157,9 +193,22 @@
                 </div>
             </template>
         </y9Form>
+
+        <div v-if="formData.owner" class="api-params-section">
+            <div class="params-title">接口参数</div>
+            <div>
+                <!-- 显示参数值 -->
+                <p>dataSourceId: {{ formData.dataSourceId }}</p>
+                <p>tableName: {{ formData.tableConfigs[0].tableName }}</p>
+                <p>APP_NAME: {{ formData.owner }}</p>
+                <p>API_KEY: {{ appKey }}</p>
+                <p>TENANT_ID: {{ tenantId }}</p>
+                <p v-if="formData.incrementField">增量查询字段: {{ formData.incrementField }}</p>
+            </div>
+        </div>
         
         <!-- 按钮区域 -->
-        <div class="dialog-footer" v-if="!disabled || userRole === 'systemAdmin'">
+        <div class="dialog-footer" v-if="!disabled || (userRole === 'systemAdmin' && type == '3')">
             <el-button @click="cancel">{{ $t('取消') }}</el-button>
             <el-button type="primary" @click="submitForm">{{ $t('提交') }}</el-button>
         </div>
@@ -167,11 +216,11 @@
 </template>
 
 <script lang="ts" setup>
-    import { computed, onMounted, reactive, ref } from 'vue';
+    import { computed, onMounted, reactive, ref, watch } from 'vue';
     import { ElMessage, ElNotification } from 'element-plus';
     import { useI18n } from 'vue-i18n';
-    import { getOwners, getTableForeignKeys, saveDataApiTable } from '@/api/apiService';
-    import { getDataBase, getTableColumns, getTablesByBaseId } from '@/api/dataSource';
+    import { getApiRoleById, getOwners, getTableForeignKeys, saveDataApiTable } from '@/api/apiService';
+    import { getDataSourceByAssetsId, getTableByAssetsId, getTableColumns, getTablesByBaseId } from '@/api/dataSource';
 
     const { t } = useI18n();
     
@@ -183,6 +232,18 @@
         disabled: {
             type: Boolean,
             default: false
+        },
+        subscribeId: {
+            type: String,
+            default: ''
+        },
+        assetsId: {
+            type: String,
+            default: ''
+        },
+        type: {
+            type: String,
+            default: ''
         }
     });
 
@@ -203,7 +264,8 @@
         tableConfigs: [] as Array<{tableName: string, queryFields: string[], returnFields: string[]}>,
         queryParams: '',
         owner: '',
-        remark: ''
+        remark: '',
+        incrementField: ''
     });
     
     // 数据源列表
@@ -257,6 +319,15 @@
                 prop: 'queryParams'
             },
             {
+                type: 'input',
+                props: {
+                    type: 'text',
+                    placeholder: '请输入增量查询字段',
+                },
+                label: '增量查询字段',
+                prop: 'incrementField'
+            },
+            {
                 type: 'slot',
                 label: '所属者',
                 props:{
@@ -266,15 +337,18 @@
         ]
     });
     
+    let tenantId = ref('');
+
     // 初始化数据
     onMounted(() => {
-        if (userRole === 'systemAdmin') {
+        if (userRole === 'systemAdmin' && props.disabled && props.type == '3') {
             formConfig.itemList.push(...formConfig.itemList2);
             loadOwnerOptions();
         }
         loadDataSourceList();
         if (props.entity) {
             initFormData(props.entity);
+            tenantId.value = props.entity.tenantId || '';
         }
     });
 
@@ -295,7 +369,7 @@
     // 加载数据源列表
     async function loadDataSourceList() {
         try {
-            await getDataBase().then((res) => {
+            await getDataSourceByAssetsId({assetsId: props.assetsId}).then((res) => {
                 if(res.success) {
                     dataSourceList.value = res.data;
                 }
@@ -319,15 +393,34 @@
     
     // 加载表列表
     async function loadTableList(dataSourceId) {
+        // 判断当前选择的数据源是关联的表还是数据库
+        let mountType = '';
+        dataSourceList.value.forEach(item => {
+            if (item.id == dataSourceId) {
+                mountType = item.type;
+            }
+        });
         try {
-            let params = {
-                id: dataSourceId,
-                name: ''
-            };
-            let res = await getTablesByBaseId(params);
-            if (res.code == 0) {
-                // 对返回的接口数据进行赋值与处理
-                tableList.value = res.data;
+            if(mountType == '数据表') {
+                let params = {
+                    identifier: dataSourceId,
+                    assetsId: props.assetsId
+                };
+                let res = await getTableByAssetsId(params);
+                if (res.code == 0) {
+                    // 对返回的接口数据进行赋值与处理
+                    tableList.value = res.data;
+                }
+            } else {
+                let params = {
+                    id: dataSourceId,
+                    name: ''
+                };
+                let res = await getTablesByBaseId(params);
+                if (res.code == 0) {
+                    // 对返回的接口数据进行赋值与处理
+                    tableList.value = res.data;
+                }
             }
         } catch (error) {
             ElMessage.error('加载表列表失败');
@@ -343,6 +436,8 @@
             const foreignKeys = await loadTableForeignKeys(formData.value.dataSourceId, config.tableName);
             // 赋予查询字段默认值
             config.queryFields = foreignKeys;
+            // 默认返回值全选中
+            config.returnFields = getTableFields(config.tableName).map(field => field.columnName);
         }
     }
 
@@ -395,6 +490,19 @@
         formData.value.tableConfigs.splice(index, 1);
     }
     
+    // 全选字段
+    function selectAllFields(config, fieldType) {
+        const fields = getTableFields(config.tableName);
+        if (fields.length > 0) {
+            config[fieldType] = fields.map(field => field.columnName);
+        }
+    }
+    
+    // 清空选择的字段
+    function clearAllFields(config, fieldType) {
+        config[fieldType] = [];
+    }
+    
     // 初始化表单数据（编辑模式）
     function initFormData(entity) {
         formData.value.dataSourceId = entity.dataSourceId || '';
@@ -402,6 +510,7 @@
         formData.value.owner = entity.owner || '';
         formData.value.remark = entity.remark || '';
         formData.value.id = entity.id || '';
+        formData.value.incrementField = entity.incrementField || '';
         
         // 如果传入的是单个表配置
         if (entity.tableName) {
@@ -493,7 +602,9 @@
                             returnFields: JSON.stringify(tableConfig.returnFields),
                             queryParams: ruleRef.value.model.queryParams,
                             owner: ruleRef.value.model.owner,
-                            remark: ruleRef.value.model.remark
+                            remark: ruleRef.value.model.remark,
+                            incrementField: ruleRef.value.model.incrementField,
+                            subscribeId: props.subscribeId
                         };
                         
                         try {
@@ -541,6 +652,18 @@
     function cancel() {
         emit('close', 0);
     }
+
+    // 监听owner变化,加载权限信息
+    let appKey = ref('');
+    watch(() => formData.value.owner, async (newOwner) => {
+        if (newOwner) {
+            await getApiRoleById(newOwner).then((res) => {
+                if(res.success) {
+                    appKey.value = res.data.appKey || '';
+                }
+            });
+        }
+    });
 </script>
 
 <style lang="scss" scoped>
@@ -597,17 +720,6 @@
             }
         }
         
-        .field-scrollbar {
-            margin-top: 12px;
-        }
-        
-        .field-checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            padding: 10px;
-        }
-        
         .text-muted {
             color: #909399;
             padding: 10px;
@@ -651,61 +763,6 @@
             }
         }
         
-        /* 字段信息样式 */
-        .field-checkbox {
-            display: block;
-            width: 100%;
-            border-radius: 4px;
-            transition: all 0.3s;
-            
-            &:hover {
-                background-color: #f5f7fa;
-            }
-            
-            .el-checkbox__input {
-                vertical-align: top;
-                margin-right: 10px;
-            }
-        }
-        
-        .field-info {
-            display: inline-block;
-            vertical-align: middle;
-        }
-        
-        .field-name {
-            font-weight: 500;
-            color: #303133;
-            margin-right: 5px;
-        }
-        
-        .field-comment {
-            color: #606266;
-            margin-right: 10px;
-            font-size: 13px;
-        }
-        
-        .field-type {
-            color: #909399;
-            margin-right: 5px;
-            font-size: 12px;
-            font-family: monospace;
-        }
-        
-        .field-length {
-            color: #909399;
-            font-size: 12px;
-            font-family: monospace;
-        }
-        
-        /* 字段复选框组样式 */
-        .field-checkbox-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            padding: 0;
-        }
-        
         /* 表单项样式优化 */
         .form-item {
             margin-bottom: 20px;
@@ -735,6 +792,36 @@
             margin-top: 20px;
             padding-top: 20px;
             border-top: 1px solid #ebeef5;
+        }
+
+        .api-params-section {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ebeef5;
+            width: 75%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .params-title {
+            font-size: 16px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ebeef5;
+        }
+        
+        /* 选择器和按钮的布局样式 */
+        .select-with-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        
+        .field-select {
+            flex: 1;
+            width: auto;
         }
     }
 </style>

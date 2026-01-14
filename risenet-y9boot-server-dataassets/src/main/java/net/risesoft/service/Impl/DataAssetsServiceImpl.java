@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 import net.risesoft.entity.DataApiOnlineEntity;
 import net.risesoft.entity.DataAssets;
+import net.risesoft.entity.DataRecentEntity;
 import net.risesoft.entity.DataSourceEntity;
 import net.risesoft.entity.DictionaryValue;
 import net.risesoft.entity.FileInfo;
@@ -52,6 +53,7 @@ import net.risesoft.repository.SubscribeBaseRepository;
 import net.risesoft.repository.SubscribeRepository;
 import net.risesoft.repository.spec.DataAssetsSpecification;
 import net.risesoft.service.DataAssetsService;
+import net.risesoft.service.DataRecentService;
 import net.risesoft.service.DataSourceService;
 import net.risesoft.service.DictionaryOptionService;
 import net.risesoft.util.Config;
@@ -82,6 +84,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     private final DictionaryOptionService dictionaryOptionService;
     private final SubscribeRepository subscribeRepository;
     private final DataCatalogApiClient dataCatalogApiClient;
+    private final DataRecentService dataRecentService;
 
     @Override
     public DataAssets findById(Long id) {
@@ -103,11 +106,21 @@ public class DataAssetsServiceImpl implements DataAssetsService {
                 }
                 dataAssets.setOrderNum(orderNum);
             }
+            
+            DataRecentEntity dataRecentEntity = new DataRecentEntity();
+            dataRecentEntity.setOperator(Y9LoginUserHolder.getUserInfo().getName());
+            dataRecentEntity.setOperationType("资产登记");
+            
             if (dataAssets.getId() == null) {
                 dataAssets.setCreator(Y9LoginUserHolder.getUserInfo().getName());
                 dataAssets.setCreatorId(Y9LoginUserHolder.getPersonId());
                 dataAssets.setDataState("out");
                 dataAssetsRepository.save(dataAssets);
+                
+                // 保存最近操作数据
+                dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 新增了资产：" + dataAssets.getName());
+                dataRecentService.saveAsync(dataRecentEntity);
+                
                 return Y9Result.successMsg("新增成功");
             } else {
                 DataAssets dataAssets2 = findById(dataAssets.getId());
@@ -115,6 +128,11 @@ public class DataAssetsServiceImpl implements DataAssetsService {
                 dataAssets2.setUpdateUser(Y9LoginUserHolder.getUserInfo().getName());
                 dataAssets2.setUpdateUserId(Y9LoginUserHolder.getPersonId());
                 dataAssetsRepository.save(dataAssets2);
+                
+                // 保存最近操作数据
+                dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 修改了资产：" + dataAssets2.getName());
+                dataRecentService.saveAsync(dataRecentEntity);
+                
                 return Y9Result.successMsg("修改成功");
             }
         } catch (Exception e) {
@@ -147,6 +165,13 @@ public class DataAssetsServiceImpl implements DataAssetsService {
             dataAssets.setDeleteUser(Y9LoginUserHolder.getUserInfo().getName());
             dataAssets.setDeleteUserId(Y9LoginUserHolder.getPersonId());
             dataAssetsRepository.save(dataAssets);
+            
+            // 保存最近操作数据
+            DataRecentEntity dataRecentEntity = new DataRecentEntity();
+            dataRecentEntity.setOperator(Y9LoginUserHolder.getUserInfo().getName());
+            dataRecentEntity.setOperationType("资产登记");
+            dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 删除了资产：" + dataAssets.getName());
+            dataRecentService.saveAsync(dataRecentEntity);
         } else {
             return Y9Result.failure("数据不存在，请刷新数据");
         }
@@ -615,28 +640,45 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 	public Y9Result<String> saveSubscribe(SubscribeEntity subscribeEntity) {
 		try {
 			if(StringUtils.isBlank(subscribeEntity.getProvideType())) {
-				return Y9Result.failure("订阅失败，提供方式不能为空");
+				return Y9Result.failure("提供方式不能为空");
 			}
+            DataAssets dataAssets = findById(subscribeEntity.getAssetsId());
+            if(dataAssets == null) {
+                return Y9Result.failure("数据资产不存在");
+            }
+
+            DataRecentEntity dataRecentEntity = new DataRecentEntity();
+            dataRecentEntity.setOperator(Y9LoginUserHolder.getUserInfo().getName());
+            dataRecentEntity.setOperationType("数据订阅");
+
 			if(StringUtils.isBlank(subscribeEntity.getId())) {
 				// 判断是否存在已订阅信息
-				SubscribeEntity subscribeEntity2 = subscribeRepository.findByAssetsIdAndProvideTypeAndUserId(subscribeEntity.getAssetsId(), 
-						subscribeEntity.getProvideType(), Y9LoginUserHolder.getPersonId());
+				SubscribeEntity subscribeEntity2 = subscribeRepository.findByAssetsIdAndProvideTypeAndUserIdAndReviewStatus(subscribeEntity.getAssetsId(), 
+						subscribeEntity.getProvideType(), Y9LoginUserHolder.getPersonId(), "待审核");
 				if(subscribeEntity2 != null) {
-					return Y9Result.failure("订阅失败，已存在相同的订阅");
+					return Y9Result.failure("已存在相同的待审核订阅，不能重复订阅");
 				}
 				subscribeEntity.setId(Y9IdGenerator.genId());
+
+                dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 订阅了数据：" + dataAssets.getName());
 			} else {
 				SubscribeEntity subscribeEntity2 = subscribeRepository.findById(subscribeEntity.getId()).orElse(null);
 				if(subscribeEntity2 != null && !subscribeEntity2.getReviewStatus().equals("待审核")) {
 					return Y9Result.failure("已进入审核阶段，无法再修改");
 				}
+                
+                dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 修改了订阅信息：" + dataAssets.getName());
 			}
 			subscribeEntity.setReviewStatus("待审核");
 			subscribeEntity.setTenantId(Y9LoginUserHolder.getTenantId());
 			subscribeEntity.setUserId(Y9LoginUserHolder.getPersonId());
 			subscribeEntity.setUserName(Y9LoginUserHolder.getUserInfo().getName());
 			subscribeRepository.save(subscribeEntity);
-			return Y9Result.successMsg("保存成功");
+
+            // 保存最近操作数据
+            dataRecentService.saveAsync(dataRecentEntity);
+
+			return Y9Result.success(subscribeEntity.getId(), "保存成功");
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Y9Result.failure("保存失败：" + e.getMessage());
@@ -716,7 +758,8 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 		Map<String, Object> map = new HashMap<String, Object>();
 		SubscribeEntity subscribeEntity = subscribeRepository.findById(id).orElse(null);
 		if(subscribeEntity != null) {
-			map.put("provideType", dictionaryOptionService.findByCodeAndType(subscribeEntity.getProvideType(), "provideType"));
+			map.put("provideTypeName", dictionaryOptionService.findByCodeAndType(subscribeEntity.getProvideType(), "provideType"));
+            map.put("provideType", subscribeEntity.getProvideType());
 			map.put("reviewStatus", subscribeEntity.getReviewStatus());
 			map.put("reason", subscribeEntity.getReason());
 			map.put("purpose", subscribeEntity.getPurpose());

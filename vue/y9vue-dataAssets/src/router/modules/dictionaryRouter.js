@@ -23,7 +23,7 @@ const dictionaryRouter = {
             component: () => import('@/views/dictionary/dataDict/index.vue'),
             name: 'dataDictIndex',
             meta: {
-                title: '数据字典管理',
+                title: '字典管理',
                 icon: 'ri-book-2-line',
             },
         },

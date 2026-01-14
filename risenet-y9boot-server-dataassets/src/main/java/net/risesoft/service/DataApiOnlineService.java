@@ -48,4 +48,11 @@ public interface DataApiOnlineService {
      */
     Y9Result<Map<String, Object>> getApiInfo(String id);
 
+    /**
+     * 获取接口数量
+     * 
+     * @return
+     */
+    Long getApiCount();
+
 }
