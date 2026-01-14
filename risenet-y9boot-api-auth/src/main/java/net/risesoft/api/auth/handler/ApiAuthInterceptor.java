@@ -2,6 +2,7 @@ package net.risesoft.api.auth.handler;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Date;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -69,6 +70,12 @@ public class ApiAuthInterceptor implements HandlerInterceptor {
                 errorMsg(response, HttpServletResponse.SC_UNAUTHORIZED, "密钥不对，或者被禁用");
                 return false;
             } else {
+                // 检查过期日期
+                if (apiRoleEntity.getExpireDate() != null && apiRoleEntity.getExpireDate().before(new Date())) {
+                    saveApiLogService.asyncSave(apiKey, requestUrl, ip, requestParams, "密钥已过期");
+                    errorMsg(response, HttpServletResponse.SC_UNAUTHORIZED, "密钥已过期");
+                    return false;
+                }
                 appName = apiRoleEntity.getAppName();
                 ipAddr = apiRoleEntity.getIpAddr();
                 permitsPerSecond = apiRoleEntity.getPermitsPerSecond();

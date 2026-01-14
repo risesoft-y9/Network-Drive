@@ -150,4 +150,19 @@ public interface ApiDataService {
      */
     List<String> getAllUsers();
 
+    /**
+     * 根据ID获取权限信息
+     * 
+     * @param id
+     * @return
+     */
+    ApiRoleEntity findApiRoleById(String id);
+
+    /**
+     * 根据日志获取每天的接口调用次数
+     *
+     * @return
+     */
+    List<Map<String, Object>> getDailyApiCallCount();
+
 }

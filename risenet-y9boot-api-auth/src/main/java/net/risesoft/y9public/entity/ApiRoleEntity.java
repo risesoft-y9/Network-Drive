@@ -1,11 +1,15 @@
 package net.risesoft.y9public.entity;
 
+import java.util.Date;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Comment;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -49,5 +53,10 @@ public class ApiRoleEntity extends BaseEntity {
     @Column(name = "STATUS", nullable = false)
     @Comment(value = "状态：1-禁用，0-未禁用")
     private Integer status;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @Column(name = "EXPIRE_DATE")
+    @Comment(value = "过期日期")
+    private Date expireDate;
 
 }
