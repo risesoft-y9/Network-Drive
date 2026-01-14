@@ -1,7 +1,11 @@
 package net.risesoft.service.impl;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -383,6 +387,41 @@ public class ApiDataServiceImpl implements ApiDataService {
     @Override
     public List<String> getAllUsers() {
         return apiRoleRepository.findAll().stream().map(ApiRoleEntity::getAppName).collect(Collectors.toList());
+    }
+
+    @Override
+    public ApiRoleEntity findApiRoleById(String id) {
+        ApiRoleEntity roleEntity = apiRoleRepository.findById(id).orElse(null);
+        if(roleEntity == null || roleEntity.getStatus() == 1) {
+            return null;
+        }
+        return roleEntity;
+    }
+    
+    @Override
+    public List<Map<String, Object>> getDailyApiCallCount() {
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        // 获取近7天日期,反着排序
+        for(int i = 6; i >= 0; i--) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.DAY_OF_MONTH, -i);
+            Date date = calendar.getTime();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String dateStr = sdf.format(date);
+            // 根据时间字段模糊查询当天的数据量
+            Long count = 0L;
+            try {
+                SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                count = apiServiceLogRepository.countByCreateTimeLike(sdf2.parse(dateStr + " 00:00:00"), sdf2.parse(dateStr + " 23:59:59"));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("date", dateStr);
+            map.put("count", count);
+            list.add(map);
+        }
+        return list;
     }
 
 }
