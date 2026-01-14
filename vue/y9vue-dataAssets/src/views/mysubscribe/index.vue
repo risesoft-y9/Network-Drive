@@ -48,12 +48,9 @@
     import { computed, h, inject, onMounted, reactive, ref, toRefs, watch } from 'vue';
     import { useI18n } from 'vue-i18n';
     import { useSettingStore } from '@/store/modules/settingStore';
-    import settings from '@/settings';
-    import router from '@/router';
     import { getStoragePageSize } from '@/utils';
     import { getSubscribeBaseById, saveSubscribeBase, searchSubscribePage } from '@/api/pretreat';
     import Info from '@/views/subscribe/comps/Info.vue';
-    import y9_storage from '@/utils/storage';
     import ItemData from '@/views/pretreat/comps/ItemData.vue';
     import { ElNotification } from 'element-plus';
 

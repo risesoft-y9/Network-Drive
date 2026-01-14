@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 
 import net.risesoft.entity.DataDemandEntity;
+import net.risesoft.entity.DataDemandEntity2;
 import net.risesoft.log.LogLevelEnum;
 import net.risesoft.log.OperationTypeEnum;
 import net.risesoft.log.annotation.RiseLog;
@@ -92,5 +93,24 @@ public class DataDemandController {
     @GetMapping("/searchPage3")
     public Y9Page<Map<String, Object>> searchPage3(String searchText, Integer page, Integer size) {
         return dataDemandService.searchPage3(searchText, page, size);
+    }
+
+    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取个人需求列表", logLevel = LogLevelEnum.RSLOG,
+        enable = false)
+    @GetMapping("/searchDemandPage")
+    public Y9Page<DataDemandEntity2> searchDemandPage(String searchText, String pageType, Integer page, Integer size) {
+        return dataDemandService.searchDemandPage(searchText, pageType, page, size);
+    }
+
+    @RiseLog(operationType = OperationTypeEnum.ADD, operationName = "保存需求信息", logLevel = LogLevelEnum.RSLOG)
+    @PostMapping(value = "/saveData2")
+    public Y9Result<String> saveData2(DataDemandEntity2 dataDemandEntity) {
+        return dataDemandService.saveData2(dataDemandEntity);
+    }
+
+    @RiseLog(operationType = OperationTypeEnum.DELETE, operationName = "删除需求数据", logLevel = LogLevelEnum.RSLOG)
+    @PostMapping(value = "/deleteData2")
+    public Y9Result<String> deleteData2(@RequestParam String id) {
+        return dataDemandService.deleteData2(id);
     }
 }

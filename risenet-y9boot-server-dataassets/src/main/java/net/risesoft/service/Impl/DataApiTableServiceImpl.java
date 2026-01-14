@@ -29,22 +29,24 @@ public class DataApiTableServiceImpl implements DataApiTableService {
     private final TableForeignKeyRepository tableForeignKeyRepository;
 
     @Override
-    public Page<DataApiTableEntity> findByTableName(String tableName, Pageable pageable) {
-        // 判断是否系统管理员
-        boolean isAdmin = personRoleApiClient.hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", 
-        null, "系统管理员", Y9LoginUserHolder.getPersonId()).getData();
+    public Page<DataApiTableEntity> findByTableNameAndSubscribeId(String tableName, String subscribeId, Pageable pageable) {
+        Page<DataApiTableEntity> pageList = null;
         if(StringUtils.isBlank(tableName)) {
-            if(isAdmin) {
-                return dataApiTableRepository.findByTenantId(Y9LoginUserHolder.getTenantId(), pageable);
+            pageList = dataApiTableRepository.findByTenantIdAndCreatorIdAndSubscribeId(Y9LoginUserHolder.getTenantId(),
+            Y9LoginUserHolder.getPersonId(), subscribeId, pageable);
+        } else {
+            pageList = dataApiTableRepository.findByTableNameContainingAndTenantIdAndCreatorIdAndSubscribeId(tableName, Y9LoginUserHolder.getTenantId(), 
+            Y9LoginUserHolder.getPersonId(), subscribeId, pageable);
+        }
+        // 查询出增量字段信息添加进去返回
+        List<DataApiTableEntity> content = pageList.getContent();
+        if(content != null && !content.isEmpty()) {
+            for(DataApiTableEntity entity : content) {
+                TableForeignKeyEntity foreignKeys = tableForeignKeyRepository.findByTableNameAndDataSourceId(entity.getTableName(), entity.getDataSourceId());
+                entity.setIncrementField(foreignKeys != null ? foreignKeys.getIncrementField() : "");
             }
-            return dataApiTableRepository.findByTenantIdAndCreatorId(Y9LoginUserHolder.getTenantId(), 
-            Y9LoginUserHolder.getPersonId(), pageable);
         }
-        if(isAdmin) {
-            return dataApiTableRepository.findByTableNameContainingAndTenantId(tableName, Y9LoginUserHolder.getTenantId(), pageable);
-        }
-        return dataApiTableRepository.findByTableNameContainingAndTenantIdAndCreatorId(tableName, Y9LoginUserHolder.getTenantId(), 
-        Y9LoginUserHolder.getPersonId(), pageable);
+        return pageList;
     }
 
     @Override
@@ -87,6 +89,22 @@ public class DataApiTableServiceImpl implements DataApiTableService {
                 tableForeignKeyRepository.save(tableForeignKeyEntity);
             }
         }
+        // 保存增量字段
+        if (StringUtils.isNotBlank(dataApiTableEntity.getIncrementField())) {
+            TableForeignKeyEntity tableForeignKeyEntity = tableForeignKeyRepository.
+            findByTableNameAndDataSourceId(dataApiTableEntity.getTableName(), dataApiTableEntity.getDataSourceId());
+            if (tableForeignKeyEntity != null) {
+                tableForeignKeyEntity.setIncrementField(dataApiTableEntity.getIncrementField());
+                tableForeignKeyRepository.save(tableForeignKeyEntity);
+            } else {
+                tableForeignKeyEntity = new TableForeignKeyEntity();
+                tableForeignKeyEntity.setId(Y9IdGenerator.genId());
+                tableForeignKeyEntity.setTableName(dataApiTableEntity.getTableName());
+                tableForeignKeyEntity.setIncrementField(dataApiTableEntity.getIncrementField());
+                tableForeignKeyEntity.setDataSourceId(dataApiTableEntity.getDataSourceId());
+                tableForeignKeyRepository.save(tableForeignKeyEntity);
+            }
+        }
         dataApiTableRepository.save(dataApiTableEntity);
         return "保存成功";
     }
@@ -125,7 +143,16 @@ public class DataApiTableServiceImpl implements DataApiTableService {
 
     @Override
     public DataApiTableEntity findById(Long id) {
-        return dataApiTableRepository.findById(id).orElse(null);
+        DataApiTableEntity dataApiTableEntity = dataApiTableRepository.findById(id).orElse(null);
+        if (dataApiTableEntity != null) {
+            // 增量字段
+            TableForeignKeyEntity tableForeignKeyEntity = tableForeignKeyRepository.
+            findByTableNameAndDataSourceId(dataApiTableEntity.getTableName(), dataApiTableEntity.getDataSourceId());
+            if (tableForeignKeyEntity != null && StringUtils.isNotBlank(tableForeignKeyEntity.getIncrementField())) {
+                dataApiTableEntity.setIncrementField(tableForeignKeyEntity.getIncrementField());
+            }
+        }
+        return dataApiTableEntity;
     }
 
     @Override

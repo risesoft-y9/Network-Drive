@@ -94,4 +94,21 @@ public interface DataSourceService {
      */
     List<Map<String, Object>> getDataBase();
 
+    /**
+     * 根据资产id获取挂接的数据库
+     * 
+     * @param assetsId
+     * @return
+     */
+    List<Map<String, Object>> getDataSourceByAssetsId(Long assetsId);
+
+    /**
+     * 根据资产id获取挂接的数据表
+     * 
+     * @param assetsId ：资产id
+     * @param identifier ：数据源id
+     * @return
+     */
+    List<String> getTableByAssetsId(Long assetsId, String identifier);
+
 }

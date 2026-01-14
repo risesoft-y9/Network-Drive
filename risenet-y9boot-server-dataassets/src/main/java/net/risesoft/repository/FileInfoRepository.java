@@ -1,5 +1,7 @@
 package net.risesoft.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +18,10 @@ public interface FileInfoRepository extends JpaRepository<FileInfo, Long>, JpaSp
     Page<FileInfo> findByAssetsIdAndNameContains(Long assetsId, String name, Pageable pageable);
 
     long countByAssetsId(Long assetsId);
+
+    List<FileInfo> findByAssetsIdAndFileType(Long assetsId, String fileType);
+
+    List<FileInfo> findByAssetsIdAndIdentifierAndFileType(Long assetsId, String identifier, String fileType);
+
+    long countByFileType(String fileType);
 }

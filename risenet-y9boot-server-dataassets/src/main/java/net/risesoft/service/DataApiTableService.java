@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import net.risesoft.entity.DataApiTableEntity;
-import net.risesoft.entity.TableForeignKeyEntity;
 
 /**
  * 接口资源申请表服务接口
@@ -18,7 +17,7 @@ public interface DataApiTableService {
      * @param pageable 分页参数
      * @return 接口资源申请表分页列表
      */
-    Page<DataApiTableEntity> findByTableName(String tableName, Pageable pageable);
+    Page<DataApiTableEntity> findByTableNameAndSubscribeId(String tableName, String subscribeId, Pageable pageable);
     
     /**
      * 保存接口资源申请表

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -24,8 +22,12 @@ import net.risesoft.api.auth.util.Y9ApiThreadHoder;
 import net.risesoft.api.auth.util.Y9SqlUtil;
 import net.risesoft.entity.DataApiTableEntity;
 import net.risesoft.entity.DataSourceEntity;
+import net.risesoft.entity.SubscribeEntity;
+import net.risesoft.entity.TableForeignKeyEntity;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.repository.DataApiTableRepository;
+import net.risesoft.repository.SubscribeRepository;
+import net.risesoft.repository.TableForeignKeyRepository;
 import net.risesoft.service.ApiDataService;
 import net.risesoft.service.DataSourceService;
 import net.risesoft.y9.json.Y9JsonUtil;
@@ -40,6 +42,8 @@ public class ApiController {
     private final ApiDataService apiDataService;
     private final DataSourceService dataSourceService;
     private final DataApiTableRepository dataApiTableRepository;
+    private final SubscribeRepository subscribeRepository;
+    private final TableForeignKeyRepository tableForeignKeyRepository;
 
     @GetMapping(value = "/get/{method}/{id}")
     public Y9Result<List<Map<String, Object>>> get(@PathVariable @NotBlank String method,
@@ -181,6 +185,12 @@ public class ApiController {
             if(dataApiTableEntity.getIsDeleted()) {
                 return Y9Result.failure("该接口申请已被禁用");
             }
+            // 判断关联的订阅信息状态,如果不是通过状态不允许调用
+            SubscribeEntity subscribeEntity = subscribeRepository.findById(dataApiTableEntity.getSubscribeId()).orElse(null);
+            if(subscribeEntity == null || !subscribeEntity.getReviewStatus().equals("通过")) {
+                return Y9Result.failure("该接口的订阅信息不存在或者未通过审核，不允许调用");
+            }
+
             // 返回字段和查询字段都是List<String>的json数据需要转换成逗号分割的字符串
             String returnFields = Y9JsonUtil.readList(dataApiTableEntity.getReturnFields(), String.class).stream().collect(Collectors.joining(","));
             String queryFields = Y9JsonUtil.readList(dataApiTableEntity.getQueryFields(), String.class).stream().collect(Collectors.joining(","));
@@ -195,9 +205,9 @@ public class ApiController {
                 sql += " WHERE ";
                 String[] queryFieldsArray = queryFields.split(",");
                 for (String queryField : queryFieldsArray) {
-                    // 如果参数值为空,则不拼接
+                    // 如果参数值为空,则返回提示
                     if (StringUtils.isBlank(body.get(queryField).toString())) {
-                        continue;
+                        return Y9Result.failure("参数" + queryField + "不能为空");
                     }
                     sql += " " + queryField.toUpperCase() + " = ? AND ";
                     args.add(body.get(queryField));
@@ -207,6 +217,16 @@ public class ApiController {
             }
             if (StringUtils.isNotBlank(dataApiTableEntity.getQueryParams())) {
                 sql += (StringUtils.isNotBlank(queryFields) ? " AND " : " WHERE ") + dataApiTableEntity.getQueryParams();
+            }
+
+            // 增量字段,使用INSTR函数判断是否包含增量字段值
+            TableForeignKeyEntity tableForeignKeyEntity = tableForeignKeyRepository.findByTableNameAndDataSourceId(tableName, dataSourceId);
+            if (tableForeignKeyEntity != null && StringUtils.isNotBlank(tableForeignKeyEntity.getIncrementField())) {
+                // 如果增量字段值为空,则不拼接增量查询条件
+                if (StringUtils.isNotBlank(body.get(tableForeignKeyEntity.getIncrementField()).toString())) {
+                    sql += (sql.contains(" WHERE ") ? " AND " : " WHERE ") + " INSTR(" + tableForeignKeyEntity.getIncrementField().toUpperCase() + ", ?) > 0";
+                    args.add(body.get(tableForeignKeyEntity.getIncrementField()));
+                }
             }
 
             // 添加分页参数和排序参数
@@ -251,7 +271,7 @@ public class ApiController {
 
     /**
      * 验证列名是否合法，防止SQL注入
-     *
+     * 
      * @param columnName 列名
      * @return 是否为合法列名
      */

@@ -36,15 +36,12 @@
 </template>
 
 <script lang="ts" setup>
-    import { computed, h, inject, onMounted, reactive, ref, toRefs, watch } from 'vue';
+    import { computed, h, inject, onMounted, reactive, ref, toRefs } from 'vue';
     import { useI18n } from 'vue-i18n';
     import { useSettingStore } from '@/store/modules/settingStore';
-    import settings from '@/settings';
-    import router from '@/router';
     import { getStoragePageSize } from '@/utils';
     import { searchSubscribePage } from '@/api/pretreat';
     import Info from '@/views/subscribe/comps/Info.vue';
-    import { ElNotification } from 'element-plus';
 
     const settingStore = useSettingStore();
     // 注入 字体对象

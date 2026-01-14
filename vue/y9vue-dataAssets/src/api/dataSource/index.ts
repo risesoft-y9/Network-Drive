@@ -211,3 +211,26 @@ export const getDataBase = async () => {
         cType: false
     });
 };
+
+/**
+ * 根据资产id获取挂接的数据库
+ * @param params
+ * @returns
+ */
+export const getDataSourceByAssetsId = async (params) => {
+    return await platformRequest({
+        url: '/vue/source/getDataSourceByAssetsId',
+        method: 'GET',
+        cType: false,
+        params: params
+    });
+};
+
+export const getTableByAssetsId = async (params) => {
+    return await platformRequest({
+        url: 'vue/source/getTableByAssetsId',
+        method: 'GET',
+        cType: false,
+        params: params
+    });
+};

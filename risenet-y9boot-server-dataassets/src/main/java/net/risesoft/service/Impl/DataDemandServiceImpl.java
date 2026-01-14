@@ -19,12 +19,14 @@ import lombok.RequiredArgsConstructor;
 import net.risesoft.api.platform.org.PersonApi;
 import net.risesoft.entity.DataDemandAskEntity;
 import net.risesoft.entity.DataDemandEntity;
+import net.risesoft.entity.DataDemandEntity2;
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.model.platform.org.Person;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.repository.DataDemandAskRepository;
 import net.risesoft.repository.DataDemandRepository;
+import net.risesoft.repository.DataDemandRepository2;
 import net.risesoft.repository.spec.DataDemandSpecification;
 import net.risesoft.service.DataDemandService;
 import net.risesoft.y9.Y9LoginUserHolder;
@@ -40,6 +42,7 @@ public class DataDemandServiceImpl implements DataDemandService {
     private final DataDemandAskRepository dataDemandAskRepository;
     private final PersonApi personApi;
     private final PersonRoleApiClient personRoleApiClient;
+    private final DataDemandRepository2 dataDemandRepository2;
 
     @Override
     @Transactional(readOnly = false)
@@ -282,6 +285,51 @@ public class DataDemandServiceImpl implements DataDemandService {
             listMap.add(map);
         }
         return Y9Page.success(page, dataPage.getTotalPages(), dataPage.getTotalElements(), listMap, "获取数据成功");
+    }
+    
+    @Override
+    @Transactional(readOnly = false)
+    public Y9Result<String> saveData2(DataDemandEntity2 dataDemandEntity) {
+        try {
+            if (StringUtils.isBlank(dataDemandEntity.getId())) {
+                dataDemandEntity.setId(Y9IdGenerator.genId());
+                dataDemandEntity.setPublisher(Y9LoginUserHolder.getUserInfo().getName());
+                dataDemandEntity.setPublisherId(Y9LoginUserHolder.getPersonId());
+                dataDemandRepository2.save(dataDemandEntity);
+                return Y9Result.successMsg("保存成功");
+            } else {
+                DataDemandEntity2 demandEntity = dataDemandRepository2.findById(dataDemandEntity.getId()).orElse(null);
+                if (demandEntity == null) {
+                    return Y9Result.failure("修改失败：数据不存在");
+                }
+                Y9BeanUtil.copyProperties(dataDemandEntity, demandEntity);
+                dataDemandRepository2.save(demandEntity);
+                return Y9Result.successMsg("修改成功");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Y9Result.failure("保存失败：" + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = false)
+    public Y9Result<String> deleteData2(String id) {
+        dataDemandRepository2.deleteById(id);
+        return Y9Result.successMsg("删除成功");
+    }
+
+    @Override
+    public Y9Page<DataDemandEntity2> searchDemandPage(String searchText, String pageType, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createTime"));
+        Page<DataDemandEntity2> dataPage = null;
+        if("1".equals(pageType)){// 管理员查所有
+            dataPage = dataDemandRepository2.findByTitleContaining(searchText, pageable);
+        } else {
+            dataPage = dataDemandRepository2.findByTitleContainingAndPublisherId(searchText,
+                Y9LoginUserHolder.getPersonId(), pageable);
+        }
+        return Y9Page.success(page, dataPage.getTotalPages(), dataPage.getTotalElements(), dataPage.getContent(), "获取数据成功");
     }
 
 }

@@ -14,7 +14,7 @@ const examineRouter = {
             component: () => import('@/views/pretreat/examine.vue'),
             name: 'examine1',
             meta: {
-                title: '资产审核',
+                title: '入库审核',
                 icon: 'ri-archive-line',
             },
         },
@@ -25,6 +25,15 @@ const examineRouter = {
             meta: {
                 title: '订阅审核',
                 icon: 'ri-archive-2-line',
+            },
+        },
+        {
+            path: '/examine3',
+            component: () => import('@/views/demand/index2.vue'),
+            name: 'examine3',
+            meta: {
+                title: '资源审核',
+                icon: 'ri-todo-line',
             },
         },
     ]

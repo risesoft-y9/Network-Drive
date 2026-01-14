@@ -38,4 +38,8 @@ public class TableForeignKeyEntity extends BaseEntity {
     @Comment(value = "数据源id")
     private String dataSourceId;
 
+    @Column(name = "INCREMENTFIELD", length = 100)
+    @Comment(value = "增量字段")
+    private String incrementField;
+
 }

@@ -23,6 +23,7 @@
                 :style="{ fontSize: fontSizeObj.baseFontSize }"
                 class="global-btn-second"
                 @click="addDataApiTable()"
+                v-if="isShow"
             >
                 <i class="ri-add-line" />
                 {{ $t('新增申请') }}
@@ -40,6 +41,9 @@
             :disabled="disabled"
             :entity="entity"
             @close="close"
+            :subscribeId="subscribeId"
+            :assetsId="assetsId"
+            :type="type"
         ></DataApiTableForm>
     </y9Dialog>
     <y9Dialog v-model:config="dialogConfig2">
@@ -63,6 +67,25 @@
     const { t } = useI18n();
     const userRole = sessionStorage.getItem('userRole');
 
+    const props = defineProps({
+        subscribeId: {
+            type: String,
+            default: ''
+        },
+        assetsId: {
+            type: String,
+            default: ''
+        },
+        type: {
+            type: String,
+            default: ''
+        },
+        isShow: {
+            type: Boolean,
+            default: false
+        },
+    });
+
     // 变量 对象
     const state = reactive({
         // 区域 loading
@@ -82,14 +105,8 @@
                 { title: computed(() => t('查询字段')), key: 'queryFields', render: (row) => {
                     return row.queryFields ? JSON.parse(row.queryFields).join(', ') : '';
                 }},
-                { title: computed(() => t('申请状态')), key: 'owner', render: (row) => {
-                    if(row.isDeleted) {
-                        return '已禁用';
-                    }
-                    return row.owner ? '已通过' : '审核中';
-                }},
-                { title: computed(() => t('申请人')), key: 'creator' },
                 { title: computed(() => t('申请时间')), key: 'createTime', width: settingStore.getDatetimeSpan },
+                { title: computed(() => t('权限拥有者')), key: 'owner' },
                 {
                     title: computed(() => t('操作')),
                     fixed: 'right',
@@ -157,7 +174,7 @@
                                 ]
                             )
                         ];
-                        if(row.owner) {
+                        if(row.owner || props.type == '3') {
                             editActions = [h(
                                 'span',
                                 {
@@ -175,7 +192,7 @@
                                     h('span', t('查看'))
                                 ]
                             )];
-                            if(userRole === 'systemAdmin') {
+                            if(userRole === 'systemAdmin' && row.owner && props.isShow) {
                                 editActions.push(h(
                                     'span',
                                     {
@@ -191,7 +208,6 @@
                                                 type: 'info'
                                             })
                                             .then(async () => {
-                                                // 请求 移除 接口函数---
                                                 loading.value = true;
                                                 let result = await deleteDataApiTable(row.id);
                                                 ElNotification({
@@ -220,6 +236,9 @@
                                     ]
                                 ));
                             }
+                        }
+                        if(row.isDeleted && props.type != '3') {
+                            return h('span', t('已禁用'));
                         }
                         return h('span', editActions);
                     }
@@ -254,7 +273,7 @@
                 {
                     type: 'slot',
                     slotName: 'filterBtnSlot',
-                    span: 6
+                    span: 8
                 }
             ]
         },
@@ -266,9 +285,7 @@
         dialogConfig2: {
             show: false,
             title: ''
-        },
-        // 接口文档内容
-        apiDocContent: ''
+        }
     });
 
     let {
@@ -277,8 +294,7 @@
         tableConfig,
         filterConfig,
         dialogConfig,
-        dialogConfig2,
-        apiDocContent
+        dialogConfig2
     } = toRefs(state);
 
     onMounted(() => {
@@ -305,6 +321,7 @@
             page: tableConfig.value.pageConfig.currentPage,
             size: tableConfig.value.pageConfig.pageSize,
             tableName: formLine.value.tableName,
+            subscribeId: props.subscribeId
         };
         let res = await getDataApiTablePage(params);
         if (res.code == 0) {

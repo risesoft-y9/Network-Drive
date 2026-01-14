@@ -13,11 +13,13 @@ import lombok.RequiredArgsConstructor;
 
 import net.risesoft.entity.DataApiOnlineEntity;
 import net.risesoft.entity.DataApiOnlineInfoEntity;
+import net.risesoft.entity.DataRecentEntity;
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.repository.DataApiOnlineInfoRepository;
 import net.risesoft.repository.DataApiOnlineRepository;
 import net.risesoft.service.DataApiOnlineService;
+import net.risesoft.service.DataRecentService;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.json.Y9JsonUtil;
 
@@ -30,6 +32,7 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
     private final DataApiOnlineRepository dataApiOnlineRepository;
     private final DataApiOnlineInfoRepository dataApiOnlineInfoRepository;
     private final PersonRoleApiClient personRoleApiClient;
+    private final DataRecentService dataRecentService;
 
     @Override
     @Transactional(readOnly = false)
@@ -48,6 +51,13 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
                 dataApiOnlineRepository.deleteById(id);
                 removeIds.add(id);
             }
+            
+            // 保存最近操作数据
+            DataRecentEntity dataRecentEntity = new DataRecentEntity();
+            dataRecentEntity.setOperator(Y9LoginUserHolder.getUserInfo().getName());
+            dataRecentEntity.setOperationType("接口注册");
+            dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 删除了接口：" + dataApiOnlineEntity.getName());
+            dataRecentService.saveAsync(dataRecentEntity);
         } catch (Exception e) {
             return Y9Result.failure("删除失败，" + e.getMessage());
         }
@@ -71,10 +81,17 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
     @Override
     @Transactional(readOnly = false)
     public Y9Result<DataApiOnlineEntity> saveData(DataApiOnlineEntity entity, DataApiOnlineInfoEntity infoEntity) {
+        // 保存最近操作数据
+        DataRecentEntity dataRecentEntity = new DataRecentEntity();
+        dataRecentEntity.setOperator(Y9LoginUserHolder.getUserInfo().getName());
+        dataRecentEntity.setOperationType("接口注册");
+
         if (StringUtils.isBlank(entity.getId())) {
             entity.setId(Y9IdGenerator.genId());
             entity.setCreator(Y9LoginUserHolder.getUserInfo().getName());
             entity.setCreatorId(Y9LoginUserHolder.getPersonId());
+
+            dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 注册了接口：" + entity.getName());
         } else {
             DataApiOnlineEntity dataApiOnlineEntity = dataApiOnlineRepository.findById(entity.getId()).orElse(null);
             if (dataApiOnlineEntity != null) {
@@ -83,11 +100,15 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
             } else {
                 return Y9Result.failure("数据不存在，修改失败");
             }
+            dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 修改了接口信息：" + entity.getName());
         }
         if (infoEntity != null) {
             infoEntity.setId(entity.getId());
             dataApiOnlineInfoRepository.save(infoEntity);
         }
+        // 保存最近操作数据
+        dataRecentService.saveAsync(dataRecentEntity);
+
         return Y9Result.success(dataApiOnlineRepository.save(entity), "保存成功");
     }
 
@@ -171,6 +192,11 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
     public Y9Result<Map<String, Object>> getApiInfo(String id) {
         DataApiOnlineInfoEntity apiOnlineInfoEntity = dataApiOnlineInfoRepository.findById(id).orElse(null);
         return Y9Result.success(Y9JsonUtil.readHashMap(apiOnlineInfoEntity.getFormData()));
+    }
+
+    @Override
+    public Long getApiCount() {
+        return dataApiOnlineInfoRepository.countAll();
     }
 
 }

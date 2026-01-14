@@ -11,9 +11,9 @@ import net.risesoft.entity.DataApiTableEntity;
 @Transactional(value = "rsTenantTransactionManager", readOnly = true)
 public interface DataApiTableRepository extends JpaRepository<DataApiTableEntity, Long>, JpaSpecificationExecutor<DataApiTableEntity> {
 
-    Page<DataApiTableEntity> findByTenantIdAndCreatorId(String tenantId, String creatorId, Pageable pageable);
+    Page<DataApiTableEntity> findByTenantIdAndCreatorIdAndSubscribeId(String tenantId, String creatorId, String subscribeId, Pageable pageable);
 
-    Page<DataApiTableEntity> findByTableNameContainingAndTenantIdAndCreatorId(String tableName, String tenantId, String creatorId, Pageable pageable);
+    Page<DataApiTableEntity> findByTableNameContainingAndTenantIdAndCreatorIdAndSubscribeId(String tableName, String tenantId, String creatorId, String subscribeId, Pageable pageable);
 
     Page<DataApiTableEntity> findByTenantId(String tenantId, Pageable pageable);
 

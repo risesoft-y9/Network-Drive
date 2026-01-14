@@ -11,6 +11,8 @@ import sourceRouter from './modules/sourceRouter';
 import generateApiRouter from './modules/generateApiRouter';
 import subscriptionRouter from './modules/subscriptionRouter';
 import myRouter from './modules/myRouter';
+import apiApplyRouter from './modules/apiApplyRouter';
+import homeRouter from './modules/homeRouter';
 
 //constantRoutes为不需要动态判断权限的路由，如登录、404、500等
 export const constantRoutes: Array<any> = [
@@ -18,7 +20,7 @@ export const constantRoutes: Array<any> = [
         path: '/',
         name: 'index',
         hidden: true,
-        redirect: '/register',
+        redirect: '/home',
     },
     {
         path: '/401',
@@ -53,15 +55,17 @@ const lazy = (path) => {
 let routes: RouteRecordRaw[] = []
 //asyncRoutes需求动态判断权限并动态添加的页面  这里的路由模块顺序也是菜单显示的顺序（位置：src->router->modules）
 export const asyncRoutes = [
+    homeRouter,
     subscriptionRouter,
-    pretreatmentRouter,
+    myRouter,
+    apiApplyRouter,
     interfaceRouter,
     sourceRouter,
+    pretreatmentRouter,
     examineRouter,
     libraryRouter,
     dictionaryRouter,
     generateApiRouter,
-    myRouter
     //...routes
     // 引入其他模块路由
 
