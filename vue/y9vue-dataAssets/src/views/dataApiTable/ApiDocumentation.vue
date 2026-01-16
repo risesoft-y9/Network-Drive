@@ -182,7 +182,7 @@ public class ApiCallExample {
     private static final int GCM_IV_LENGTH = 12;
     // 标签长度
     private static final int GCM_TAG_LENGTH = 16;
-    private static String generateSign(String key, String value) {
+    private static String generateSign(String key, String value) throws Exception {
         // 密钥生成器
         KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         // 根据KEY规则初始化密钥生成器生成一个128位的随机源
@@ -225,7 +225,7 @@ public static void main(String[] args) throws Exception {
     // 创建HTTP客户端
     try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
         // 循环查询所有数据
-        while (true) {            
+        while (true) {
             // 准备请求体
             JSONObject requestBody = new JSONObject();
             requestBody.put("sortField", sortField);

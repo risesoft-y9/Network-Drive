@@ -62,7 +62,7 @@
                         <el-table-column prop="remark" label="描述" />
                     </el-table>
                 </el-form-item>
-            </el-descriptions-item>        
+            </el-descriptions-item>
         </el-descriptions>
         
         <div>
@@ -122,6 +122,7 @@ const headerData = [
 
 const javaCode = ref(`package net.risesoft.util;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -136,6 +137,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -197,13 +199,14 @@ public class Test {
 		return obj;
 	}
 	
-	/**
-     * 生成签名
-     */
     private static final int GCM_IV_LENGTH = 12;
     // 标签长度
     private static final int GCM_TAG_LENGTH = 16;
-    private static String generateSign(String key, String value) {
+
+    /**
+     * 生成签名
+     */
+    private static String generateSign(String key, String value) throws Exception {
         // 密钥生成器
         KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         // 根据KEY规则初始化密钥生成器生成一个128位的随机源
