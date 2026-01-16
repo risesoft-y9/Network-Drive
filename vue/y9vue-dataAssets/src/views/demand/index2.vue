@@ -65,6 +65,9 @@
                 { title: computed(() => t('内容')), key: 'description' },
                 { title: computed(() => t('申请人')), key: 'publisher', width: 100 },
                 { title: computed(() => t('申请时间')), key: 'createTime', width: settingStore.getDatetimeSpan },
+                { title: computed(() => t('审核状态')), key: 'examineStatus', width: 100, formatter: (row) => {
+                    return row.feedback != '' ? '已处理' : '未处理';
+                } },
                 { title: computed(() => t('操作')), fixed: 'right', width: 200, slot: 'opt_button' }
             ],
             loading: false,
