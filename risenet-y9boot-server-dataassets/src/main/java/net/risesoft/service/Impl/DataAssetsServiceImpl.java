@@ -695,43 +695,43 @@ public class DataAssetsServiceImpl implements DataAssetsService {
         List<Long> ids = dataAssetsRepository.findIdByNameLike("%" + name + "%");
         Page<SubscribeEntity> pageList = null;
         if(StringUtils.isNotBlank(type) && type.equals("admin")) {// 审核列表
-        	pageList = subscribeRepository.findByAssetsIdIn(ids, pageable);
+            pageList = subscribeRepository.findByAssetsIdIn(ids, pageable);
         } else {
-        	pageList = subscribeRepository.findByUserIdAndAssetsIdIn(Y9LoginUserHolder.getPersonId(), ids, pageable);
+            pageList = subscribeRepository.findByUserIdAndAssetsIdIn(Y9LoginUserHolder.getPersonId(), ids, pageable);
         }
         List<Map<String, Object>> listMap = new ArrayList<Map<String,Object>>();
         for(SubscribeEntity subscribeEntity : pageList) {
-        	Map<String, Object> map = new HashMap<String, Object>();
-        	DataAssets dataAssets = findById(subscribeEntity.getAssetsId());
-            if(dataAssets.getStatus() == 0) {
-            	map.put("assetsName", "资产数据已下架！");
-            } else if(dataAssets.getIsDeleted()) {
-        		map.put("assetsName", "资产数据已删除！");
-        	} else {
-        		map.put("id", subscribeEntity.getId());
-        		map.put("assetsId", subscribeEntity.getAssetsId());
-        		map.put("assetsName", dataAssets.getName());
-            	DataCatalog dataCatalog = dataCatalogApiClient.getById(Y9LoginUserHolder.getTenantId(), dataAssets.getCategoryId()).getData();
-            	if(dataCatalog != null) {
-            		String catalog = dataCatalog.getName();
-            		if(StringUtils.isNotBlank(dataCatalog.getParentId())) {
-            			catalog = dataCatalogApiClient.getById(Y9LoginUserHolder.getTenantId(), 
-            					dataCatalog.getParentId()).getData().getName() + "/" + catalog;
-            		}
-            		map.put("catalog", catalog);
-            	} else {
-            		map.put("catalog", "");
-            	}
-            	map.put("provideType", dictionaryOptionService.findByCodeAndType(subscribeEntity.getProvideType(), "provideType"));
-            	map.put("reviewStatus", subscribeEntity.getReviewStatus());
-            	map.put("reason", subscribeEntity.getReason());
-            	map.put("purpose", subscribeEntity.getPurpose());
-            	map.put("createTime", sdf.format(subscribeEntity.getCreateTime()));
-            	map.put("reviewName", subscribeEntity.getReviewName());
-            	map.put("reviewDate", subscribeEntity.getReviewDate());
-                map.put("userName", subscribeEntity.getUserName());
-        	}
-        	listMap.add(map);
+            Map<String, Object> map = new HashMap<String, Object>();
+            DataAssets dataAssets = findById(subscribeEntity.getAssetsId());
+            if(dataAssets.getIsDeleted()) {
+                map.put("reviewStatus", "资产数据已删除");
+            } else if(dataAssets.getStatus() == 0) {
+                map.put("reviewStatus", "资产数据已下架");
+            } else {
+                map.put("id", subscribeEntity.getId());
+                map.put("reviewStatus", subscribeEntity.getReviewStatus());
+            }
+            map.put("assetsId", subscribeEntity.getAssetsId());
+            map.put("assetsName", dataAssets.getName());
+            DataCatalog dataCatalog = dataCatalogApiClient.getById(Y9LoginUserHolder.getTenantId(), dataAssets.getCategoryId()).getData();
+            if(dataCatalog != null) {
+                String catalog = dataCatalog.getName();
+                if(StringUtils.isNotBlank(dataCatalog.getParentId())) {
+                    catalog = dataCatalogApiClient.getById(Y9LoginUserHolder.getTenantId(), 
+                            dataCatalog.getParentId()).getData().getName() + "/" + catalog;
+                }
+                map.put("catalog", catalog);
+            } else {
+                map.put("catalog", "");
+            }
+            map.put("provideType", dictionaryOptionService.findByCodeAndType(subscribeEntity.getProvideType(), "provideType"));
+            map.put("reason", subscribeEntity.getReason());
+            map.put("purpose", subscribeEntity.getPurpose());
+            map.put("createTime", sdf.format(subscribeEntity.getCreateTime()));
+            map.put("reviewName", subscribeEntity.getReviewName());
+            map.put("reviewDate", subscribeEntity.getReviewDate());
+            map.put("userName", subscribeEntity.getUserName());
+            listMap.add(map);
         }
         return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), listMap, "获取数据成功");
 	}

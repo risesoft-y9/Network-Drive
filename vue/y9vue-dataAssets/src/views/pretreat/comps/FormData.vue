@@ -119,7 +119,11 @@
             >
                 <el-form-item label="" prop="dataSensitivity">
                     <span v-if="disabled">{{ form.dataSensitivity }}</span>
-                    <el-input v-else v-model="form.dataSensitivity"></el-input>
+                    <el-select v-else v-model="form.dataSensitivity">
+                        <el-option label="低" value="低"></el-option>
+                        <el-option label="中" value="中"></el-option>
+                        <el-option label="高" value="高"></el-option>
+                    </el-select>
                 </el-form-item>
             </el-descriptions-item>
 
