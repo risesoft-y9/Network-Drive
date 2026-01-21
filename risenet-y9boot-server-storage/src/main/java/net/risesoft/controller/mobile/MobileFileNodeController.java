@@ -88,6 +88,7 @@ public class MobileFileNodeController {
      * @param orderAsc 排序是否正序（true|false）
      * @param response
      */
+    @RiseLog(operationName = "获取文件列表")
     @RequestMapping(value = "/getFileNodeList")
     public void getFileNodeList(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestHeader("auth-positionId") String positionId,
@@ -145,6 +146,7 @@ public class MobileFileNodeController {
      * @param orderAsc 排序是否正序（true|false）
      * @param response
      */
+    @RiseLog(operationName = "获取公共文件列表")
     @RequestMapping(value = "/getPublicFileNodeList")
     public void getPublicFileNodeList(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String folderId,
@@ -202,6 +204,7 @@ public class MobileFileNodeController {
      * @param orderAsc 排序是否正序（true|false）
      * @param response
      */
+    @RiseLog(operationName = "获取公共管理文件列表")
     @RequestMapping(value = "/getPublicManageFileList")
     public void getPublicManageFileList(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String folderId,
@@ -258,6 +261,7 @@ public class MobileFileNodeController {
      * @param orderAsc 排序是否正序（true|false）
      * @param response
      */
+    @RiseLog(operationName = "获取我的收藏列表")
     @RequestMapping(value = "/getCollectFileNodeList")
     public void getCollectFileNodeList(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String folderId,
@@ -316,6 +320,7 @@ public class MobileFileNodeController {
      * @param userId 用户id
      * @param response
      */
+    @RiseLog(operationName = "获取回收站列表")
     @RequestMapping(value = "/getRecycleList")
     public void getRecycleList(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, HttpServletResponse response) {
@@ -744,6 +749,7 @@ public class MobileFileNodeController {
      * @param rows 总行数
      * @param response
      */
+    @RiseLog(operationName = "获取公共文件的文件公开记录列表")
     @RequestMapping(value = "/getDownloadRecord")
     public void getDownloadRecord(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String fileId, @RequestParam Integer page,

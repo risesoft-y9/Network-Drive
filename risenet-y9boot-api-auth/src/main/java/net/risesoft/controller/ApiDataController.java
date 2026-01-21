@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.validation.constraints.NotBlank;
 
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +28,7 @@ import net.risesoft.y9public.entity.ApiServiceLogEntity;
 
 @Validated
 @RestController
-@RequestMapping(value = "/vue/api", produces = "application/json")
+@RequestMapping(value = "/vue/api", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class ApiDataController {
 

@@ -47,6 +47,7 @@ public class StorageCapacityController {
      * @param id
      * @return
      */
+    @RiseLog(operationName = "获取存储信息")
     @RequestMapping(value = "/getCapacityInfo")
     public Y9Result<StorageCapacity> getCapacityInfo(String id) {
         StorageCapacity sc = storageCapacityService.findById(id);
@@ -61,6 +62,7 @@ public class StorageCapacityController {
      * @param rows
      * @return
      */
+    @RiseLog(operationName = "获取存储空间列表")
     @GetMapping(value = "/getCapacityList")
     public Y9Page<Map<String, Object>> getCapacityList(String userName, int page, int rows) {
         List<Map<String, Object>> items = new ArrayList<>();
@@ -90,6 +92,7 @@ public class StorageCapacityController {
      *
      * @return
      */
+    @RiseLog(operationName = "获取存储长度")
     @RequestMapping(value = "/getCapacitySize")
     public Y9Result<Map<String, Object>> getCapacitySize() {
         Map<String, Object> map = new HashMap<>();

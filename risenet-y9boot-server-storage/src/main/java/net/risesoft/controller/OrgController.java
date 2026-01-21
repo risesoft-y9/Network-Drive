@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.risesoft.api.platform.org.PositionApi;
 import net.risesoft.api.platform.permission.cache.PersonRoleApi;
 import net.risesoft.enums.platform.org.OrgTreeTypeEnum;
+import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.platform.org.OrgUnit;
 import net.risesoft.model.platform.org.Organization;
 import net.risesoft.model.platform.org.Position;
@@ -52,7 +54,8 @@ public class OrgController {
      *
      * @return
      */
-    @RequestMapping(value = "/checkManager", method = RequestMethod.GET, produces = "application/json")
+    @RiseLog(operationName = "验证当前人的管理权限", enable = false)
+    @RequestMapping(value = "/checkManager", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public Y9Result<Map<String, Object>> checkManager() {
         Map<String, Object> res_map = new HashMap<String, Object>();
         String tenantId = Y9LoginUserHolder.getTenantId();
@@ -76,10 +79,11 @@ public class OrgController {
     }
 
     /**
-     * 获取当前租户的组织架构
+     * 获取当前租户的组织机构
      *
      * @return
      */
+    @RiseLog(operationName = "获取当前租户的组织机构")
     @GetMapping(value = "/getOrganization")
     public Y9Result<List<Organization>> getOrganization() {
         String tenantId = Y9LoginUserHolder.getTenantId();
@@ -94,6 +98,7 @@ public class OrgController {
      * @param name
      * @return
      */
+    @RiseLog(operationName = "根据id或name获取组织架构树")
     @GetMapping("/getTree")
     public Y9Result<List<OrgUnit>> getOrgTree(@RequestParam(required = false) String id,
         @RequestParam(required = false) String name) {
@@ -119,7 +124,8 @@ public class OrgController {
      * @return
      */
     @SuppressWarnings("deprecation")
-    @RequestMapping(value = "/getPositionList", method = RequestMethod.GET, produces = "application/json")
+    @RiseLog(operationName = "获取个人所有岗位")
+    @RequestMapping(value = "/getPositionList", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Y9Result<Map<String, Object>> getPositionList() {
         String tenantId = Y9LoginUserHolder.getTenantId();

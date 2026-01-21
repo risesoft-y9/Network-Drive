@@ -84,6 +84,7 @@ public class FileNodeShareController {
      * @param rows
      * @return
      */
+    @RiseLog(operationName = "获取文件公开记录列表")
     @GetMapping(value = "/getFilePublicRecord")
     public Y9Page<Map<String, Object>> getFilePublicRecord(String fileId, int page, int rows) {
         String tenantId = Y9LoginUserHolder.getTenantId();
@@ -113,6 +114,7 @@ public class FileNodeShareController {
      * 
      * @return
      */
+    @RiseLog(operationName = "获取我的分享列表")
     @GetMapping("/myList")
     public Y9Result<List<FileNodeShareDTO>> myShareList() {
         List<FileNodeShareDTO> fileNodeShareDTOList = new ArrayList<>();

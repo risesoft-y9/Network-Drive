@@ -49,7 +49,7 @@ public class DataAssetsController {
         return dataAssetsService.saveDataAssets(dataAssets);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取资产数据列表", logLevel = LogLevelEnum.RSLOG)
+    @RiseLog(operationName = "分页获取资产数据列表", logLevel = LogLevelEnum.RSLOG)
     @GetMapping("/searchPage")
     public Y9Page<DataAssets> searchPage(String name, String code, String categoryId, Integer status, String dataState,
         Integer page, Integer size) {
@@ -58,7 +58,8 @@ public class DataAssetsController {
             item.setLabelData(labelService.getLabelData(item.getId()));
             return item;
         }).collect(Collectors.toList());
-        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(), "获取数据成功");
+        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(),
+            "获取数据成功");
     }
 
     @RiseLog(operationType = OperationTypeEnum.DELETE, operationName = "删除数据资产信息", logLevel = LogLevelEnum.RSLOG)
@@ -91,11 +92,12 @@ public class DataAssetsController {
         return dataAssetsService.genCode(categoryId, pCode);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取资产数据挂接文件列表", logLevel = LogLevelEnum.RSLOG)
+    @RiseLog(operationName = "分页获取资产数据挂接文件列表", logLevel = LogLevelEnum.RSLOG)
     @GetMapping("/getFilePage")
     public Y9Page<FileInfo> getFilePage(String name, Long id, Integer page, Integer size) {
         Page<FileInfo> pageList = dataAssetsService.getFilePage(id, name, page, size);
-        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(), "获取数据成功");
+        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(),
+            "获取数据成功");
     }
 
     @RiseLog(operationType = OperationTypeEnum.SEND, operationName = "下载文件", logLevel = LogLevelEnum.RSLOG)
@@ -134,50 +136,50 @@ public class DataAssetsController {
         return dataAssetsService.deleteMountData(id);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "可信数据空间-分页获取数据列表", logLevel = LogLevelEnum.RSLOG)
+    @RiseLog(operationName = "可信数据空间-分页获取数据列表", logLevel = LogLevelEnum.RSLOG)
     @GetMapping("/getDataPage")
     public Y9Page<Map<String, Object>> getDataPage(String searchText, String appScenarios, String dataZone,
         String productType, Integer sort, Integer page, Integer size) {
         return dataAssetsService.searchPage2(searchText, "", appScenarios, dataZone, productType, sort, page, size);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "可信数据空间-获取数据信息", logLevel = LogLevelEnum.RSLOG)
+    @RiseLog(operationName = "可信数据空间-获取数据信息", logLevel = LogLevelEnum.RSLOG)
     @GetMapping("/getDataById")
     public Y9Result<AssetsModel> getDataById(Long id) {
         return dataAssetsService.getDataById(id);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "可信数据空间-获取过滤条件", logLevel = LogLevelEnum.RSLOG)
+    @RiseLog(operationName = "可信数据空间-获取过滤条件", logLevel = LogLevelEnum.RSLOG)
     @GetMapping("/getDataFilter")
     public Y9Result<List<Map<String, Object>>> getDataFilter() {
         return dataAssetsService.getDataFilter();
     }
-    
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "数据订阅-分页获取数据列表", logLevel = LogLevelEnum.RSLOG)
+
+    @RiseLog(operationName = "数据订阅-分页获取数据列表", logLevel = LogLevelEnum.RSLOG)
     @GetMapping("/searchPage2")
     public Y9Page<Map<String, Object>> searchPage2(String searchText, String categoryId, Integer page, Integer size) {
         return dataAssetsService.searchPage2(searchText, categoryId, "", "", "", null, page, size);
     }
-    
+
     @RiseLog(operationType = OperationTypeEnum.ADD, operationName = "保存订阅信息", logLevel = LogLevelEnum.RSLOG)
     @PostMapping(value = "/saveSubscribe")
     public Y9Result<String> saveSubscribe(SubscribeEntity subscribeEntity) {
         return dataAssetsService.saveSubscribe(subscribeEntity);
     }
-    
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "数据订阅-我的订阅列表", logLevel = LogLevelEnum.RSLOG)
+
+    @RiseLog(operationName = "数据订阅-我的订阅列表", logLevel = LogLevelEnum.RSLOG)
     @GetMapping("/searchSubscribePage")
     public Y9Page<Map<String, Object>> searchSubscribePage(String type, String name, Integer page, Integer size) {
         return dataAssetsService.searchSubscribePage(type, name, page, size);
     }
-    
+
     @RiseLog(operationType = OperationTypeEnum.CHECK, operationName = "审核订阅信息", logLevel = LogLevelEnum.RSLOG)
     @PostMapping(value = "/review")
     public Y9Result<String> review(@RequestParam String id, @RequestParam String reviewStatus, String reason) {
         return dataAssetsService.review(id, reviewStatus, reason);
     }
-    
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "订阅与审核信息", logLevel = LogLevelEnum.RSLOG)
+
+    @RiseLog(operationName = "订阅与审核信息", logLevel = LogLevelEnum.RSLOG)
     @GetMapping("/getSubscribeById")
     public Y9Result<Map<String, Object>> getSubscribeById(String id) {
         return Y9Result.success(dataAssetsService.getSubscribeById(id));
@@ -188,8 +190,8 @@ public class DataAssetsController {
     public Y9Result<String> saveSubscribeBase(SubscribeBaseEntity subscribeBaseEntity) {
         return dataAssetsService.saveSubscribeBase(subscribeBaseEntity);
     }
-    
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "根据id获取订阅-库表推送信息", logLevel = LogLevelEnum.RSLOG)
+
+    @RiseLog(operationName = "根据id获取订阅-库表推送信息", logLevel = LogLevelEnum.RSLOG)
     @GetMapping("/getSubscribeBaseById")
     public Y9Result<SubscribeBaseEntity> getSubscribeBaseById(String id) {
         return Y9Result.success(dataAssetsService.getSubscribeBaseById(id));
