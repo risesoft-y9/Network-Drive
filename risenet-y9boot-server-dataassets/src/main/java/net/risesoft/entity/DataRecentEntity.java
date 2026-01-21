@@ -3,10 +3,10 @@ package net.risesoft.entity;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Comment;
 
@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "Y9_DATAASSETS_RECENT")
-@org.hibernate.annotations.Table(comment = "记录数据表", appliesTo = "Y9_DATAASSETS_RECENT")
+@Comment("记录数据表")
 @NoArgsConstructor
 @Data
 public class DataRecentEntity implements Serializable {

@@ -1,10 +1,10 @@
 package net.risesoft.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import org.hibernate.annotations.Comment;
 
@@ -16,7 +16,7 @@ import net.risesoft.converter.EncryptConverter;
 
 @Entity
 @Table(name = "Y9_DATAASSETS_SUBSCRIBEBASE")
-@org.hibernate.annotations.Table(comment = "订阅-库表推送信息表", appliesTo = "Y9_DATAASSETS_SUBSCRIBEBASE")
+@Comment("订阅-库表推送信息表")
 @NoArgsConstructor
 @Data
 public class SubscribeBaseEntity extends BaseEntity {
