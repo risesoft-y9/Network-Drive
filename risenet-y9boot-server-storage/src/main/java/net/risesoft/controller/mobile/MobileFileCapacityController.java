@@ -54,6 +54,7 @@ public class MobileFileCapacityController {
      * @param rows 总行数
      * @param response
      */
+    @RiseLog(operationName = "获取文件空间管理列表")
     @RequestMapping(value = "/getFileCapacityList")
     public void getFileCapacityList(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam(required = false) String userName,
@@ -103,6 +104,7 @@ public class MobileFileCapacityController {
      * @param id 存储空间id
      * @param response
      */
+    @RiseLog(operationName = "根据id获取存储空间信息")
     @RequestMapping(value = "/getCapacityInfo")
     public void getCapacityInfo(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String id, HttpServletResponse response) {

@@ -35,6 +35,7 @@ import net.risesoft.entity.FileNode;
 import net.risesoft.entity.StorageCapacity;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
+import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.user.UserInfo;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.ChunkService;
@@ -115,6 +116,7 @@ public class UploaderController {
         return map;
     }
 
+    @RiseLog(operationName = "上传文件块")
     @PostMapping(value = "/chunk")
     public String uploadChunk1(Chunk chunk, HttpServletResponse response) {
         MultipartFile file = chunk.getFile();
@@ -146,6 +148,7 @@ public class UploaderController {
         }
     }
 
+    @RiseLog(operationName = "验证文件块")
     @GetMapping(value = "/chunk")
     public Object checkChunk(Chunk chunk, HttpServletResponse response) {
         LOGGER.debug("文件 {} 验证, uuid:{}", chunk.getFilename(), chunk.getIdentifier());
@@ -155,6 +158,7 @@ public class UploaderController {
         return chunk;
     }
 
+    @RiseLog(operationName = "合并文件")
     @PostMapping("/mergeFile")
     public Y9Result<Map<String, Object>> mergeFile(FileInfo fileInfo, String parentId, String listType,
         HttpServletResponse response) {

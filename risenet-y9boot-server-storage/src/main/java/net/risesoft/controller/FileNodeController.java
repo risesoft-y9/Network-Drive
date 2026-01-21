@@ -313,6 +313,7 @@ public class FileNodeController {
      * @param orderRequest
      * @return
      */
+    @RiseLog(operationName = "获取收藏列表")
     @GetMapping(value = "/getCollectList")
     public Y9Result<FileNodeListDTO> getCollectList(@RequestHeader("positionId") String positionId,
         @RequestParam(required = false) String id, @RequestParam(required = false) String searchName,
@@ -357,6 +358,7 @@ public class FileNodeController {
      * @return
      */
     @SuppressWarnings("deprecation")
+    @RiseLog(operationName = "获取公共文件下载记录")
     @GetMapping(value = "/getDownloadRecord")
     public Y9Page<Map<String, Object>> getDownloadRecord(String fileId, int page, int rows) {
         List<Map<String, Object>> items = new ArrayList<>();
@@ -382,6 +384,7 @@ public class FileNodeController {
      * @param fileStoreId
      * @return
      */
+    @RiseLog(operationName = "获取txt文件的内容")
     @RequestMapping(value = "/getFileText")
     public Y9Result<Object> getFileText(String fileStoreId) {
         try {
@@ -398,6 +401,7 @@ public class FileNodeController {
      *
      * @return
      */
+    @RiseLog(operationName = "获取我的回收站的文件列表")
     @RequestMapping(value = "/deletedList")
     public Y9Result<List<FileNodeDTO>> deletedList() {
         List<FileNode> fileNodeList = fileNodeService.deletedList(Y9LoginUserHolder.getUserInfo().getPersonId());
@@ -410,6 +414,7 @@ public class FileNodeController {
      * @param id
      * @return
      */
+    @RiseLog(operationName = "获取当前节点的父节点")
     @GetMapping(value = "/getNetParentId")
     public Y9Result<FileNode> getNetParentId(String id) {
         FileNode node = fileNodeService.findById(id);
@@ -423,6 +428,7 @@ public class FileNodeController {
      * @param orderRequest
      * @return
      */
+    @RiseLog(operationName = "根据文件类型和列表类型获取文件列表")
     @GetMapping(value = "/list")
     public Y9Result<FileNodeListDTO> list(@RequestHeader("positionId") String positionId,
         @RequestParam(required = false) String id, @RequestParam(required = false) FileNodeType fileNodeType,
@@ -456,6 +462,7 @@ public class FileNodeController {
      * @param id
      * @return
      */
+    @RiseLog(operationName = "加载所有文件夹")
     @GetMapping(value = "/listFolder")
     public Y9Result<List<FileNodeDTO>> listFolder(@RequestParam(required = false) String id) {
         List<FileNode> subFileList = fileNodeService.subFolderList(id);
@@ -468,6 +475,7 @@ public class FileNodeController {
      * @param id
      * @return
      */
+    @RiseLog(operationName = "加载公共文件下所有文件夹")
     @GetMapping(value = "/listPublicFolder")
     public Y9Result<List<FileNodeDTO>> listPublicFolder(@RequestParam(required = false) String id) {
         List<FileNode> subFileList = fileNodeService.subPublicFolderList(id);
@@ -494,6 +502,7 @@ public class FileNodeController {
      * @param orderRequest
      * @return
      */
+    @RiseLog(operationName = "加载所有公共管理文件")
     @GetMapping(value = "/manageList")
     public Y9Result<FileNodeListDTO> manageList(@RequestParam(required = false) String id,
         @RequestParam(required = false) FileNodeType fileNodeType, @RequestParam(required = false) String searchName,
@@ -540,6 +549,7 @@ public class FileNodeController {
      * @param request
      * @param response
      */
+    @RiseLog(operationName = "打开文件")
     @RequestMapping(value = "/openFile")
     public void openFile(String fileStoreId, HttpServletRequest request, HttpServletResponse response) {
         ServletOutputStream os = null;
@@ -598,6 +608,7 @@ public class FileNodeController {
      * @param orderRequest
      * @return
      */
+    @RiseLog(operationName = "加载所有公共文件")
     @GetMapping(value = "/publicList")
     public Y9Result<FileNodeListDTO> publicList(@RequestParam(required = false) String id,
         @RequestParam(required = false) FileNodeType fileNodeType, @RequestParam(required = false) String searchName,
@@ -751,6 +762,7 @@ public class FileNodeController {
      *
      * @return
      */
+    @RiseLog(operationName = "获取默认顶节点")
     @GetMapping(value = "/topFolder")
     public Y9Result<List<FileNodeDTO>> topFolder(String parentId) {
         List<FileNode> subFileList = new ArrayList<>();

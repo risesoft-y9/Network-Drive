@@ -61,6 +61,7 @@ public class MobileFileShareController {
      * @param userId 用户id
      * @param response
      */
+    @RiseLog(operationName = "获取文件共享记录列表")
     @RequestMapping(value = "/getFileNodeShareRecordList")
     public void getFileNodeShareRecordList(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, HttpServletResponse response) {
@@ -209,6 +210,7 @@ public class MobileFileShareController {
      * @param rows 总行数
      * @param response
      */
+    @RiseLog(operationName = "获取公共文件公开记录列表")
     @RequestMapping(value = "/getFilePublicRecord")
     public void getFilePublicRecord(@RequestHeader("auth-tenantId") String tenantId,
         @RequestHeader("auth-userId") String userId, @RequestParam String fileId, @RequestParam Integer page,

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,22 +35,20 @@ import net.risesoft.y9.sqlddl.pojo.DbColumn;
 
 @Validated
 @RestController
-@RequestMapping(value = "/vue/source", produces = "application/json")
+@RequestMapping(value = "/vue/source", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class SourceController {
 
     private final DataSourceService dataSourceService;
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取数据源分类列表", logLevel = LogLevelEnum.RSLOG,
-        enable = false)
+    @RiseLog(operationName = "获取数据源分类列表", logLevel = LogLevelEnum.RSLOG, enable = false)
     @GetMapping(value = "/findCategoryAll")
     public Y9Result<List<DataSourceTypeEntity>> findCategoryAll() {
         List<DataSourceTypeEntity> list = dataSourceService.findDataCategory();
         return Y9Result.success(list, "获取成功");
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "根据类别获取数据源列表", logLevel = LogLevelEnum.RSLOG,
-        enable = false)
+    @RiseLog(operationName = "根据类别获取数据源列表", logLevel = LogLevelEnum.RSLOG, enable = false)
     @GetMapping(value = "/findByBaseType")
     public Y9Result<List<DataSourceEntity>> findByBaseType(@RequestParam String category) {
         List<DataSourceEntity> list = dataSourceService.findByBaseType(category);
@@ -62,15 +61,13 @@ public class SourceController {
         return Y9Result.success(list, "获取成功");
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取数据表列表", logLevel = LogLevelEnum.RSLOG,
-        enable = false)
+    @RiseLog(operationName = "获取数据表列表", logLevel = LogLevelEnum.RSLOG, enable = false)
     @GetMapping(value = "/getTablePage")
     public Y9Result<List<Map<String, Object>>> getTablePage(String id, String name) {
         return Y9Result.success(dataSourceService.getTablePage(id, name), "获取数据库表成功");
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取表字段信息", logLevel = LogLevelEnum.RSLOG,
-        enable = false)
+    @RiseLog(operationName = "获取表字段信息", logLevel = LogLevelEnum.RSLOG, enable = false)
     @GetMapping(value = "/findTableColumnsByTableName")
     public Y9Result<List<DbColumn>> findTableColumnsByTableName(String dataSourceId, String tableName) {
         List<DbColumn> list = new ArrayList<>();
@@ -87,8 +84,7 @@ public class SourceController {
         return Y9Result.success(list, "获取表字段信息成功");
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取表字段数据信息", logLevel = LogLevelEnum.RSLOG,
-        enable = false)
+    @RiseLog(operationName = "获取表字段数据信息", logLevel = LogLevelEnum.RSLOG, enable = false)
     @GetMapping(value = "/findTableDataByTableName")
     public Y9Page<Map<String, Object>> findTableDataByTableName(String dataSourceId, String tableName,
         @RequestParam(required = false) String columnNameAndValues, @RequestParam Integer page,
@@ -107,8 +103,7 @@ public class SourceController {
         return Y9Page.failure(page, rows, 0, null, "获取数据失败", 500);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "搜索数据源列表", logLevel = LogLevelEnum.RSLOG,
-        enable = false)
+    @RiseLog(operationName = "搜索数据源列表", logLevel = LogLevelEnum.RSLOG, enable = false)
     @GetMapping(value = "/searchSource")
     public Y9Result<List<Map<String, Object>>> searchSource(String name) {
         return Y9Result.success(dataSourceService.searchSource(name), "获取成功");
@@ -133,8 +128,7 @@ public class SourceController {
         return Y9Result.successMsg("保存成功");
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "根据id获取数据源信息", logLevel = LogLevelEnum.RSLOG,
-        enable = false)
+    @RiseLog(operationName = "根据id获取数据源信息", logLevel = LogLevelEnum.RSLOG, enable = false)
     @GetMapping(value = "/getDataSource")
     public Y9Result<DataSourceEntity> getDataSource(String id) {
         DataSourceEntity dataSourceEntity = dataSourceService.getDataSourceById(id);
@@ -150,8 +144,7 @@ public class SourceController {
         return dataSourceService.deleteDataSource(id);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "检测数据源状态", logLevel = LogLevelEnum.RSLOG,
-        enable = false)
+    @RiseLog(operationName = "检测数据源状态", logLevel = LogLevelEnum.RSLOG, enable = false)
     @GetMapping(value = "/checkStatus")
     public Y9Result<Boolean> checkStatus(String sourceId) {
         DataSourceEntity source = dataSourceService.getDataSourceById(sourceId);
@@ -220,13 +213,14 @@ public class SourceController {
         return Y9Result.success(dataSourceService.getDataSourceByAssetsId(assetsId));
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "根据资产id获取挂接的数据表", logLevel = LogLevelEnum.RSLOG)
+    @RiseLog(operationName = "根据资产id获取挂接的数据表", logLevel = LogLevelEnum.RSLOG)
     @GetMapping(value = "/getTableByAssetsId")
     public Y9Result<List<Map<String, Object>>> getTableByAssetsId(Long assetsId, String identifier) {
         List<String> list = dataSourceService.getTableByAssetsId(assetsId, identifier);
         List<Map<String, Object>> listMap = dataSourceService.getTablePage(identifier, "");
         // 过滤掉listMap里name值不在list的元素
-        listMap = listMap.stream().filter((item) -> list.contains(item.get("name").toString())).collect(Collectors.toList());
+        listMap =
+            listMap.stream().filter((item) -> list.contains(item.get("name").toString())).collect(Collectors.toList());
         return Y9Result.success(listMap, "获取数据库表成功");
     }
 

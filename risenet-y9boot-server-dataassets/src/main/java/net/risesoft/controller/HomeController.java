@@ -6,16 +6,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.MediaType;
 
 import lombok.RequiredArgsConstructor;
+
 import net.risesoft.entity.DataRecentEntity;
 import net.risesoft.entity.DataSourceEntity;
 import net.risesoft.log.LogLevelEnum;
-import net.risesoft.log.OperationTypeEnum;
 import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
@@ -32,7 +32,7 @@ import net.risesoft.service.DataSourceService;
 @RequiredArgsConstructor
 @RequestMapping(value = "/vue/home", produces = MediaType.APPLICATION_JSON_VALUE)
 public class HomeController {
-    
+
     private final DataRecentService dataRecentService;
     private final DataSourceService dataSourceService;
     private final DataApiOnlineService dataApiOnlineService;
@@ -42,14 +42,15 @@ public class HomeController {
     private final DataSourceRepository dataSourceRepository;
     private final DataAssetsRepository dataAssetsRepository;
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取最近操作数据列表", logLevel = LogLevelEnum.RSLOG)
+    @RiseLog(operationName = "分页获取最近操作数据列表", logLevel = LogLevelEnum.RSLOG)
     @GetMapping("/findDataRecent")
     public Y9Page<DataRecentEntity> findAll(Integer page, Integer size) {
         Page<DataRecentEntity> pageList = dataRecentService.findAll(page, size);
-        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(), "获取数据成功");
+        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(),
+            "获取数据成功");
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取首页统计数据", logLevel = LogLevelEnum.RSLOG)
+    @RiseLog(operationName = "获取首页统计数据", logLevel = LogLevelEnum.RSLOG)
     @GetMapping("/findHomeStatistics")
     public Y9Result<Map<String, Object>> findHomeStatistics() {
         Map<String, Object> map = new HashMap<>();
@@ -57,10 +58,10 @@ public class HomeController {
         map.put("totalAssetCount", dataAssetsRepository.count());
         // 获取数据源数据量和表数量
         List<DataSourceEntity> dataSourceList = dataSourceRepository.findAll();
-        if(dataSourceList != null && !dataSourceList.isEmpty()) {
+        if (dataSourceList != null && !dataSourceList.isEmpty()) {
             map.put("totalDataSourceCount", dataSourceList.size());
             int num = 0;
-            for(DataSourceEntity dataSource : dataSourceList) {
+            for (DataSourceEntity dataSource : dataSourceList) {
                 num += dataSourceService.getTablePage(dataSource.getId(), "").size();
             }
             map.put("totalTableCount", num);
@@ -78,8 +79,7 @@ public class HomeController {
         List<Map<String, Object>> dataTypeCount = new ArrayList<>();
         Map<String, Object> dataType1 = new HashMap<>();
         dataType1.put("name", "结构化数据");
-        dataType1.put("value", fileInfoRepository.countByFileType("数据库")
-        + fileInfoRepository.countByFileType("数据表"));
+        dataType1.put("value", fileInfoRepository.countByFileType("数据库") + fileInfoRepository.countByFileType("数据表"));
         dataTypeCount.add(dataType1);
 
         Map<String, Object> dataType2 = new HashMap<>();

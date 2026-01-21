@@ -6,6 +6,7 @@ import java.util.Map;
 import jakarta.validation.constraints.NotBlank;
 
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,21 +28,19 @@ import net.risesoft.service.LabelService;
 
 @Validated
 @RestController
-@RequestMapping(value = "/vue/label", produces = "application/json")
+@RequestMapping(value = "/vue/label", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 public class LabelController {
 
     private final LabelService labelService;
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取目录树", logLevel = LogLevelEnum.RSLOG,
-        enable = false)
+    @RiseLog(operationName = "获取目录树", logLevel = LogLevelEnum.RSLOG, enable = false)
     @GetMapping("/getTree")
     public Y9Result<List<Map<String, Object>>> getTree(String parentId, String name) {
         return Y9Result.success(labelService.getTree(parentId, name), "获取数据成功");
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取目录信息", logLevel = LogLevelEnum.RSLOG,
-        enable = false)
+    @RiseLog(operationName = "获取目录信息", logLevel = LogLevelEnum.RSLOG, enable = false)
     @GetMapping(value = "/{id}")
     public Y9Result<LabelCatalogEntity> getData(@PathVariable @NotBlank String id) {
         return Y9Result.success(labelService.getById(id), "获取数据成功");
@@ -59,8 +58,7 @@ public class LabelController {
         return labelService.deleteData(id);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "分页获取标签列表", logLevel = LogLevelEnum.RSLOG,
-        enable = false)
+    @RiseLog(operationName = "分页获取标签列表", logLevel = LogLevelEnum.RSLOG, enable = false)
     @GetMapping("/searchPage")
     public Y9Page<LabelDataEntity> searchPage(String parentId, Integer page, Integer size) {
         Page<LabelDataEntity> pageList = labelService.searchPage(parentId, page, size);
@@ -80,8 +78,7 @@ public class LabelController {
         return labelService.deleteLabelData(id);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取标签列表", logLevel = LogLevelEnum.RSLOG,
-        enable = false)
+    @RiseLog(operationName = "获取标签列表", logLevel = LogLevelEnum.RSLOG, enable = false)
     @GetMapping(value = "/getLabelDataList")
     public Y9Result<List<Map<String, Object>>> getLabelDataList() {
         return labelService.getLabelDataList();
@@ -93,8 +90,7 @@ public class LabelController {
         return labelService.saveAssetsLabel(ids, assetsId);
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, operationName = "获取资产标签列表", logLevel = LogLevelEnum.RSLOG,
-        enable = false)
+    @RiseLog(operationName = "获取资产标签列表", logLevel = LogLevelEnum.RSLOG, enable = false)
     @GetMapping(value = "/getLabels")
     public Y9Result<List<String>> getLabels(Long assetsId) {
         return labelService.getLabels(assetsId);

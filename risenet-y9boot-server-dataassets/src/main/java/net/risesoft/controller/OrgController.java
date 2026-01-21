@@ -97,7 +97,7 @@ public class OrgController {
         return Y9Result.successMsg("重置密码成功！");
     }
 
-    @RiseLog(operationType = OperationTypeEnum.BROWSE, logLevel = LogLevelEnum.RSLOG, operationName = "获取人员信息")
+    @RiseLog(logLevel = LogLevelEnum.RSLOG, operationName = "获取人员信息")
     @GetMapping("/getPersonInfo")
     public Y9Result<Map<String, Object>> getPersonInfo() {
         Map<String, Object> map = new HashMap<String, Object>();

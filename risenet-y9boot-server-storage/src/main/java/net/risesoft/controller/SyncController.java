@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.entity.FileNode;
+import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.repository.FileNodeRepository;
 import net.risesoft.support.RootFolder;
@@ -29,6 +30,7 @@ public class SyncController {
 
     private final Y9FileStoreService y9FileStoreService;
 
+    @RiseLog(operationName = "同步文件大小")
     @RequestMapping("/fileSize")
     public Y9Result<Object> fileSize() {
         List<FileNode> fileNodeList = fileNodeRepository.findAll();
@@ -44,6 +46,7 @@ public class SyncController {
         return Y9Result.success();
     }
 
+    @RiseLog(operationName = "同步根文件夹")
     @RequestMapping("/rootFolder")
     public Y9Result<Object> rootFolder() {
         List<FileNode> fileNodeList = fileNodeRepository.findAll();
