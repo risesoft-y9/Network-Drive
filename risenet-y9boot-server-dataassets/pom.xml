@@ -19,12 +19,12 @@
     </properties>
 
     <dependencies>
-    	<dependency>
-			<groupId>net.risesoft</groupId>
-			<artifactId>risenet-y9boot-api-auth</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		
+        <dependency>
+            <groupId>net.risesoft</groupId>
+            <artifactId>risenet-y9boot-api-auth</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>net.risesoft</groupId>
             <artifactId>risenet-y9boot-starter-sso-oauth2-resource</artifactId>
@@ -36,7 +36,7 @@
             <artifactId>risenet-y9boot-starter-security</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>net.risesoft</groupId>
             <artifactId>risenet-y9boot-starter-log</artifactId>
@@ -66,7 +66,7 @@
             <artifactId>risenet-y9boot-api-feignclient-platform</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>net.risesoft</groupId>
             <artifactId>risenet-y9boot-api-interface-platform</artifactId>
@@ -78,13 +78,13 @@
             <artifactId>risenet-y9boot-support-file-service-ftp</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>net.risesoft</groupId>
             <artifactId>risenet-y9boot-support-file-service-local</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>net.risesoft</groupId>
             <artifactId>risenet-y9boot-idcode</artifactId>
@@ -125,17 +125,17 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
-		    <groupId>com.oracle.database.nls</groupId>
-		    <artifactId>orai18n</artifactId>
-		</dependency>
-		
-		<!-- SQL Server Driver -->
-	    <dependency>
-	        <groupId>com.microsoft.sqlserver</groupId>
-	        <artifactId>mssql-jdbc</artifactId>
-	    </dependency>
+            <groupId>com.oracle.database.nls</groupId>
+            <artifactId>orai18n</artifactId>
+        </dependency>
+
+        <!-- SQL Server Driver -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+        </dependency>
 
     </dependencies>
 
