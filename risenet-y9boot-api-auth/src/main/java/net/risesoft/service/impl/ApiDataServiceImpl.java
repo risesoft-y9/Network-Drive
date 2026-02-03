@@ -334,11 +334,14 @@ public class ApiDataServiceImpl implements ApiDataService {
     }
 
     @Override
-    public Page<ApiServiceLogEntity> searchLogPage(String appName, int page, int size) {
+    public Page<ApiServiceLogEntity> searchLogPage(String appName, String apiType, int page, int size) {
         if (page < 0) {
             page = 1;
         }
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createTime"));
+        if (StringUtils.isNotBlank(apiType)) {
+            return apiServiceLogRepository.findByAppNameContainingAndApiType(appName, apiType, pageable);
+        }
         return apiServiceLogRepository.findByAppNameContaining(appName, pageable);
     }
 
@@ -410,15 +413,19 @@ public class ApiDataServiceImpl implements ApiDataService {
             String dateStr = sdf.format(date);
             // 根据时间字段模糊查询当天的数据量
             Long count = 0L;
+            Long successCount = 0L;
             try {
                 SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 count = apiServiceLogRepository.countByCreateTimeLike(sdf2.parse(dateStr + " 00:00:00"), sdf2.parse(dateStr + " 23:59:59"));
+                // 根据时间字段模糊查询当天成功的数据量
+                successCount = apiServiceLogRepository.countByCreateTimeAndResult(sdf2.parse(dateStr + " 00:00:00"), sdf2.parse(dateStr + " 23:59:59"), "success");
             } catch (ParseException e) {
                 e.printStackTrace();
             }
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("date", dateStr);
-            map.put("count", count);
+            map.put("errorCount", count - successCount);
+            map.put("successCount", successCount);
             list.add(map);
         }
         return list;

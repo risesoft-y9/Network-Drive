@@ -29,4 +29,6 @@ public interface DataSourceRepository
 
     List<DataSourceEntity> findByTenantId(String tenantId);
 
+    List<DataSourceEntity> findByTenantIdAndType(String tenantId, Integer type);
+
 }

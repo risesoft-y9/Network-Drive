@@ -1,5 +1,6 @@
 package net.risesoft.api.auth.util;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -336,4 +337,43 @@ public class Y9SqlUtil {
             closedCount, failedCount, (closedCount + failedCount));
     }
 
+    /**
+     * 获取表的数据量和数据最新更新时间
+     * 
+     * @param tableName 表名
+     * @param url 数据库URL
+     * @param username 用户名
+     * @param password 密码
+     * @param driver 驱动类名
+     * @return 包含数据量和最新更新时间的Map
+     */
+    public static Map<String, Object> getTableInfo(String tableName, String url, String username, String password, String driver) {
+        Map<String, Object> tableInfo = new HashMap<>();
+        try {
+            DataSource dataSource = createDataSource(url, username, password, driver);
+            JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+            
+            // 获取数据量
+            String countSql = "SELECT COUNT(*) FROM " + tableName;
+            Long rowCount = jdbcTemplate.queryForObject(countSql, Long.class);
+            tableInfo.put("rowCount", rowCount);
+            
+            // 获取最新更新时间,如果报表中没有UPDATE_TIME字段,则返回查不到表的更新字段
+            try {
+                String maxDateSql = "SELECT MAX(UPDATE_TIME) FROM " + tableName;
+                Object maxDateObj = jdbcTemplate.queryForObject(maxDateSql, Object.class);
+                if (maxDateObj != null) {
+                    tableInfo.put("maxUpdateTime", maxDateObj);
+                } else {
+                    tableInfo.put("maxUpdateTime", null);
+                }
+            } catch (Exception e) {
+                tableInfo.put("maxUpdateTime", "查不到表的更新时间字段");
+            }
+        } catch (Exception e) {
+            logger.error("Failed to get table info for table: {}", tableName, e);
+            throw new RuntimeException("Failed to get table info", e);
+        }
+        return tableInfo;
+    }
 }

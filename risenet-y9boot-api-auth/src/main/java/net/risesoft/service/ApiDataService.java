@@ -117,7 +117,7 @@ public interface ApiDataService {
      * @param size
      * @return
      */
-    Page<ApiServiceLogEntity> searchLogPage(String appName, int page, int size);
+    Page<ApiServiceLogEntity> searchLogPage(String appName, String apiType, int page, int size);
 
     /**
      * 获取API树

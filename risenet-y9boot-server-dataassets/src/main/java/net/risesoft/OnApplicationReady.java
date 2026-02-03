@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import net.risesoft.y9.Y9LoginUserHolder;
-
 @Component
 @Slf4j
 @RequiredArgsConstructor
@@ -25,7 +23,7 @@ public class OnApplicationReady implements ApplicationListener<ApplicationReadyE
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         LOGGER.info("DataAssets service ApplicationReady...");
-        Y9LoginUserHolder.setTenantId(tenantId);
+        //Y9LoginUserHolder.setTenantId(tenantId);
     }
 
     @PostConstruct

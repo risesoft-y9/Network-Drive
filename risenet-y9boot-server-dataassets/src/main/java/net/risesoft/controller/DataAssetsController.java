@@ -1,5 +1,9 @@
 package net.risesoft.controller;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
-
+import net.risesoft.converter.util.Y9Encrytor;
 import net.risesoft.entity.DataAssets;
 import net.risesoft.entity.FileInfo;
 import net.risesoft.entity.SubscribeBaseEntity;
@@ -30,6 +34,9 @@ import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.DataAssetsService;
 import net.risesoft.service.LabelService;
+import net.risesoft.util.DataConstant;
+import net.risesoft.y9.Y9Context;
+import net.risesoft.y9.Y9LoginUserHolder;
 
 /**
  * 资产管理
@@ -195,6 +202,76 @@ public class DataAssetsController {
     @GetMapping("/getSubscribeBaseById")
     public Y9Result<SubscribeBaseEntity> getSubscribeBaseById(String id) {
         return Y9Result.success(dataAssetsService.getSubscribeBaseById(id));
+    }
+
+    @PostMapping("/checkSubscribeBase")
+    public Y9Result<String> checkSubscribeBase(String subscribeId) {
+        SubscribeBaseEntity subscribeBaseEntity = dataAssetsService.getSubscribeBaseById(subscribeId);
+        if (subscribeBaseEntity == null) {
+            return Y9Result.failure("订阅-库表推送信息不存在");
+        }
+        SubscribeEntity subscribeEntity = dataAssetsService.findById(subscribeId);
+        if (subscribeEntity == null) {
+            return Y9Result.failure("订阅不存在");
+        }
+
+        // 获取数据流引擎数据库配置
+        String driverClassName = Y9Context.getProperty("dataflow.driverClassName");
+        String jdbcUrl = Y9Context.getProperty("dataflow.jdbcUrl");
+        String username = Y9Context.getProperty("dataflow.username");
+        String password = Y9Context.getProperty("dataflow.password");
+        // 加载数据库驱动
+        try {
+            Class.forName(driverClassName);
+        } catch (ClassNotFoundException e) {
+            return Y9Result.failure("数据库驱动加载失败");
+        }
+
+        // 连接数据库
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
+            // 根据推送库的连接url：jdbc:mysql://localhost:3306/y9_data获取数据库的类型、驱动信息
+            String url = subscribeBaseEntity.getUrl();
+            // 从url中提取数据库类型
+            String databaseProductName = url.substring(url.indexOf(":") + 1, url.indexOf("://"));
+            // 获取数据库的驱动信息
+            String driverName = DataConstant.getDirver(databaseProductName);
+            if (driverClassName.isEmpty()) {
+                return Y9Result.failure("不支持的数据库类型");
+            }
+
+            // 将库表推送信息保存到数据流引擎库Y9_DATASERVICE_DATASOURCE表里
+            // 根据subscribeBaseEntity的id判断数据是否存在，存在返回查询到的名称
+            String checkSql = "SELECT BASENAME FROM Y9_DATASERVICE_DATASOURCE WHERE ID = ?";
+            try (PreparedStatement checkStatement = connection.prepareStatement(checkSql)) {
+                checkStatement.setString(1, subscribeBaseEntity.getId());
+                try (ResultSet resultSet = checkStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return Y9Result.success(resultSet.getString(1));
+                    }
+                }
+            }
+            String name = "资产订阅推送库";
+            DataAssets dataAssetsEntity = dataAssetsService.findById(subscribeEntity.getAssetsId());
+            if (dataAssetsEntity != null) {
+                name = name + "-" + dataAssetsEntity.getName();
+            }
+            name = name + "-" + subscribeEntity.getUserName();
+
+            Y9Encrytor y9Encrytor = new Y9Encrytor();
+            String encryptPassword = y9Encrytor.Encrytor(subscribeBaseEntity.getPassword());
+            String sql = "INSERT INTO Y9_DATASERVICE_DATASOURCE (ID,CREATE_TIME,UPDATE_TIME,BASENAME,BASESCHEMA,BASETYPE,DIRECTORY,DRIVER,INITIALSIZE,ISLOOK,MAXACTIVE,MINIDLE,PASSWORD,REMARK,RUNTYPE,`TYPE`,URL,USERNAME,TENANTID,USERID,EXTERNALID,SYSTEMNAME) " +
+            "VALUES ('"+subscribeBaseEntity.getId()+"',null,null,'"+name+"','','"+databaseProductName+"','','"+driverName+"',1,0,20,1,'"+encryptPassword+"','"+subscribeBaseEntity.getRemark()+"',NULL,0,'"+subscribeBaseEntity.getUrl()+"','"+subscribeBaseEntity.getUsername()+"','"+Y9LoginUserHolder.getTenantId()+"','"+Y9LoginUserHolder.getPersonId()+"','"+subscribeId+"','dataassets')";
+            // 执行SQL语句
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                int rowsAffected = preparedStatement.executeUpdate();
+                if (rowsAffected > 0) {
+                    return Y9Result.success(name);
+                }
+            }
+            return Y9Result.failure("跳转库表推送信息保存失败");
+        } catch (Exception e) {
+            return Y9Result.failure("程序出错："+e.getMessage());
+        }
     }
 
 }

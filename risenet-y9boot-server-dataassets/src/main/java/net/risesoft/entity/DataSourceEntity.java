@@ -92,6 +92,14 @@ public class DataSourceEntity extends BaseEntity {
     @ColumnDefault("0")
     private Integer type;
 
+    @Column(name = "PROVIDER", length = 200)
+    @Comment(value = "提供方")
+    private String provider;
+
+    @Column(name = "CONTACT", length = 200)
+    @Comment(value = "联系方式")
+    private String contact;
+
     @Column(name = "TENANTID", length = 50)
     @Comment(value = "租户ID")
     private String tenantId;

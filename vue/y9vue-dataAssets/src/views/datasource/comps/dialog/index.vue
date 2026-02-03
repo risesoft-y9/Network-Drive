@@ -1,11 +1,12 @@
 <template>
     <y9Dialog v-model:config="dialogConfig">
-        <component ref="compRef" :is="dialogConfig.flag" :isAdd="true" :flxedTree="flxedTree"></component>
+        <component ref="compRef" :is="dialogConfig.flag" :isAdd="true" :flxedTree="flxedTree" :baseType="currNode.baseType"></component>
     </y9Dialog>
 </template>
 <script lang="ts">
     import DataSourceType from '../dataSourceType/index.vue';
     import DataSource from '../dataSource/dataForm.vue';
+    import { ElNotification } from 'element-plus';
     export default {
         components: {
             DataSourceType,
@@ -14,11 +15,11 @@
     };
 </script>
 <script lang="ts" setup>
-    import { ref } from 'vue';
+    import { nextTick, ref } from 'vue';
     import { addDataSourceInfo, saveDataConnectInfo } from '@/api/dataSource';
     import { FormType } from '../../enums';
 
-    const compRef = ref(null);
+    const compRef = ref();
 
     const props = defineProps({
         currNode: {
@@ -38,7 +39,7 @@
         title: '我是标题',
         resetText: '重置',
         onOk: (config) => {
-            return new Promise(async (resolve, reject) => {
+            return new Promise<void>(async (resolve, reject) => {
                 //数据源类型表单
                 if (config.value.flag === FormType.DATA_SOURCE_TYPE) {
                     //校验表单
@@ -92,9 +93,7 @@
 
                     //所有表单校验通过，提交数据
                     if (checkPassCount === compRef.value.formList.length) {
-                        console.log('树的增加，提交给后端的数据：', formData);
                         let result = await saveDataConnectInfo(formData);
-                        console.log('result', result);
                         // 刷新树
                         props.flxedTree?.onRefreshTree();
                         resolve();

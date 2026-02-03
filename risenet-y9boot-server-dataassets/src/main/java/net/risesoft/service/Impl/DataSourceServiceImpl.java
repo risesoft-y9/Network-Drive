@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
+import net.risesoft.api.auth.util.Y9SqlUtil;
 import net.risesoft.entity.DataRecentEntity;
 import net.risesoft.entity.DataSourceEntity;
 import net.risesoft.entity.DataSourceTypeEntity;
@@ -226,6 +227,9 @@ public class DataSourceServiceImpl implements DataSourceService {
         try {
             List<DataSourceTypeEntity> dataSourceTypeEntities = findDataCategory();
             for (DataSourceTypeEntity entity : dataSourceTypeEntities) {
+                if (entity.getType() == 1) {
+                    continue;
+                }
                 Map<String, Object> map = new HashMap<String, Object>();
                 map.put("value", entity.getId());
                 map.put("label", entity.getName());
@@ -372,6 +376,26 @@ public class DataSourceServiceImpl implements DataSourceService {
             listMap.add(fileInfo.getName());
         }
         return listMap;
+    }
+
+    @Override
+    public Map<String, Object> getTableDetail(String sourceId, String tableName) {
+        Map<String, Object> map = new HashMap<String, Object>();
+        try {
+            DataSourceEntity dataSourceEntity = getDataSourceById(sourceId);
+            if (dataSourceEntity != null) {
+                // 获取数据表详情
+                map = Y9SqlUtil.getTableInfo(tableName, dataSourceEntity.getUrl(), dataSourceEntity.getUsername(), dataSourceEntity.getPassword(), dataSourceEntity.getDriver());
+                map.put("sourceType", dataSourceEntity.getBaseType());
+                map.put("sourceName", dataSourceEntity.getName());
+                map.put("provider", dataSourceEntity.getProvider());
+                map.put("contact", dataSourceEntity.getContact());
+                map.put("remark", dataSourceEntity.getRemark());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return map;
     }
 
 }

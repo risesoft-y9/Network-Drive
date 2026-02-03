@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,6 +64,20 @@ public class DataConstant {
             default:
                 return "";
         }
+    }
+
+    /**
+     * 获取昨天日期
+     * 
+     * @return 昨天日期
+     */
+    public static String getYesterday() {
+        // 1. 获取当前日期（本地日期，不含时间）
+        LocalDate today = LocalDate.now();
+        
+        // 2. 减去1天，得到昨天的日期
+        LocalDate yesterday = today.minusDays(1);
+        return yesterday.toString();
     }
 
     public static void main(String[] args) {

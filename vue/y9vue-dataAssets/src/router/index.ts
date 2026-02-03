@@ -13,6 +13,7 @@ import subscriptionRouter from './modules/subscriptionRouter';
 import myRouter from './modules/myRouter';
 import apiApplyRouter from './modules/apiApplyRouter';
 import homeRouter from './modules/homeRouter';
+import monitorRouter from './modules/monitorRouter';
 
 //constantRoutes为不需要动态判断权限的路由，如登录、404、500等
 export const constantRoutes: Array<any> = [
@@ -66,6 +67,7 @@ export const asyncRoutes = [
     libraryRouter,
     dictionaryRouter,
     generateApiRouter,
+    monitorRouter,
     //...routes
     // 引入其他模块路由
 

@@ -106,7 +106,8 @@
         let params = {
             page: tableConfig.value.pageConfig.currentPage,
             size: tableConfig.value.pageConfig.pageSize,
-            appName: formLine.value.appName == null ? '' : formLine.value.appName
+            appName: formLine.value.appName == null ? '' : formLine.value.appName,
+            apiType: '内部接口'
         };
         let res = await searchLogPage(params);
         if (res.code == 0) {

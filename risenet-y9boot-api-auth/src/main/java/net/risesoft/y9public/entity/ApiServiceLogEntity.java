@@ -34,6 +34,10 @@ public class ApiServiceLogEntity extends BaseEntity {
     @Comment(value = "请求的url")
     private String requestUrl;
 
+    @Column(name = "APITYPE", length = 50)
+    @Comment(value = "接口类型：内部接口、转发接口")
+    private String apiType;
+
     @Column(name = "HOSTIP", length = 50)
     @Comment(value = "请求者IP")
     private String hostIp;

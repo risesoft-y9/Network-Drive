@@ -40,8 +40,9 @@
     import { useI18n } from 'vue-i18n';
     import { useSettingStore } from '@/store/modules/settingStore';
     import { getStoragePageSize } from '@/utils';
-    import { searchSubscribePage } from '@/api/pretreat';
+    import { checkSubscribeBase, searchSubscribePage } from '@/api/pretreat';
     import Info from '@/views/subscribe/comps/Info.vue';
+    import { ElMessageBox, ElNotification } from 'element-plus';
 
     const settingStore = useSettingStore();
     // 注入 字体对象
@@ -73,7 +74,7 @@
                 {
                     title: computed(() => t('操作')),
                     fixed: 'right',
-                    width: '120px',
+                    width: '160px',
                     render: (row) => {
                         let editActions = [
                             h(
@@ -101,6 +102,28 @@
                                 ]
                             )
                         ];
+                        if(row.provideType == '库表推送'){
+                            editActions.push(
+                                h(
+                                    'span',
+                                    {
+                                        style: {
+                                            cursor: 'pointer',
+                                            marginLeft: '10px',
+                                        },
+                                        class: 'global-btn-second',
+                                        onClick: async () => {
+                                            subscribeId.value = row.id;
+                                            configTask();
+                                        }
+                                    },
+                                    [
+                                        h('i', { class: 'ri-settings-line' }),
+                                        h('span', t('配置任务'))
+                                    ]
+                                )
+                            )
+                        }
                         return h('span', editActions);
                     }
                 }
@@ -188,6 +211,24 @@
         dialogConfig.value.show = false;
         searchData();
     };
+
+    async function configTask(){
+        let result = await checkSubscribeBase({
+            subscribeId: subscribeId.value
+        });
+        if(result.success){
+            // 新开一个窗口打开配置任务页面
+            window.open(import.meta.env.VUE_APP_DATAFLOW_URL + result.data);
+        } else {
+            ElNotification({
+                title: result.success ? t('成功') : t('失败'),
+                message: result.msg,
+                type: result.success ? 'success' : 'error',
+                duration: 2000,
+                offset: 80
+            });
+        }
+    }
 </script>
 <style lang="scss" scoped>
     @import '@/theme/global.scss';

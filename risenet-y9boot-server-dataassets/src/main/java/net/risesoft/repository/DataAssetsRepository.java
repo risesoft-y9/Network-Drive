@@ -28,4 +28,28 @@ public interface DataAssetsRepository extends JpaRepository<DataAssets, Long>, J
     
     @Query("select p.id from DataAssets p where p.name like ?1")
     List<Long> findIdByNameLike(String name);
+
+    /**
+     * 获取已登记的资产数量
+     *
+     * @return 已登记的资产数量
+     */
+    @Query("select count(p) from DataAssets p where p.isDeleted = false")
+    Long countByIsDeletedFalse();
+
+    /**
+     * 获取已上架的资产数量
+     *
+     * @return 已上架的资产数量
+     */
+    @Query("select count(p) from DataAssets p where p.isDeleted = false and p.status = 1")
+    Long countByIsUpTrueAndIsDeletedFalse();
+
+    /**
+     * 获取已入库的资产数量
+     *
+     * @return 已入库的资产数量
+     */
+    @Query("select count(p) from DataAssets p where p.isDeleted = false and p.status = 1 and p.dataState = 'in'")
+    Long countByIsUpFalseAndIsDeletedFalse();
 }

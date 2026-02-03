@@ -61,8 +61,8 @@
                     </div>
                 </template>
                 <div class="chart-row">
-                    <div ref="apiTrendChart" class="chart-half"></div>
-                    <div ref="apiTypeChart" class="chart-half"></div>
+                    <div ref="dataTrendChart" class="chart-half"></div>
+                    <div ref="dataTypeChart" class="chart-half"></div>
                 </div>
             </el-card>
         </div>
@@ -92,23 +92,22 @@ import { findHomeStatistics, searchRecentPage } from '@/api/home';
 // 数据统计
 const dataStats = reactive({
     totalAssetCount: 0,
-    dataSourceCount: 24,
-    tableCount: 156,
-    apiCount: 89,
-    subscriptionCount: 123
+    dataSourceCount: 0,
+    tableCount: 0,
+    apiCount: 0,
+    subscriptionCount: 0
 });
 
 // 最近活动
 let recentActivities = ref([]);
 
 // 图表引用
-const apiTrendChart = ref<HTMLElement | null>(null);
-const apiTypeChart = ref<HTMLElement | null>(null);
+const dataTrendChart = ref<HTMLElement | null>(null);
+const dataTypeChart = ref<HTMLElement | null>(null);
 
 // 初始化图表
 onMounted(() => {
     initHomeStatistics();
-    
     // 初始化最近活动
     fetchRecentActivities();
 });
@@ -124,10 +123,8 @@ function initHomeStatistics() {
             dataStats.tableCount = res.data.totalTableCount;
             dataStats.apiCount = res.data.totalApiCount;
             dataStats.subscriptionCount = res.data.totalSubscribeCount;
-            const xData = res.data.dailyApiCallCount.map(item => item.date);
-            const yData = res.data.dailyApiCallCount.map(item => item.count);
-            initApiTrendChart(xData, yData);
-            initApiTypeChart(res.data.dataTypeCount);
+            initDataTypeChart(res.data.dataTypeCount);
+            initDataChart(res.data.assetsTypeCount);
         }
     });
 }
@@ -135,7 +132,7 @@ function initHomeStatistics() {
 function fetchRecentActivities() {
     searchRecentPage({
         page: 1,
-        size: 15
+        size: 30
     }).then(res => {
         if (res.success) {
             recentActivities.value = res.rows;
@@ -143,38 +140,34 @@ function fetchRecentActivities() {
     });
 }
 
-// 初始化API调用趋势图表
-function initApiTrendChart(xData, yData) {
-    if (apiTrendChart.value) {
-        const chart = echarts.init(apiTrendChart.value);
+function initDataChart(data) {
+    if (dataTrendChart.value) {
+        const chart = echarts.init(dataTrendChart.value);
         const option = {
             tooltip: {
-                trigger: 'axis'
+                trigger: 'item'
             },
             title: {
-                text: 'API调用趋势'
+                text: '资产数据情况分布'
             },
-            grid: {
-                left: '3%',
-                right: '4%',
-                bottom: '3%',
-                containLabel: true
-            },
-            xAxis: {
-                type: 'category',
-                boundaryGap: false,
-                data: xData
-            },
-            yAxis: {
-                type: 'value'
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+                top: '20%'
             },
             series: [
                 {
-                    name: 'API调用次数',
-                    type: 'line',
-                    stack: 'Total',
-                    data: yData,
-                    areaStyle: {}
+                    name: '数据类型',
+                    type: 'pie',
+                    radius: '60%',
+                    data: data,
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
                 }
             ]
         };
@@ -187,10 +180,10 @@ function initApiTrendChart(xData, yData) {
     }
 }
 
-// 初始化API类型分布图表
-function initApiTypeChart(data) {
-    if (apiTypeChart.value) {
-        const chart = echarts.init(apiTypeChart.value);
+// 初始化数据类型分布图表
+function initDataTypeChart(data) {
+    if (dataTypeChart.value) {
+        const chart = echarts.init(dataTypeChart.value);
         const option = {
             tooltip: {
                 trigger: 'item'
@@ -200,7 +193,8 @@ function initApiTypeChart(data) {
             },
             legend: {
                 orient: 'vertical',
-                left: 'right'
+                left: 'left',
+                top: '20%'
             },
             series: [
                 {
