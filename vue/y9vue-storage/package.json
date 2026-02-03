@@ -1,6 +1,6 @@
 {
     "name": "y9vue-storage",
-    "version": "9.6.8",
+    "version": "9.6.9",
     "browserslist": [
         "defaults",
         "not ie <= 11",
