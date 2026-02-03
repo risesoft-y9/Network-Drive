@@ -8,7 +8,7 @@ management:
             probes:
                 enabled: true
 server:
-    port: 8080
+    port: 7056
     servlet:
         encoding:
             charset: UTF-8
@@ -127,6 +127,7 @@ y9:
         orgBaseUrl: http://127.0.0.1:7055/server-platform
         dataAssetsBaseUrl: http://localhost:7056/server-dataassets
         logBaseUrl: http://localhost:7056/server-log
+        dataflowBaseUrl: http://localhost:7055/risedata
     feature:
         file:
             base64FileName: false
@@ -194,6 +195,7 @@ y9:
                     - idAndIsShowJson
                     - formDataJson
                     - rulesJson
+                    - url
             csrf:
                 acceptedReferer:
                     - 127.0.0.1
@@ -228,3 +230,10 @@ idCode:
     goto_url: https://test.youshengyun.com/data-assets/goto
     #统一码示例地址
     sample_url: https://test.youshengyun.com/data-assets/goto
+# 数据流引擎数据库配置
+dataflow:
+    # 数据库连接信息
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://localhost:3306/y9_data?serverTimezone=GMT%2B8&nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&rewriteBatchedStatements=true&useCompression=true&useSSL=false
+    username: root
+    password: 111111

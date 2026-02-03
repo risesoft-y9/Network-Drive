@@ -94,8 +94,8 @@ public class ApiDataController {
     }
 
     @GetMapping("/searchLogPage")
-    public Y9Page<ApiServiceLogEntity> searchLogPage(String appName, Integer page, Integer size) {
-        Page<ApiServiceLogEntity> pageList = apiDataService.searchLogPage(appName, page, size);
+    public Y9Page<ApiServiceLogEntity> searchLogPage(String appName, String apiType, Integer page, Integer size) {
+        Page<ApiServiceLogEntity> pageList = apiDataService.searchLogPage(appName, apiType, page, size);
         return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(),
             "获取数据成功");
     }

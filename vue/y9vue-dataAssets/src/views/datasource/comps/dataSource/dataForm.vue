@@ -64,6 +64,10 @@
         },
         flxedTree: {
             type: Object
+        },
+        baseType: {
+            type: String,
+            default: ''
         }
     });
 
@@ -72,7 +76,7 @@
     //表单初始值
     const initFormModels = {
         baseFormModel: {
-            baseType: 'postgresql',
+            baseType: props.baseType,
             name: '',
             driver: '',
             username: '',
@@ -82,14 +86,11 @@
             url: '',
             directory: ''
         },
-        constraintFormModel: {
-            initialSize: 1,
-            maxActive: 20,
-            minIdle: 1
-        },
         assistFormModel: {
             remark: '',
-            isLook: 0
+            isLook: 0,
+            provider: '',
+            contact: ''
         }
     };
     //基本信息-表单配置
@@ -98,61 +99,24 @@
         descriptionsFormConfig: {
             column: 3,
             labelAlign: 'center',
-            labelWidth: '120px'
-            // contentWidth: '180px'
+            labelWidth: '150px',
+            contentWidth: '180px'
         },
         //表单属性
         model: initFormModels.baseFormModel,
         //表单验证规则
-        rules: {
-            baseType: [{ required: true, message: computed(() => t('请选择数据源类型')), trigger: 'change' }],
-            name: [{ required: true, message: computed(() => t('请输入数据源名称')), trigger: 'blur' }],
-            username: [{ required: true, message: computed(() => t('请输入用户名')), trigger: 'blur' }],
-            password: [{ required: true, message: computed(() => t('请输入密码')), trigger: 'blur' }],
-            runType: [{ required: true, message: computed(() => t('请选择连接模式')), trigger: 'change' }],
-            url: [{ required: true, message: computed(() => t('请输入连接地址')), trigger: 'blur' }],
-            directory: [{ required: true, message: computed(() => t('请输入文件目录')), trigger: 'blur' }]
-        },
-        rule: {
-            baseType: [{ required: true, message: computed(() => t('请选择数据源类型')), trigger: 'change' }],
-            name: [{ required: true, message: computed(() => t('请输入数据源名称')), trigger: 'blur' }],
-            url: [{ required: true, message: computed(() => t('请输入连接地址')), trigger: 'blur' }]
-        },
-        oldRule: {
-            baseType: [{ required: true, message: computed(() => t('请选择数据源类型')), trigger: 'change' }],
-            name: [{ required: true, message: computed(() => t('请输入数据源名称')), trigger: 'blur' }],
-            username: [{ required: true, message: computed(() => t('请输入用户名')), trigger: 'blur' }],
-            password: [{ required: true, message: computed(() => t('请输入密码')), trigger: 'blur' }],
-            runType: [{ required: true, message: computed(() => t('请选择连接模式')), trigger: 'change' }],
-            url: [{ required: true, message: computed(() => t('请输入连接地址')), trigger: 'blur' }],
-            directory: [{ required: true, message: computed(() => t('请输入文件目录')), trigger: 'blur' }]
-        },
+        rules: {},
         //表单显示列表
         itemList: [
             {
-                type: 'select',
-                type1: 'select',
+                type: 'input',
+                type1: 'input',
                 type2: 'text',
                 prop: 'baseType',
                 label: computed(() => t('数据源类型')),
                 required: true,
                 props: {
-                    clearable: false,
-                    options: [],
-                    events: {
-                        change: (type) => {
-                            //获取所有表单数据
-                            const formRefs = y9FormRef.value;
-                            let formData = {};
-                            if (formRefs.length) {
-                                formRefs.forEach((itemRef) => {
-                                    Object.assign(formData, itemRef.model);
-                                });
-                            }
-                            //根据数据源类型设置对应的表单字段
-                            changeType(type, formData);
-                        }
-                    }
+                    readonly: true
                 }
             },
             {
@@ -206,29 +170,14 @@
         ],
         itemLists: [
             {
-                type: 'select',
-                type1: 'select',
+                type: 'input',
+                type1: 'input',
                 type2: 'text',
                 prop: 'baseType',
                 label: computed(() => t('数据源类型')),
                 required: true,
                 props: {
-                    clearable: false,
-                    options: [],
-                    events: {
-                        change: (type) => {
-                            //获取所有表单数据
-                            const formRefs = y9FormRef.value;
-                            let formData = {};
-                            if (formRefs.length) {
-                                formRefs.forEach((itemRef) => {
-                                    Object.assign(formData, itemRef.model);
-                                });
-                            }
-                            //根据数据源类型设置对应的表单字段
-                            changeType(type, formData);
-                        }
-                    }
+                    readonly: true
                 }
             },
             {
@@ -282,76 +231,14 @@
         ]
     });
 
-    //约束信息-表单配置
-    const constraintFormConfig = ref({
-        //描述表单配置
-        descriptionsFormConfig: {
-            column: 3,
-            labelAlign: 'center',
-            labelWidth: '100px'
-            // contentWidth: '180px'
-        },
-        //表单属性
-        model: initFormModels.constraintFormModel,
-        //表单验证规则
-        rules: {
-            initialSize: [{ required: true, message: computed(() => t('请输入initialSize')), trigger: 'blur' }],
-            maxActive: [{ required: true, message: computed(() => t('请输入maxActive')), trigger: 'blur' }],
-            minIdle: [{ required: true, message: computed(() => t('请输入minIdle')), trigger: 'blur' }]
-        },
-        //表单显示列表
-        itemList: [
-            {
-                type: 'input',
-                type1: 'input',
-                type2: 'text',
-                prop: 'initialSize',
-                label: 'initialSize',
-                required: true,
-                props: {
-                    type: 'number',
-                    clearable: false,
-                    min: 1
-                }
-            },
-            {
-                type: 'input',
-                type1: 'input',
-                type2: 'text',
-                prop: 'maxActive',
-                label: 'maxActive',
-                required: true,
-                props: {
-                    type: 'number',
-                    clearable: false,
-                    max: 20,
-                    min: 0
-                }
-            },
-            {
-                type: 'input',
-                type1: 'input',
-                type2: 'text',
-                prop: 'minIdle',
-                label: 'minIdle',
-                required: true,
-                props: {
-                    type: 'number',
-                    clearable: false,
-                    min: 1
-                }
-            }
-        ]
-    });
-
     //辅助信息-表单配置
     const assistFormConfig = ref({
         //描述表单配置
         descriptionsFormConfig: {
-            column: 1,
+            column: 3,
             labelAlign: 'center',
             labelWidth: '150px',
-            contentWidth: '200px'
+            contentWidth: '180px'
         },
         //表单属性
         model: initFormModels.assistFormModel,
@@ -371,9 +258,64 @@
                 }
             },
             {
+                type: 'input',
+                type1: 'input',
+                type2: 'text',
+                prop: 'provider',
+                label: computed(() => t('提供方')),
+                props: {}
+            },
+            {
+                type: 'input',
+                type1: 'input',
+                type2: 'text',
+                prop: 'contact',
+                label: computed(() => t('联系人')),
+                props: {}
+            },
+            {
                 type: 'textarea',
                 type1: 'textarea',
                 type2: 'text',
+                span: 3,
+                prop: 'remark',
+                label: computed(() => t('备注')),
+                props: {}
+            }
+        ],
+        itemLists: [
+            {
+                type: 'switch',
+                type1: 'switch',
+                type2: 'text',
+                prop: 'isLook',
+                label: computed(() => t('元数据信息')),
+                props: {
+                    activeValue: 1,
+                    inactiveValue: 0
+                }
+            },
+            {
+                type: 'input',
+                type1: 'input',
+                type2: 'text',
+                prop: 'provider',
+                label: computed(() => t('提供方')),
+                props: {}
+            },
+            {
+                type: 'input',
+                type1: 'input',
+                type2: 'text',
+                prop: 'contact',
+                label: computed(() => t('联系人')),
+                props: {}
+            },
+            {
+                type: 'textarea',
+                type1: 'textarea',
+                type2: 'text',
+                span: 3,
                 prop: 'remark',
                 label: computed(() => t('备注')),
                 props: {}
@@ -386,10 +328,6 @@
         {
             title: '基本信息',
             formData: baseFormConfig
-        },
-        {
-            title: '约束信息',
-            formData: constraintFormConfig
         },
         {
             title: '辅助信息',
@@ -453,7 +391,6 @@
         const models = Object.assign(
             {
                 ...initFormModels.baseFormModel,
-                ...initFormModels.constraintFormModel,
                 ...initFormModels.assistFormModel,
                 baseType: type
             },
@@ -468,10 +405,20 @@
                 }
             }
         })
-        //if(type != 'ftp') {
-            baseFormConfig.value.itemList=JSON.parse(JSON.stringify(baseFormConfig.value.itemLists))
-        //}
-        baseFormConfig.value.rules = baseFormConfig.value.oldRule;
+        
+        baseFormConfig.value.itemList=JSON.parse(JSON.stringify(baseFormConfig.value.itemLists))
+        assistFormConfig.value.itemList=JSON.parse(JSON.stringify(assistFormConfig.value.itemLists))
+
+        baseFormConfig.value.rules = {
+            baseType: [{ required: true, message: computed(() => t('请选择数据源类型')), trigger: 'change' }],
+            name: [{ required: true, message: computed(() => t('请输入数据源名称')), trigger: 'blur' }],
+            username: [{ required: true, message: computed(() => t('请输入用户名')), trigger: 'blur' }],
+            password: [{ required: true, message: computed(() => t('请输入密码')), trigger: 'blur' }],
+            runType: [{ required: true, message: computed(() => t('请选择连接模式')), trigger: 'change' }],
+            url: [{ required: true, message: computed(() => t('请输入连接地址')), trigger: 'blur' }],
+            directory: [{ required: true, message: computed(() => t('请输入文件目录')), trigger: 'blur' }]
+        };
+
         //显示|隐藏对应的基本信息的字段。
         if (type === 'ftp') {
             if (baseFormConfig.value.itemList[2].prop !== 'runType') {
@@ -482,20 +429,9 @@
         } else if (type === 'elasticsearch') {
             baseFormConfig.value.itemList.splice(5, 1);
             baseFormConfig.value.itemList[2].props.placeholder = `例：http||https://{host}:{port}/`;
-            baseFormConfig.value.rules = baseFormConfig.value.rule;
         } else {
             baseFormConfig.value.itemList[2].props.placeholder = `例：jdbc:${type}://{host}:{port}/{database}`;
         }
-        formList.value = [
-            {
-                title: '基本信息',
-                formData: baseFormConfig
-            },
-            {
-                title: '辅助信息',
-                formData: assistFormConfig
-            }
-        ];
 
         //初始化表单数据——基本信息表单
         baseFormConfig.value.model = pick(models, Object.keys(initFormModels.baseFormModel));
@@ -510,13 +446,6 @@
                 itemRef.elFormRef.resetFields();
             });
         }
-
-        //编辑状态，赋值已有数据到编辑表单。
-        // if (isEditStatus.value) {
-        //     baseFormConfig.value.model = pick(currNode.value, Object.keys(baseFormConfig.value.model));
-        //     constraintFormConfig.value.model = pick(currNode.value, Object.keys(constraintFormConfig.value.model));
-        //     assistFormConfig.value.model = pick(currNode.value, Object.keys(assistFormConfig.value.model));
-        // }
     };
 
     /**
@@ -533,56 +462,35 @@
             if (isEdit) {
                 item.type = item.type1;
                 item.props.render = null;
-                //获取数据源类型列表
-                if (item.prop === 'baseType') {
-                    const typeList = props.flxedTree?.getTreeData();
-                    item.props.options =
-                        typeList.map((item) => {
-                            return {
-                                label: item.name,
-                                value: item.name
-                            };
-                        }) || [];
-                }
             } else {
                 item.type = item.type2;
                 item.props.render = () => {
-                  return h('span', baseFormConfig.value.model[item.prop] || '');
+                    return h('span', baseFormConfig.value.model[item.prop] || '');
                 };
-            }
-        });
-        constraintFormConfig.value.itemList.forEach((item) => {
-            if (isEdit) {
-                item.type = item.type1;
-                item.render = null;
-            } else {
-                item.type = item.type2;
-                item.props.render = () => {
-                  return h('span', constraintFormConfig.value.model[item.prop] || '');
-                };
+                baseFormConfig.value.rules[item.prop] = [];
             }
         });
         assistFormConfig.value.itemList.forEach((item) => {
             if (isEdit) {
                 item.type = item.type1;
-                item.render = null;
+                item.props.render = null;
             } else {
-              item.type = item.type2;
-              if(item.prop=='isLook'){
-                if(assistFormConfig.value.model.isLook==0){
-                  item.props.render = () => {
-                    return h('span',  '关闭');
-                  };
+                item.type = item.type2;
+                if(item.prop=='isLook'){
+                    if(assistFormConfig.value.model.isLook==0){
+                        item.props.render = () => {
+                            return h('span',  '关闭');
+                        };
+                    }else{
+                        item.props.render = () => {
+                            return h('span',  '开启');
+                        };
+                    }
                 }else{
-                  item.props.render = () => {
-                    return h('span',  '开启');
-                  };
+                    item.props.render = () => {
+                        return h('span',  assistFormConfig.value.model[item.prop] || '');
+                    };
                 }
-              }else{
-                item.props.render = () => {
-                  return h('span',  assistFormConfig.value.model[item.prop] || '');
-                };
-              }
             }
         });
     };
@@ -622,10 +530,10 @@
                 duration: 2000,
                 offset: 80
             });
-            // onShow();
-          await initDataSourceDetail(props.currNode.id)
-          await saveFormList()
-          await onShow();
+
+            await initDataSourceDetail(props.currNode.id)
+            await saveFormList()
+            await onShow();
             // 刷新树
             // props.flxedTree?.onRefreshTree();
         } else {
@@ -637,19 +545,18 @@
         }
     };
     const saveFormList=async ()=>{
-      const models = Object.assign(
-          {
-            ...initFormModels.baseFormModel,
-            ...initFormModels.constraintFormModel,
-            ...initFormModels.assistFormModel,
-            baseType: props.currNode.baseType
-          },
-          dataSourceInfo.value
-      );
-      //初始化表单数据——基本信息表单
-      baseFormConfig.value.model = pick(models, Object.keys(initFormModels.baseFormModel));
-      //初始化表单数据——辅助信息表单
-      assistFormConfig.value.model = pick(models, Object.keys(initFormModels.assistFormModel));
+        const models = Object.assign(
+            {
+                ...initFormModels.baseFormModel,
+                ...initFormModels.assistFormModel,
+                baseType: props.currNode.baseType
+            },
+            dataSourceInfo.value
+        );
+        //初始化表单数据——基本信息表单
+        baseFormConfig.value.model = pick(models, Object.keys(initFormModels.baseFormModel));
+        //初始化表单数据——辅助信息表单
+        assistFormConfig.value.model = pick(models, Object.keys(initFormModels.assistFormModel));
     }
     //编辑按钮触发
     const onEdit = () => {
@@ -679,10 +586,8 @@
     watch(
         () => props.currNode.id,
         async (newId) => {
-          //恢复状态
-          //恢复状态
-          await initDataSourceDetail(newId);
-          await onShow();
+            await initDataSourceDetail(newId);
+            await onShow();
         },
         {
             immediate: true,

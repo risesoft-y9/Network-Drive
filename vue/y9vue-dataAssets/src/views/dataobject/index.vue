@@ -1,7 +1,7 @@
 <template>
     <!-- 表格 -->
     <y9Table 
-        :config="tableConfig" 
+        :config="tableConfig"
         :filterConfig="filterConfig"
     >
         <template v-slot:filterBtnSlot>
@@ -27,48 +27,41 @@
             />
         </template>
     </y9Table>
-    <!-- 制造loading效果 -->
-    <el-button v-loading.fullscreen.lock="loading" style="display: none"></el-button>
 
     <y9Dialog v-model:config="dialogConfig">
-        <TableView 
+        <TableView
             v-if="dialogConfig.show"
-            :currNode="currNode" 
-            @close="close"
+            :currNode="currNode"
         ></TableView>
     </y9Dialog>
 </template>
 
 <script lang="ts" setup>
-    import { computed, h, inject, onMounted, reactive, ref, toRefs, watch } from 'vue';
+    import { computed, h, inject, onMounted, reactive, ref, toRefs } from 'vue';
     import { useI18n } from 'vue-i18n';
-    import { useSettingStore } from '@/store/modules/settingStore';
-    import settings from '@/settings';
-    import router from '@/router';
     import TableView from './comps/tableData.vue';
     import { getTableSelectTree } from '@/api/pretreat';
     import { getTablesByBaseId } from '@/api/dataSource';
 
-    const settingStore = useSettingStore();
     // 注入 字体对象
     const fontSizeObj: any = inject('sizeObjInfo');
     const { t } = useI18n();
 
-    const currNode = ref(null);
+    const currNode = ref({});
 
     // 变量 对象
     const state = reactive({
-        // 区域 loading
-        loading: false,
         // 查询条件
         formLine: {
             name: ''
         },
         // 表格的 配置信息
         tableConfig: {
+            loading: false,
             columns: [
                 { title: computed(() => t('序号')), type: 'index', width: 60, fixed: 'left' },
-                { title: computed(() => t('名称')), key: 'name' },
+                { title: computed(() => t('表名称')), key: 'name' },
+                { title: computed(() => t('中文名称')), key: 'cname' },
                 {
                     title: computed(() => t('操作')),
                     fixed: 'right',
@@ -144,7 +137,6 @@
     });
 
     let {
-        loading,
         formLine,
         tableConfig,
         filterConfig,
@@ -165,12 +157,18 @@
         await getTableSelectTree('base').then((res) => {
             if(res.success) {
                 tableTreeData.value = res.data;
+                // 将第一个数据库的表列表赋值给表格
+                if(res.data.length > 0) {
+                    checkTableData.value = res.data[0].children[0].value;
+                    searchData();
+                }
             }
         });
     }
 
     // 请求 列表接口
     async function searchData() {
+        tableConfig.value.loading = true;
         let params = {
             id: checkTableData.value.replace("s-", ""),
             name: formLine.value.name == null ? '' : formLine.value.name
@@ -180,6 +178,7 @@
             // 对返回的接口数据进行赋值与处理
             tableConfig.value.tableData = res.data;
         }
+        tableConfig.value.loading = false;
     }
 
 </script>

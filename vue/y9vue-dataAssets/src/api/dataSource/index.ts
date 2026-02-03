@@ -234,3 +234,17 @@ export const getTableByAssetsId = async (params) => {
         params: params
     });
 };
+
+/**
+ * 根据数据源id和表名称获取表详情
+ * @param params
+ * @returns
+ */
+export const getTableDetail = async (params) => {
+    return await platformRequest({
+        url: 'vue/source/getTableDetail',
+        method: 'GET',
+        cType: false,
+        params: params
+    });
+};

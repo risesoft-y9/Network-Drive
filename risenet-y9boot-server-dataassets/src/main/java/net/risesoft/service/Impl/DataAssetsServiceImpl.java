@@ -31,6 +31,7 @@ import net.risesoft.entity.DataAssets;
 import net.risesoft.entity.DataRecentEntity;
 import net.risesoft.entity.DataSourceEntity;
 import net.risesoft.entity.DictionaryValue;
+import net.risesoft.entity.DownloadLogEntity;
 import net.risesoft.entity.FileInfo;
 import net.risesoft.entity.SubscribeBaseEntity;
 import net.risesoft.entity.SubscribeEntity;
@@ -48,6 +49,7 @@ import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.repository.DataApiOnlineRepository;
 import net.risesoft.repository.DataAssetsRepository;
+import net.risesoft.repository.DownloadLogRepository;
 import net.risesoft.repository.FileInfoRepository;
 import net.risesoft.repository.SubscribeBaseRepository;
 import net.risesoft.repository.SubscribeRepository;
@@ -75,7 +77,7 @@ import cn.hutool.core.util.NumberUtil;
 public class DataAssetsServiceImpl implements DataAssetsService {
 
     private final SubscribeBaseRepository subscribeBaseRepository;
-
+    private final DownloadLogRepository downloadLogRepository;
     private final DataAssetsRepository dataAssetsRepository;
     private final FileInfoRepository fileInfoRepository;
     private final Y9FileStoreService y9FileStoreService;
@@ -339,8 +341,9 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 
     @Override
     public void fileDownload(Long id, HttpServletResponse response, HttpServletRequest request) {
+        String result = "success";
+        FileInfo file = fileInfoRepository.findById(id).orElse(null);
         try {
-            FileInfo file = fileInfoRepository.findById(id).orElse(null);
             String filename = file.getName();
             String filePath = file.getFilePath();
             if (request.getHeader("User-Agent").toLowerCase().indexOf("firefox") > 0) {
@@ -358,6 +361,17 @@ public class DataAssetsServiceImpl implements DataAssetsService {
             out.close();
         } catch (Exception e) {
             e.printStackTrace();
+            result = "failure:" + e.getMessage();
+        } finally {
+            // 保存下载日志
+            DownloadLogEntity downloadLogEntity = new DownloadLogEntity();
+            downloadLogEntity.setId(Y9IdGenerator.genId());
+            downloadLogEntity.setAssetsId(id);
+            downloadLogEntity.setFileId(file.getId());
+            downloadLogEntity.setDownloader(Y9LoginUserHolder.getUserInfo().getName());
+            downloadLogEntity.setDownloaderId(Y9LoginUserHolder.getPersonId());
+            downloadLogEntity.setResult(result);
+            downloadLogRepository.save(downloadLogEntity);
         }
     }
 
@@ -486,6 +500,9 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     public Y9Result<String> deleteMountData(Long id) {
         try {
             FileInfo info = fileInfoRepository.findById(id).orElse(null);
+            if (info == null) {
+                return Y9Result.failure("删除失败，数据不存在");
+            }
             if (info != null && info.getFileType().equals("文件")) {
                 y9FileStoreService.deleteFile(info.getFilePath());
             }
@@ -791,6 +808,11 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     @Override
     public SubscribeBaseEntity getSubscribeBaseById(String id) {
         return subscribeBaseRepository.findBySubscribeId(id);
+    }
+
+    @Override
+    public SubscribeEntity findById(String id) {
+        return subscribeRepository.findById(id).orElse(null);
     }
 
 }

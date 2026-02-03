@@ -269,3 +269,14 @@ export const getSubscribeBaseById = async (id) => {
         params: { id: id }
     });
 };
+
+// 检验订阅库表推送信息
+export const checkSubscribeBase = async (params) => {
+    const data = qs.stringify(params);
+    return await dataRequest({
+        url: '/vue/detail/checkSubscribeBase',
+        method: 'post',
+        cType: false,
+        data
+    });
+};

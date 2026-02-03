@@ -155,6 +155,7 @@ public class SourceController {
         return Y9Result.success(true);
     }
 
+    @RiseLog(operationName = "根据类型获取数据库下拉选择框数据(到表)", logLevel = LogLevelEnum.RSLOG)
     @GetMapping(value = "/getTableSelectTree")
     public Y9Result<List<Map<String, Object>>> getTableSelectTree(String type) {
         return Y9Result.success(dataSourceService.getTableSelectTree(type));
@@ -203,11 +204,13 @@ public class SourceController {
         return Y9Result.success(listMap);
     }
 
+    @RiseLog(operationName = "获取数据库列表-不分权限", logLevel = LogLevelEnum.RSLOG)
     @GetMapping(value = "/getDataBase")
     public Y9Result<List<Map<String, Object>>> getDataBase() {
         return Y9Result.success(dataSourceService.getDataBase());
     }
 
+    @RiseLog(operationName = "根据资产id获取挂接的数据库", logLevel = LogLevelEnum.RSLOG)
     @GetMapping(value = "/getDataSourceByAssetsId")
     public Y9Result<List<Map<String, Object>>> getDataSourceByAssetsId(Long assetsId) {
         return Y9Result.success(dataSourceService.getDataSourceByAssetsId(assetsId));
@@ -219,9 +222,14 @@ public class SourceController {
         List<String> list = dataSourceService.getTableByAssetsId(assetsId, identifier);
         List<Map<String, Object>> listMap = dataSourceService.getTablePage(identifier, "");
         // 过滤掉listMap里name值不在list的元素
-        listMap =
-            listMap.stream().filter((item) -> list.contains(item.get("name").toString())).collect(Collectors.toList());
+        listMap = listMap.stream().filter((item) -> list.contains(item.get("name").toString())).collect(Collectors.toList());
         return Y9Result.success(listMap, "获取数据库表成功");
+    }
+
+    @RiseLog(operationName = "根据数据源id获取表详情", logLevel = LogLevelEnum.RSLOG)
+    @GetMapping(value = "/getTableDetail")
+    public Y9Result<Map<String, Object>> getTableDetail(String sourceId, String tableName) {
+        return Y9Result.success(dataSourceService.getTableDetail(sourceId, tableName), "获取表详情成功");
     }
 
 }

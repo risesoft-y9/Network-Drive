@@ -1,13 +1,27 @@
 <template>
     <div class="tableDataCss">
-        <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
-            <el-tab-pane label="字段属性" name="first">
+        <el-tabs v-model="activeName" class="demo-tabs">
+            <el-tab-pane label="基本属性" name="first">
+                <el-descriptions :column="2" border>
+                    <el-descriptions-item label="数据源名称" align="center">{{tableDetail.sourceName}}</el-descriptions-item>
+                    <el-descriptions-item label="数据源类型" align="center">{{tableDetail.sourceType}}</el-descriptions-item>
+                    <el-descriptions-item label="备注" align="center" :span="2">{{tableDetail.remark}}</el-descriptions-item>
+                    <el-descriptions-item label="表名称" align="center">{{currNode.name}}</el-descriptions-item>
+                    <el-descriptions-item label="中文名称" align="center">{{currNode.cname}}</el-descriptions-item>
+                    <el-descriptions-item label="提供方" align="center">{{tableDetail.provider}}</el-descriptions-item>
+                    <el-descriptions-item label="联系方式" align="center">{{tableDetail.contact}}</el-descriptions-item>
+                    <el-descriptions-item label="数据量" align="center">{{tableDetail.rowCount}}</el-descriptions-item>
+                    <el-descriptions-item label="字段数量" align="center">{{tableConfig.columns.length}}</el-descriptions-item>
+                    <el-descriptions-item label="数据最新更新时间" align="center">{{tableDetail.maxUpdateTime}}</el-descriptions-item>
+                </el-descriptions>
+            </el-tab-pane>
+            <el-tab-pane label="字段属性" name="second">
                 <y9Table
                     :config="propsTableConfig"
-                >                   
+                >
                 </y9Table>
             </el-tab-pane>
-            <el-tab-pane label="数据" name="second">
+            <el-tab-pane label="数据" name="third">
                 <y9Table
                     :config="tableConfig"
                     :filterConfig="filterConfig"
@@ -47,13 +61,14 @@
                     </template>
                 </el-drawer>
             </el-tab-pane>
-        </el-tabs>    
+        </el-tabs>
     </div>
 </template>
 <script lang="ts" setup>
-    import { computed, reactive, ref, watch } from 'vue';
+    import { computed, onMounted, reactive, ref, toRefs, watch } from 'vue';
     import { useSettingStore } from '@/store/modules/settingStore';
-    import { getTableColumns, getTableData} from '@/api/dataSource/index';
+    import { getTableColumns, getTableData, getTableDetail} from '@/api/dataSource/index';
+    import { useI18n } from 'vue-i18n';
 
     const props = defineProps({
         currNode: {
@@ -140,7 +155,7 @@
 
         },
         tableConfig: {
-            columns: [],
+            columns: [{}],
             border: true,
             tableData: [],
             pageConfig: {
@@ -183,7 +198,7 @@
                 },
             ],
             border: true,
-            tableData: [],
+            tableData: [{}],
             pageConfig: false,
             height: 400,
         },
@@ -200,7 +215,21 @@
         },
         {deep: true}
     );
-    getColumns();
+
+    onMounted(() => {
+        getTableInfo();
+        getColumns();
+    });
+
+    const tableDetail = ref<any>({});
+    function getTableInfo(){
+        getTableDetail({sourceId: props.currNode.sourceId, tableName: props.currNode.name}).then(res => {
+            if(res.success){
+                tableDetail.value = res.data;
+            }
+        });
+    }
+    
     async function getColumns(){
         let res = await getTableColumns(props.currNode.sourceId, props.currNode.name);
         if(res.success){
@@ -266,7 +295,6 @@
         tableConfig.value.pageConfig.pageSize = pageSize;
         getTableDataList();
     }
-   
 </script>
 
 <style lang="scss" scoped>

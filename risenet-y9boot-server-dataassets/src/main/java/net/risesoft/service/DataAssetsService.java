@@ -223,4 +223,11 @@ public interface DataAssetsService {
      */
     SubscribeBaseEntity getSubscribeBaseById(String id);
 
+    /**
+     * 根据id获取订阅信息
+     * @param id
+     * @return
+     */
+    SubscribeEntity findById(String id);
+
 }

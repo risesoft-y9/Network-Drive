@@ -233,48 +233,6 @@ public class Y9FormDbMetaDataUtil extends DbMetaDataUtil {
         return Y9Page.success(pageNum, totalPages, totalRecords, tableDataList, "获取数据成功");
     }
 
-    /**
-     * 返回所有的业务表
-     */
-    public static Map<String, Object> listAllTableNames(DataSource dataSource) throws Exception {
-        Map<String, Object> al = new HashMap<>(16);
-
-        ResultSet rs = null;
-        String sql = "show tables";
-        try (Connection connection = dataSource.getConnection(); Statement stmt = connection.createStatement()) {
-
-            String dialect = getDatabaseDialectNameByConnection(connection);
-            switch (dialect) {
-                case SqlConstants.DBTYPE_ORACLE:
-                    sql = "SELECT table_name FROM all_tables";
-                    break;
-                case SqlConstants.DBTYPE_DM:
-                    sql = "SELECT table_name FROM all_tables";
-                    break;
-                case SqlConstants.DBTYPE_KINGBASE:
-                    sql = "SELECT table_name FROM all_tables";
-                    break;
-                default:
-                    sql = "show tables";
-                    break;
-            }
-            rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                String tableName = rs.getString(1);
-                // mysql中不处理视图
-                al.put(tableName.toLowerCase(), tableName);
-            }
-        } catch (Exception ex) {
-            LOGGER.error("查询所有的业务表失败", ex);
-            throw ex;
-        } finally {
-            if (rs != null) {
-                rs.close();
-            }
-        }
-        return al;
-    }
-
     public static List<Map<String, Object>> listTypes(DataSource dataSource) throws Exception {
         List<Map<String, Object>> list = new ArrayList<>();
         try {

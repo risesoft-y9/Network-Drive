@@ -111,4 +111,13 @@ public interface DataSourceService {
      */
     List<String> getTableByAssetsId(Long assetsId, String identifier);
 
+    /**
+     * 获取数据库表详情
+     * 
+     * @param sourceId ：数据源id
+     * @param tableName ：表名
+     * @return
+     */
+    Map<String, Object> getTableDetail(String sourceId, String tableName);
+
 }
