@@ -14,7 +14,7 @@
             <el-button
                 :size="fontSizeObj.buttonSize"
                 :style="{ fontSize: fontSizeObj.baseFontSize }"
-                size="mini"
+                size="small"
                 type="primary"
                 @click="logout"
                 >{{ $t('退出重新登录') }}
