@@ -301,7 +301,7 @@ public class FileNodeServiceImpl implements FileNodeService {
             if (fileNode.getListType().equals(FileListType.DEPT.getValue())) {
                 String positionId = Y9LoginUserHolder.getPositionId();
                 String tenantId = Y9LoginUserHolder.getTenantId();
-                OrgUnit orgUnit = orgUnitApiClient.getParent(tenantId, positionId).getData();
+                OrgUnit orgUnit = orgUnitApiClient.getOrgUnitParent(tenantId, positionId).getData();
                 fileNode.setOrgId(orgUnit.getId());
             } else {
                 fileNode.setUserId(userInfo.getPersonId());
@@ -392,7 +392,7 @@ public class FileNodeServiceImpl implements FileNodeService {
                 fileNode.setListType(listType);
                 if (listType.equals(FileListType.DEPT.getValue())) {
                     String positionId = Y9LoginUserHolder.getPositionId();
-                    OrgUnit orgUnit = orgUnitApiClient.getParent(tenantId, positionId).getData();
+                    OrgUnit orgUnit = orgUnitApiClient.getOrgUnitParent(tenantId, positionId).getData();
                     Position position = positionApi.get(tenantId, positionId).getData();
                     fileNode.setOrgId(orgUnit.getId());
                     fileNode.setUserId(position.getId());
@@ -473,7 +473,7 @@ public class FileNodeServiceImpl implements FileNodeService {
         } else {
             String tenantId = Y9LoginUserHolder.getTenantId();
             if (listType.equals(FileListType.DEPT.getValue())) {
-                OrgUnit orgUnit = orgUnitApiClient.getParent(tenantId, positionId).getData();
+                OrgUnit orgUnit = orgUnitApiClient.getOrgUnitParent(tenantId, positionId).getData();
 
                 FileNodeSpecification spec =
                     new FileNodeSpecification(id, fileType, listType, searchName, orgUnit.getId(), false);
