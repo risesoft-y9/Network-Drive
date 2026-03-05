@@ -103,15 +103,10 @@ public class OrgController {
     public Y9Result<List<OrgUnit>> getOrgTree(@RequestParam(required = false) String id,
         @RequestParam(required = false) String name) {
         String tenantId = Y9LoginUserHolder.getTenantId();
-        if (StringUtils.isBlank(id)) {
-            List<Organization> organizationList = organizationManager.list(tenantId).getData();
-            if (organizationList != null && organizationList.size() > 0) {
-                id = organizationList.get(0).getId();
-            }
-        }
+
         List<OrgUnit> orgUnitList;
         if (StringUtils.isNotBlank(name)) {
-            orgUnitList = orgUnitManager.treeSearch(tenantId, name, OrgTreeTypeEnum.TREE_TYPE_PERSON).getData();
+            orgUnitList = orgUnitManager.treeSearch(tenantId, null, name, OrgTreeTypeEnum.TREE_TYPE_PERSON).getData();
         } else {
             orgUnitList = orgUnitManager.getSubTree(tenantId, id, OrgTreeTypeEnum.TREE_TYPE_PERSON).getData();
         }
