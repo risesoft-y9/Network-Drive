@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +36,7 @@ import net.risesoft.repository.FileNodeRepository;
 import net.risesoft.repository.FileNodeShareRepository;
 import net.risesoft.repository.spec.FileNodeSpecification;
 import net.risesoft.service.FileNodeService;
+import net.risesoft.service.FileTagRelationService;
 import net.risesoft.service.StorageCapacityService;
 import net.risesoft.support.FileListType;
 import net.risesoft.support.FileNodeType;
@@ -85,6 +87,7 @@ public class FileNodeServiceImpl implements FileNodeService {
     private final PositionApi positionApi;
     private final Y9FileStoreService y9FileStoreService;
     private final StorageCapacityService storageCapacityService;
+    private final FileTagRelationService fileTagRelationService;
     @Value("${y9.app.storage.defaultStorageCapacity}")
     private String defaultStorageCapacity;
     @Value("${y9.app.storage.singleUploadLimit}")
@@ -508,6 +511,61 @@ public class FileNodeServiceImpl implements FileNodeService {
     }
 
     @Override
+    public List<FileNode> subList(String positionId, String id, FileNodeType fileType, String searchName,
+        List<String> tagIds, String listType, OrderRequest orderRequest) {
+        List<FileNode> fileNodeList = new ArrayList<FileNode>();
+        String personId = Y9LoginUserHolder.getPersonId();
+        if (RootFolder.SHARED.getEnName().equals(id)) {
+            String guidPath = Y9LoginUserHolder.getUserInfo().getGuidPath();
+            String[] guidArray = StringUtils.split(guidPath, ",");
+            List<String> guidList = Arrays.asList(guidArray);
+
+            List<FileNodeShare> fileNodeShareList = fileNodeShareRepository.findByToOrgUnitIdIn(guidList);
+            List<String> fileNodeIdList =
+                fileNodeShareList.stream().map(FileNodeShare::getFileNodeId).collect(Collectors.toList());
+            fileNodeList =
+                fileNodeRepository.findByIdInAndParentIdAndListTypeAndDeletedFalse(fileNodeIdList, id, listType);
+        } else {
+            String tenantId = Y9LoginUserHolder.getTenantId();
+            if (listType.equals(FileListType.DEPT.getValue())) {
+                OrgUnit orgUnit = orgUnitApiClient.getOrgUnitParent(tenantId, positionId).getData();
+
+                FileNodeSpecification spec =
+                    new FileNodeSpecification(id, fileType, listType, searchName, orgUnit.getId(), false);
+                fileNodeList = fileNodeRepository.findAll(spec);
+            } else if (listType.equals(FileListType.SHARED.getValue())) {
+                // FileNodeShare share = fileNodeShareRepository.findByFileNodeIdAndToOrgUnitId(id,personId);
+                // if(null != share && StringUtils.isNotBlank(share.getId())){
+                FileNodeSpecification spec = new FileNodeSpecification(false, id, searchName);
+                fileNodeList = fileNodeRepository.findAll(spec);
+                // }
+            } else if (listType.equals(FileListType.REPORT.getValue())) {
+                if (id.equals(FileListType.REPORT.getValue())) {
+                    FileNodeSpecification spec =
+                        new FileNodeSpecification(id, FileNodeType.FOLDER, listType, searchName, false);
+                    fileNodeList = fileNodeRepository.findAll(spec);
+                } else {
+                    FileNodeSpecification spec = new FileNodeSpecification(false, id, listType, searchName);
+                    fileNodeList = fileNodeRepository.findAll(spec);
+                }
+            } else if (listType.equals(FileListType.REPORTMANAGE.getValue())) {
+                FileNodeSpecification spec = new FileNodeSpecification(false, id, searchName);
+                fileNodeList = fileNodeRepository.findAll(spec);
+            } else {
+                // 通过FileTagRelation表查询同时具有所有指定标签的文件ID列表
+                List<String> fileIds = fileTagRelationService.findFileIdsByTagIds(tagIds);
+
+                FileNodeSpecification spec =
+                    new FileNodeSpecification(personId, id, fileIds, fileType, listType, searchName, false);
+                fileNodeList = fileNodeRepository.findAll(spec);
+            }
+        }
+        Comparator<FileNode> fileNodeComparator = sortTypeComparatorMap.get(orderRequest.toString());
+        fileNodeList.sort(fileNodeComparator);
+        return fileNodeList;
+    }
+
+    @Override
     public List<FileNode> subCollectList(String id, String searchName, String listType, OrderRequest orderRequest) {
         List<FileNode> fileNodeList = new ArrayList<FileNode>();
         FileNodeSpecification spec = new FileNodeSpecification(false, id, listType, searchName);
@@ -525,6 +583,62 @@ public class FileNodeServiceImpl implements FileNodeService {
         fileNodeList.sort(fileNodeComparator);
         return fileNodeList;
     }
+
+    @Override
+    public List<FileNode> listFilesByTagIds(String positionId, String id, FileNodeType fileNodeType, String searchName,
+        List<String> tagIds, String listType, OrderRequest orderRequest) {
+        // 通过FileTagRelation表查询同时具有所有指定标签的文件ID列表
+        List<String> fileIds = fileTagRelationService.findFileIdsByTagIds(tagIds);
+
+        if (fileIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 构建查询条件
+        Specification<FileNode> spec = (root, query, criteriaBuilder) -> {
+            List<javax.persistence.criteria.Predicate> predicates = new ArrayList<>();
+
+            // 添加文件ID条件
+            predicates.add(root.get("id").in(fileIds));
+
+            // 添加父节点ID条件
+            if (StringUtils.isNotBlank(id)) {
+                predicates.add(criteriaBuilder.equal(root.get("parentId"), id));
+            } else {
+                predicates.add(criteriaBuilder.equal(root.get("parentId"), ""));
+            }
+
+            // 添加文件类型条件
+            if (fileNodeType != null) {
+                predicates.add(criteriaBuilder.equal(root.get("fileType"), fileNodeType.getValue()));
+            }
+
+            // 添加列表类型条件
+            if (StringUtils.isNotBlank(listType)) {
+                predicates.add(criteriaBuilder.equal(root.get("listType"), listType));
+            }
+
+            // 添加搜索名称条件
+            if (StringUtils.isNotBlank(searchName)) {
+                predicates.add(criteriaBuilder.like(root.get("name"), "%" + searchName + "%"));
+            }
+
+            return criteriaBuilder.and(predicates.toArray(new javax.persistence.criteria.Predicate[0]));
+        };
+
+        // 执行查询并排序
+        // Sort sort = buildSort(orderRequest);
+        return fileNodeRepository.findAll(spec);
+    }
+
+    // private Sort buildSort(OrderRequest orderRequest) {
+    // if (orderRequest != null && StringUtils.isNotBlank(orderRequest.getOrderProp())) {
+    // Sort.Direction direction =
+    // "desc".equalsIgnoreCase(orderRequest.getOrderDirection()) ? Sort.Direction.DESC : Sort.Direction.ASC;
+    // return Sort.by(direction, orderRequest.getOrderProp());
+    // }
+    // return Sort.by(Sort.Direction.DESC, "createTime");
+    // }
 
     @Override
     public List<FileNode> subPublicList(String id, FileNodeType fileType, String searchName, String startTime,
@@ -601,6 +715,12 @@ public class FileNodeServiceImpl implements FileNodeService {
         Comparator<FileNode> fileNodeComparator = sortTypeComparatorMap.get(orderRequest.toString());
         fileNodeList.sort(fileNodeComparator);
         return fileNodeList;
+    }
+
+    @Override
+    public List<FileNode> subListByTag(String positionId, String parentId, String tagId, String listType,
+        OrderRequest orderRequest) {
+        return List.of();
     }
 
     @Override

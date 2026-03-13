@@ -2,6 +2,7 @@ package net.risesoft.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +13,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Comment;
@@ -118,6 +120,9 @@ public class FileNode implements Serializable {
     @Column(name = "TABINDEX")
     @Comment("排序字段")
     private Integer tabIndex;
+
+    @Transient
+    private List<FileTag> tags; // 文件关联的标签列表
 
     public FileNode(String id, String name) {
         this.id = id;

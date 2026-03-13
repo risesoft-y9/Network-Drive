@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import net.risesoft.entity.FileNode;
+import net.risesoft.entity.FileTag;
 import net.risesoft.support.FileNodeType;
 import net.risesoft.util.FileUtils;
 import net.risesoft.y9.Y9LoginUserHolder;
@@ -47,6 +48,7 @@ public class FileNodeDTO {
     private boolean owner;
     private String collectRoute;
     private FileNodeDTO parentFileNode;
+    private List<FileTag> fileTags;
 
     public static FileNodeDTO from(FileNode fileNode) {
         return Y9ModelConvertUtil.convert(fileNode, FileNodeDTO.class);
