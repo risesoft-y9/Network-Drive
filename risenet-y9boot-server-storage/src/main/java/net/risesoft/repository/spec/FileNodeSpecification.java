@@ -28,14 +28,9 @@ public class FileNodeSpecification implements Specification<FileNode> {
     private Boolean deleted;
     private Date startDate;
     private Date endDate;
+    private List<String> idList;
 
     public FileNodeSpecification() {}
-
-    public FileNodeSpecification(String userId, String parentId, boolean deleted) {
-        this.userId = userId;
-        this.parentId = parentId;
-        this.deleted = deleted;
-    }
 
     public FileNodeSpecification(boolean deleted, String parentId, String listType, String searchName) {
         this.name = searchName;
@@ -58,7 +53,6 @@ public class FileNodeSpecification implements Specification<FileNode> {
     }
 
     public FileNodeSpecification(boolean deleted, String parentId, String searchName) {
-        // this.listType = listType;
         this.parentId = parentId;
         this.name = searchName;
         this.deleted = deleted;
@@ -73,6 +67,21 @@ public class FileNodeSpecification implements Specification<FileNode> {
         boolean deleted) {
         this.userId = personId;
         this.parentId = parentId;
+        this.fileType = fileType;
+        this.name = searchName;
+        this.listType = listType;
+        this.deleted = deleted;
+    }
+
+    public FileNodeSpecification(
+        String personId,String parentId,
+       List<String> idList, FileNodeType fileType,
+       String listType,
+        String searchName,
+        boolean deleted) {
+        this.userId = personId;
+        this.parentId = parentId;
+        this.idList = idList;
         this.fileType = fileType;
         this.name = searchName;
         this.listType = listType;
@@ -200,6 +209,10 @@ public class FileNodeSpecification implements Specification<FileNode> {
     public Predicate toPredicate(Root<FileNode> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
         Predicate predicate = cb.conjunction();
         List<Expression<Boolean>> expressions = predicate.getExpressions();
+
+        if (null != idList && !idList.isEmpty()) {
+            expressions.add(root.get("id").in(idList));
+        }
 
         if (StringUtils.isNotBlank(userId)) {
             expressions.add(cb.equal(root.get("userId").as(String.class), userId));

@@ -39,6 +39,7 @@ import net.risesoft.controller.dto.FileNodeDTO;
 import net.risesoft.controller.dto.FileNodeListDTO;
 import net.risesoft.entity.FileDownLoadRecord;
 import net.risesoft.entity.FileNode;
+import net.risesoft.entity.FileTag;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.log.annotation.RiseLog;
@@ -49,6 +50,7 @@ import net.risesoft.service.FileDownLoadRecordService;
 import net.risesoft.service.FileNodeCollectService;
 import net.risesoft.service.FileNodeService;
 import net.risesoft.service.FileNodeShareService;
+import net.risesoft.service.FileTagService;
 import net.risesoft.support.FileListType;
 import net.risesoft.support.FileNodeType;
 import net.risesoft.support.OrderRequest;
@@ -70,6 +72,7 @@ public class FileNodeController {
     private final FileDownLoadRecordService fileDownLoadRecordService;
     private final FileNodeShareService fileNodeShareService;
     private final FileNodeCollectService fileNodeCollectService;
+    private final FileTagService fileTagService;
 
     /**
      * 取消文件夹密码
@@ -432,14 +435,26 @@ public class FileNodeController {
     @GetMapping(value = "/list")
     public Y9Result<FileNodeListDTO> list(@RequestHeader("positionId") String positionId,
         @RequestParam(required = false) String id, @RequestParam(required = false) FileNodeType fileNodeType,
-        @RequestParam(required = false) String searchName, @RequestParam(required = false) String listType,
-        OrderRequest orderRequest) {
+        @RequestParam(required = false) String searchName, @RequestParam(required = false) List<String> tagIds,
+        @RequestParam(required = false) String listType, OrderRequest orderRequest) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
-        List<FileNode> subFileList =
-            fileNodeService.subList(positionId, id, fileNodeType, searchName, listType, orderRequest);
+
+        List<FileNode> subFileList = new ArrayList<>();
+
+        // 如果提供了标签IDs，则通过标签关联关系查询文件
+        // if (tagIds != null && !tagIds.isEmpty()) {
+        // // 调用 service 方法通过多个标签ID和搜索名称查询文件
+        // subFileList = fileNodeService.listFilesByTagIds(positionId, id, fileNodeType, searchName, tagIds, listType,
+        // orderRequest);
+        // } else {
+        subFileList = fileNodeService.subList(positionId, id, fileNodeType, searchName, tagIds, listType, orderRequest);
+        // }
         List<FileNodeDTO> fileNodeDTOList = FileNodeDTO.from(subFileList);
 
         for (FileNodeDTO fileNodeDTO : fileNodeDTOList) {
+            // 查询文件对应的标签列表
+            List<FileTag> tags = fileTagService.getTagsByFileId(fileNodeDTO.getId());
+            fileNodeDTO.setFileTags(tags);
             boolean isCollect = fileNodeCollectService.findByCollectUserIdAndFileIdAndListName(userInfo.getPersonId(),
                 fileNodeDTO.getId(), fileNodeDTO.getListType());
             fileNodeDTO.setCollect(isCollect);
