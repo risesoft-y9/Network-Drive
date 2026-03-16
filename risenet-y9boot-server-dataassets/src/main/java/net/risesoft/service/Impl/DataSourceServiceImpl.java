@@ -273,7 +273,7 @@ public class DataSourceServiceImpl implements DataSourceService {
         List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
         try {
             DataSourceEntity dataSourceEntity = getDataSourceById(id);
-            if (dataSourceEntity != null) {
+            if (dataSourceEntity != null && dataSourceEntity.getType() == 0) {
                 // 获取数据源
                 DataSource dataSource = Y9FormDbMetaDataUtil.createDataSource(dataSourceEntity.getUrl(),
                     dataSourceEntity.getDriver(), dataSourceEntity.getUsername(), dataSourceEntity.getPassword());

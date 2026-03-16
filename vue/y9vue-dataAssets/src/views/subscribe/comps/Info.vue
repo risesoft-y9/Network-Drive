@@ -283,6 +283,59 @@
                     <el-input v-model="purpose" type="textarea" :autosize="{ minRows: 2 }" v-else></el-input>
                 </el-form-item>
             </el-descriptions-item>
+            <el-descriptions-item :span="2">
+                <template #label>
+                    附件
+                </template>
+                <el-form-item label="">
+                    <!-- 上传组件 -->
+                    <el-upload
+                        class="upload-demo"
+                        style="width: 100%;"
+                        action=""
+                        :multiple="true"
+                        :limit="5"
+                        :auto-upload="false"
+                        :file-list="filesToUpload"
+                        @change="handleFileChange"
+                        v-if="type != '3' && (type != '2' || reviewStatus == '待审核')"
+                    >
+                        <template #trigger>
+                            <el-button type="primary">
+                                <i class="ri-gallery-upload-line"></i> 上传附件
+                            </el-button>
+                        </template>
+                        <span style="color: #ff4949;margin-left: 5px;">(可多选)</span>
+                    </el-upload>
+                    
+                    <!-- 文件列表 -->
+                    <div v-if="fileList.length > 0" style="margin-top: 10px;width: 100%;">
+                        <el-table :data="fileList" style="width: 100%;">
+                            <el-table-column prop="fileName" label="文件名"></el-table-column>
+                            <el-table-column label="操作" width="180">
+                                <template #default="{ row }">
+                                    <el-button
+                                        @click="downloadFile(row.id)"
+                                        size="small"
+                                    >
+                                        <i class="ri-arrow-down-circle-line"></i> 下载
+                                    </el-button>
+                                    <el-button
+                                        @click="deleteFile(row)"
+                                        size="small"
+                                        v-if="type != '3' && (type != '2' || reviewStatus == '待审核')"
+                                    >
+                                        <i class="ri-delete-bin-line"></i> 删除
+                                    </el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                    <div v-else style="margin-top: 10px; color: #999;">
+                        暂无附件
+                    </div>
+                </el-form-item>
+            </el-descriptions-item>
             <el-descriptions-item :span="2" v-if="provideType == '接口生成' || provideType == 'generate'">
                 <template #label>
                     接口信息
@@ -381,15 +434,18 @@
             :isShow="isShow"
         ></DataApiTable>
     </y9Dialog>
+
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted, watch } from 'vue';
-import { FormInstance, ElNotification } from 'element-plus';
+import { FormInstance, ElNotification, ElMessageBox } from 'element-plus';
 import { ElMessage } from 'element-plus';
-import { getDataById, getSubscribeBaseById, getSubscribeById, reviewData, saveSubscribe } from '@/api/pretreat';
+import { getDataById, getSubscribeBaseById, getSubscribeById, reviewData, saveSubscribe, getSubscribeFilePage, deleteSubscribeFile, batchUploadFiles } from '@/api/pretreat';
 import { getOptionValueList } from '@/api/dataAssets/dictionaryOption';
 import DataApiTable from '@/views/dataApiTable/index.vue';
+import y9_storage from '@/utils/storage';
+import settings from '@/settings';
 
 const emits = defineEmits(['close']);
 const props = defineProps({
@@ -421,6 +477,13 @@ const form = ref({});
 let isClose = ref(true);
 
 let saveLoading = ref(false);
+
+// 文件列表相关
+let fileList = ref([]);
+
+// 上传相关
+const filesToUpload = ref<any[]>([]);
+
 const submitForm = async (formEl: FormInstance | undefined) => {
     return new Promise<void>((resolve, reject) => {
         if (!formEl) {
@@ -448,6 +511,9 @@ const submitForm = async (formEl: FormInstance | undefined) => {
                             saveLoading.value = false;
                             if (res.success) {
                                 subId.value = res.data;
+                                // 提交文件
+                                handleBatchUpload();
+
                                 if(isClose.value) {
                                     emits('close');
                                 }
@@ -523,7 +589,35 @@ watch(
 onMounted(() => {
     subId.value = props.subscribeId;
     getData();
+    if (subId.value) {
+        getFileList();
+    }
 });
+
+// 监听订阅ID变化，获取文件列表
+watch(
+    () => subId.value,
+    async (new_) => {
+        if (new_) {
+            getFileList();
+        }
+    }
+);
+
+// 获取文件列表
+async function getFileList() {
+    if (!subId.value) return;
+    
+    let params = {
+        subscribeId: subId.value,
+        page: 1,
+        size: 10 // 不分页，获取所有文件
+    };
+    let res = await getSubscribeFilePage(params);
+    if (res.code == 0) {
+        fileList.value = res.rows;
+    }
+}
 
 let provideTypeList = ref([]);
 async function getData() {
@@ -594,6 +688,74 @@ function openDialog() {
         width: '60%',
         title: '接口资源申请',
         showFooter: false
+    });
+}
+
+// 处理文件选择
+function handleFileChange(file, fileList) {
+    filesToUpload.value = fileList;
+}
+
+// 批量上传文件
+async function handleBatchUpload() {
+    if (filesToUpload.value.length === 0) {
+        //ElMessage.error('请选择要上传的文件');
+        return;
+    }
+
+    const formData = new FormData();
+    filesToUpload.value.forEach(file => {
+        formData.append('files', file.raw);
+    });
+    formData.append('subscribeId', subId.value);
+
+    const response = await batchUploadFiles(formData);
+    if(response.success) {
+        //ElMessage.success('上传成功');
+    } else {
+        ElMessage.error(response.msg);
+    }
+
+    filesToUpload.value = [];
+}
+
+// 下载文件
+function downloadFile(id) {
+    const url = import.meta.env.VUE_APP_CONTEXT + 'vue/subscribeFile/fileDownload?id=' + id 
+        + "&access_token=" + y9_storage.getObjectItem(settings.siteTokenKey, 'access_token');
+    window.open(url);
+}
+
+// 删除文件
+const deleteFile = (row) => {
+    ElMessageBox.confirm(`是否删除【${row.fileName}】?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+    })
+    .then(async () => {
+        saveLoading.value = true;
+        let result = await deleteSubscribeFile(row.id);
+        ElNotification({
+            title: result.success ? '成功' : '失败',
+            message: result.msg,
+            type: result.success ? 'success' : 'error',
+            duration: 2000,
+            offset: 80
+        });
+        saveLoading.value = false;
+        // 重新获取文件列表
+        if(result.success){
+            getFileList();
+        }
+    })
+    .catch(() => {
+        saveLoading.value = false;
+        ElMessage({
+            type: 'info',
+            message: '已取消删除',
+            offset: 65
+        });
     });
 }
 </script>
