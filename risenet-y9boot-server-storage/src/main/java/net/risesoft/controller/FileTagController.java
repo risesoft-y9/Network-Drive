@@ -53,7 +53,7 @@ public class FileTagController {
     @RiseLog(operationName = "新增文件标签", operationType = OperationTypeEnum.ADD)
     @PostMapping("/saveFileTag")
     public Y9Result<Object> saveFileTag(FileTag fileTag) {
-        fileTag.setTagType("manageTag");
+        fileTag.setTagType("systemTag");
         return fileTagService.save(fileTag);
     }
 
@@ -85,6 +85,26 @@ public class FileTagController {
         return Y9Result.success(null, "文件添加标签成功");
     }
 
+    /**
+     * 单文件添加标签
+     *
+     * @param tagId
+     * @param fileId
+     * @return
+     */
+    @RiseLog(operationName = "单文件添加文件标签", operationType = OperationTypeEnum.ADD)
+    @PostMapping("/simpleFileToTag")
+    public Y9Result<Object> simpleFileToTag(String tagId, String fileId) {
+        return fileTagRelationService.simpleFileToTag(tagId, fileId);
+    }
+
+    /**
+     * 单文件删除标签
+     *
+     * @param tagId
+     * @param fileId
+     * @return
+     */
     @RiseLog(operationName = "删除文件标签", operationType = OperationTypeEnum.DELETE)
     @DeleteMapping("/removeTagFromFile")
     public Y9Result<Object> removeTagFromFile(@RequestParam String fileId, @RequestParam String tagId) {
@@ -93,37 +113,29 @@ public class FileTagController {
         return Y9Result.success(null, "标签移除成功");
     }
 
-    @RiseLog(operationName = "编辑文件标签", operationType = OperationTypeEnum.MODIFY)
-    @PostMapping("/updateFileTag")
-    public Y9Result<Object> updateFileTag(FileTag fileTag) {
-
-        return null;
+    /**
+     * 新增自定义标签
+     * 
+     * @param fileTag
+     * @param fileId
+     * @return
+     */
+    @RiseLog(operationName = "新增自定义文件标签", operationType = OperationTypeEnum.ADD)
+    @PostMapping("/saveCustomTag")
+    public Y9Result<Object> saveCustomTag(FileTag fileTag, @RequestParam String fileId) {
+        return fileTagService.saveCustomTag(fileTag, fileId);
     }
-    //
-    // /**
-    // * 批量为文件添加标签
-    // */
-    // @PostMapping("/batch/addTag")
-    // public Y9Result<Object> batchAddTag(@RequestParam List<String> fileIds, @RequestParam String tagId) {
-    // UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
-    // fileTagService.batchAddTagToFile(fileIds, tagId, userInfo.getPersonId());
-    // return Y9Result.success(null, "批量添加标签成功");
-    // }
-    //
-    // /**
-    // * 根据标签查询文件
-    // */
-    // @GetMapping("/files")
-    // public Y9Result<FileNodeListDTO> listFilesByTag(@RequestHeader("positionId") String positionId,
-    // @RequestParam String tagId, @RequestParam(required = false) String parentId, OrderRequest orderRequest) {
-    //
-    // List<FileNode> subFileList = fileNodeService.subListByTag(positionId, parentId, tagId, null, orderRequest);
-    // List<FileNodeDTO> fileNodeDTOList = FileNodeDTO.from(subFileList);
-    //
-    // // 处理收藏状态等逻辑...
-    //
-    // FileNodeListDTO fileNodeListDTO = new FileNodeListDTO();
-    // fileNodeListDTO.setSubFileNodeList(fileNodeDTOList);
-    // return Y9Result.success(fileNodeListDTO);
-    // }
+
+    /**
+     * 编辑自定义标签
+     *
+     * @param fileTag
+     * @return
+     */
+    @RiseLog(operationName = "编辑自定义文件标签", operationType = OperationTypeEnum.MODIFY)
+    @PostMapping("/updateCustomTag")
+    public Y9Result<Object> updateFileTag(FileTag fileTag) {
+        return fileTagService.updateFileTag(fileTag);
+    }
+
 }

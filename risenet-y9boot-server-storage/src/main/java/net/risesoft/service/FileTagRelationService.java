@@ -2,6 +2,8 @@ package net.risesoft.service;
 
 import java.util.List;
 
+import net.risesoft.pojo.Y9Result;
+
 public interface FileTagRelationService {
 
     /**
@@ -19,4 +21,13 @@ public interface FileTagRelationService {
      * @return
      */
     List<String> findFileIdsByTagIds(List<String> tagIds);
+
+    /**
+     * 单文件关联标签
+     * 
+     * @param tagId
+     * @param fileId
+     * @return
+     */
+    Y9Result<Object> simpleFileToTag(String tagId, String fileId);
 }

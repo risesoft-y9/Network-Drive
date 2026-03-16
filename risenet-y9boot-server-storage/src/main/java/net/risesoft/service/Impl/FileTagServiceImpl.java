@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
-import net.risesoft.entity.FileNode;
 import net.risesoft.entity.FileTag;
 import net.risesoft.entity.FileTagRelation;
 import net.risesoft.id.IdType;
@@ -73,6 +72,7 @@ public class FileTagServiceImpl implements FileTagService {
             FileTag existingTag = fileTagRepository.findById(fileTag.getId()).orElse(null);
             if (existingTag != null) {
                 existingTag.setTagName(fileTag.getTagName());
+                existingTag.setTagColor(fileTag.getTagColor());
                 existingTag.setUpdateTime(new Date());
                 fileTag = existingTag;
             }
@@ -102,32 +102,6 @@ public class FileTagServiceImpl implements FileTagService {
     }
 
     @Override
-    public FileTag createTag(String tagName, String creatorId) {
-
-        return null;
-    }
-
-    @Override
-    public List<FileTag> getAllTags() {
-        return List.of();
-    }
-
-    @Override
-    public FileTag getTagById(String tagId) {
-        return null;
-    }
-
-    @Override
-    public void deleteTag(String tagId) {
-
-    }
-
-    @Override
-    public void addTagToFile(String fileId, String tagId, String operatorId) {
-
-    }
-
-    @Override
     public void removeTagFromFile(String fileId, String tagId, String operatorId) {
         FileTagRelation fileTagRelation =
             fileTagRelationRepository.findByFileIdAndTagIdAndOperatorId(fileId, tagId, operatorId);
@@ -137,25 +111,61 @@ public class FileTagServiceImpl implements FileTagService {
     }
 
     @Override
-    public void updateFileTag(FileTag fileTag) {
-        FileTag tag = fileTagRepository.findById(fileTag.getId()).orElse(null);
-        if (tag != null) {
-
+    public Y9Result<Object> updateFileTag(FileTag fileTag) {
+        try {
+            List<FileTag> existingTags = fileTagRepository.findByTagName(fileTag.getTagName());
+            if (null == existingTags || existingTags.isEmpty()) {
+                FileTag tag = fileTagRepository.findById(fileTag.getId()).orElse(null);
+                if (tag != null) {
+                    tag.setTagName(fileTag.getTagName());
+                    fileTagRepository.save(tag);
+                }
+                return Y9Result.success(null, "更新标签成功");
+            }
+        } catch (Exception e) {
+            return Y9Result.failure("更新标签失败");
         }
+        return Y9Result.failure("标签名称已存在");
     }
 
     @Override
-    public List<FileNode> getFilesByTagId(String tagId) {
-        return List.of();
+    public Y9Result<Object> saveCustomTag(FileTag fileTag, String fileId) {
+        UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
+        String operatorId = userInfo.getPersonId(), operatorName = userInfo.getName();
+
+        // 检查标签名称是否已存在
+        List<FileTag> existingTags = fileTagRepository.findByTagName(fileTag.getTagName());
+
+        if (StringUtils.isBlank(fileTag.getId())) {
+            if (!existingTags.isEmpty()) {
+                return Y9Result.success(existingTags.get(0), "标签名称已存在");
+            }
+            fileTag.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
+            fileTag.setCreateTime(new Date());
+            fileTag.setCreateId(operatorId);
+            fileTag.setCreateName(operatorName);
+        } else {
+            // 更新逻辑 - 从数据库获取现有记录并更新属性
+            if (!existingTags.isEmpty()) {
+                return Y9Result.failure(existingTags.get(0), "标签名称已存在");
+            }
+            FileTag existingTag = fileTagRepository.findById(fileTag.getId()).orElse(null);
+            if (existingTag != null) {
+                existingTag.setTagName(fileTag.getTagName());
+                existingTag.setTagColor(fileTag.getTagColor());
+                existingTag.setUpdateTime(new Date());
+                fileTag = existingTag;
+            }
+        }
+        fileTagRepository.save(fileTag);
+        FileTagRelation fileTagRelation = new FileTagRelation();
+        fileTagRelation.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
+        fileTagRelation.setFileId(fileId);
+        fileTagRelation.setTagId(fileTag.getId());
+        fileTagRelation.setOperatorId(operatorId);
+        fileTagRelation.setOperateTime(new Date());
+        fileTagRelationRepository.save(fileTagRelation);
+        return Y9Result.success("保存标签成功");
     }
 
-    @Override
-    public void batchAddTagToFile(List<String> fileIds, String tagId, String operatorId) {
-
-    }
-
-    @Override
-    public void batchRemoveTagFromFile(List<String> fileIds, String tagId, String operatorId) {
-
-    }
 }

@@ -37,5 +37,7 @@ public interface FileTagRelationRepository
     @Query("SELECT ftr.tagId FROM FileTagRelation ftr WHERE ftr.fileId = ?1")
     List<String> findTagIdsByFileId(String fileId);
 
+    FileTagRelation findByFileIdAndTagId(String fileId, String tagId);
+
     FileTagRelation findByFileIdAndTagIdAndOperatorId(String fileId, String tagId, String operatorId);
 }

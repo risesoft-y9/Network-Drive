@@ -2,7 +2,8 @@ package net.risesoft.service;
 
 import java.util.List;
 
-import net.risesoft.entity.FileNode;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import net.risesoft.entity.FileTag;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
@@ -19,27 +20,10 @@ public interface FileTagService {
 
     List<FileTag> getTagsByFileId(String fileId);
 
-    // 标签管理
-    FileTag createTag(String tagName, String creatorId);
+    Y9Result<Object> updateFileTag(FileTag fileTag);
 
-    List<FileTag> getAllTags();
-
-    FileTag getTagById(String tagId);
-
-    void deleteTag(String tagId);
-
-    // 文件标签操作
-    void addTagToFile(String fileId, String tagId, String operatorId);
+    Y9Result<Object> saveCustomTag(FileTag fileTag, @RequestParam String fileId);
 
     void removeTagFromFile(String fileId, String tagId, String operatorId);
-
-    void updateFileTag(FileTag fileTag);
-
-    List<FileNode> getFilesByTagId(String tagId);
-
-    // 批量操作
-    void batchAddTagToFile(List<String> fileIds, String tagId, String operatorId);
-
-    void batchRemoveTagFromFile(List<String> fileIds, String tagId, String operatorId);
 
 }
