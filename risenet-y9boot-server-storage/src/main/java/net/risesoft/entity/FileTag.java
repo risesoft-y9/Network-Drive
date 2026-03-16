@@ -59,6 +59,14 @@ public class FileTag implements Serializable {
     @Comment("标签类型")
     private String tagType;
 
+    @Column(name = "TAGCOLOR", length = 50)
+    @Comment("标签颜色")
+    private String tagColor;
+
+    @Column(name = "DESCRIPTION", length = 200)
+    @Comment("标签描述")
+    private String description;
+
     @Comment("创建人id")
     @Column(name = "CREATEID", length = 38)
     private String createId;
