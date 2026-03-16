@@ -280,3 +280,35 @@ export const checkSubscribeBase = async (params) => {
         data
     });
 };
+
+// 批量上传文件
+export const batchUploadFiles = (formData: FormData) => {
+    return dataRequest({
+        url: '/vue/subscribeFile/fileUpload',
+        method: 'post',
+        data: formData,
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+};
+
+// 获取订阅文件列表
+export const getSubscribeFilePage = async (params) => {
+    return await dataRequest({
+        url: '/vue/subscribeFile/getFilePage',
+        method: 'GET',
+        cType: false,
+        params
+    });
+};
+
+// 删除订阅文件
+export const deleteSubscribeFile = async (id) => {
+    return await dataRequest({
+        url: '/vue/subscribeFile/delete',
+        method: 'POST',
+        cType: false,
+        params: { id: id }
+    });
+};

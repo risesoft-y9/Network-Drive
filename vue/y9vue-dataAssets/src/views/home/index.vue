@@ -224,8 +224,7 @@ function initDataTypeChart(data) {
 
 <style lang="scss" scoped>
 .home-container {
-    padding: 20px;
-    background-color: #f5f7fa;
+    padding-top: 1px;
     min-height: 100vh;
 }
 
@@ -337,7 +336,7 @@ function initDataTypeChart(data) {
 
 @media (max-width: 768px) {
     .home-container {
-        padding: 10px;
+        padding-top: 1px;
     }
     
     .stats-card-container {
