@@ -192,7 +192,7 @@
                                     h('span', t('查看'))
                                 ]
                             )];
-                            if(userRole === 'systemAdmin' && row.owner && props.isShow) {
+                            if(userRole === 'systemAdmin' && row.owner && props.type == '3') {
                                 editActions.push(h(
                                     'span',
                                     {

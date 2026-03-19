@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 
 import net.risesoft.entity.DataApiOnlineEntity;
+import net.risesoft.entity.DataApiTableEntity;
 import net.risesoft.entity.DataAssets;
 import net.risesoft.entity.DataRecentEntity;
 import net.risesoft.entity.DataSourceEntity;
@@ -48,6 +49,7 @@ import net.risesoft.model.platform.resource.DataCatalog;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.repository.DataApiOnlineRepository;
+import net.risesoft.repository.DataApiTableRepository;
 import net.risesoft.repository.DataAssetsRepository;
 import net.risesoft.repository.DownloadLogRepository;
 import net.risesoft.repository.FileInfoRepository;
@@ -88,6 +90,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     private final SubscribeRepository subscribeRepository;
     private final DataCatalogApiClient dataCatalogApiClient;
     private final DataRecentService dataRecentService;
+    private final DataApiTableRepository dataApiTableRepository;
 
     @Override
     public DataAssets findById(Long id) {
@@ -770,6 +773,17 @@ public class DataAssetsServiceImpl implements DataAssetsService {
         SubscribeEntity subscribeEntity = subscribeRepository.findById(id).orElse(null);
         if (subscribeEntity == null) {
             return Y9Result.failure("保存失败，信息不存在");
+        }
+        // 审核通过时判断是否存在没授权的申请接口表
+        if(reviewStatus.equals("通过")) {
+            List<DataApiTableEntity> dataApiTableEntities = dataApiTableRepository.findBySubscribeId(id);
+            if(dataApiTableEntities != null) {
+                for(DataApiTableEntity dataApiTableEntity : dataApiTableEntities) {
+                    if(StringUtils.isBlank(dataApiTableEntity.getOwner())) {
+                        return Y9Result.failure("保存失败，存在未处理的申请表:" + dataApiTableEntity.getTableName());
+                    }
+                }
+            }
         }
         subscribeEntity.setReason(reason);
         subscribeEntity.setReviewStatus(reviewStatus);

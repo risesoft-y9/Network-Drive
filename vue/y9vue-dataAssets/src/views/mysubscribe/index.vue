@@ -165,7 +165,7 @@
                                     ]
                                 ))
                             }
-                            if(row.provideType == '接口请求') {
+                            if(row.provideType == '接口对接') {
                                 editActions.push(
                                     h(
                                         'span',

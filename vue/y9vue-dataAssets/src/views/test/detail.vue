@@ -514,7 +514,7 @@
             }
         }
         if (!find) {
-            ApiForm.header.push({ isSelect: true, Key: 'Authorization', Param: `Bearer ${tokenValue.value}` });
+            //ApiForm.header.push({ isSelect: true, Key: 'Authorization', Param: `Bearer ${tokenValue.value}` });
         }
     }
     function autoAddToken() {
