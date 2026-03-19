@@ -1,5 +1,7 @@
 package net.risesoft.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,4 +24,6 @@ public interface DataApiTableRepository extends JpaRepository<DataApiTableEntity
     DataApiTableEntity findByTableNameAndDataSourceIdAndOwner(String tableName, String dataSourceId, String owner);
 
     DataApiTableEntity findByTableNameAndDataSourceIdAndCreatorIdAndIsDeleted(String tableName, String dataSourceId, String creatorId, Boolean isDeleted);
+
+    List<DataApiTableEntity> findBySubscribeId(String subscribeId);
 }

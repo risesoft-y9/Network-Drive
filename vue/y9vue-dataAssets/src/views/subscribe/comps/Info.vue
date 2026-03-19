@@ -563,15 +563,16 @@ async function review() {
         };
 
         let result = await reviewData(params);
+        saveLoading.value = false;
+        
         if (result.success) {
             emits('close');
         }
-        saveLoading.value = false;
         ElNotification({
             title: result.success ? '成功' : '失败',
             message: result.msg,
             type: result.success ? 'success' : 'error',
-            duration: 2000,
+            duration: 4000,
             offset: 80
         });
     }
@@ -662,7 +663,7 @@ let dialogConfig = ref({
     title: ''
 });
 
-let isShow = ref(true);// 弹窗页面里是否显示新增和禁用按钮
+let isShow = ref(true);// 弹窗页面里是否显示新增按钮
 function handleClick() {
     if(props.type == '1' && subId.value == '') {
         isClose.value = false;

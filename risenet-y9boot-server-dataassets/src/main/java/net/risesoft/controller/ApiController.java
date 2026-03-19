@@ -180,93 +180,98 @@ public class ApiController {
 
     @PostMapping(value = "/search/{dataSourceId}/{tableName}")
     public Y9Result<Map<String, Object>> search(@PathVariable @NotBlank String tableName, @PathVariable @NotBlank String dataSourceId) {
-        String owner = Y9ApiThreadHoder.getAppName();
-        DataApiTableEntity dataApiTableEntity = dataApiTableRepository.findByTableNameAndDataSourceIdAndOwner(tableName, dataSourceId, owner);
-        if (dataApiTableEntity != null) {
-            if(dataApiTableEntity.getIsDeleted()) {
-                return Y9Result.failure("该接口申请已被禁用");
-            }
-            // 判断关联的订阅信息状态,如果不是通过状态不允许调用
-            SubscribeEntity subscribeEntity = subscribeRepository.findById(dataApiTableEntity.getSubscribeId()).orElse(null);
-            if(subscribeEntity == null || !subscribeEntity.getReviewStatus().equals("通过")) {
-                return Y9Result.failure("该接口的订阅信息不存在或者未通过审核，不允许调用");
-            }
+        try {
+            String owner = Y9ApiThreadHoder.getAppName();
+            DataApiTableEntity dataApiTableEntity = dataApiTableRepository.findByTableNameAndDataSourceIdAndOwner(tableName, dataSourceId, owner);
+            if (dataApiTableEntity != null) {
+                if(dataApiTableEntity.getIsDeleted()) {
+                    return Y9Result.failure("该接口申请已被禁用");
+                }
+                // 判断关联的订阅信息状态,如果不是通过状态不允许调用
+                SubscribeEntity subscribeEntity = subscribeRepository.findById(dataApiTableEntity.getSubscribeId()).orElse(null);
+                if(subscribeEntity == null || !subscribeEntity.getReviewStatus().equals("通过")) {
+                    return Y9Result.failure("该接口的订阅信息不存在或者未通过审核，不允许调用");
+                }
 
-            // 返回字段和查询字段都是List<String>的json数据需要转换成逗号分割的字符串
-            String returnFields = Y9JsonUtil.readList(dataApiTableEntity.getReturnFields(), String.class).stream().collect(Collectors.joining(","));
-            String queryFields = Y9JsonUtil.readList(dataApiTableEntity.getQueryFields(), String.class).stream().collect(Collectors.joining(","));
-            String sql = "SELECT " + returnFields.toUpperCase() + " FROM " + dataApiTableEntity.getTableName().toUpperCase();
+                // 返回字段和查询字段都是List<String>的json数据需要转换成逗号分割的字符串
+                String returnFields = Y9JsonUtil.readList(dataApiTableEntity.getReturnFields(), String.class).stream().collect(Collectors.joining(","));
+                String queryFields = Y9JsonUtil.readList(dataApiTableEntity.getQueryFields(), String.class).stream().collect(Collectors.joining(","));
+                String sql = "SELECT " + returnFields.toUpperCase() + " FROM " + dataApiTableEntity.getTableName().toUpperCase();
 
-            // 接口参数
-            List<Object> args = new ArrayList<Object>();
-            Map<String, Object> body = Y9JsonUtil.readHashMap(Y9ApiThreadHoder.getBody());
+                // 接口参数
+                List<Object> args = new ArrayList<Object>();
+                Map<String, Object> body = Y9JsonUtil.readHashMap(Y9ApiThreadHoder.getBody());
 
-            // 通过查询字段和固定查询参数拼接SQL语句,注意为空时where子句不拼接
-            if (StringUtils.isNotBlank(queryFields)) {
-                sql += " WHERE ";
-                String[] queryFieldsArray = queryFields.split(",");
-                for (String queryField : queryFieldsArray) {
-                    // 如果参数值为空,则返回提示
-                    if (StringUtils.isBlank(body.get(queryField).toString())) {
-                        return Y9Result.failure("参数" + queryField + "不能为空");
+                // 通过查询字段和固定查询参数拼接SQL语句,注意为空时where子句不拼接
+                if (StringUtils.isNotBlank(queryFields)) {
+                    sql += " WHERE ";
+                    String[] queryFieldsArray = queryFields.split(",");
+                    for (String queryField : queryFieldsArray) {
+                        // 如果参数值为空,则返回提示
+                        if (StringUtils.isBlank(body.get(queryField).toString())) {
+                            return Y9Result.failure("参数" + queryField + "不能为空");
+                        }
+                        sql += " " + queryField.toUpperCase() + " = ? AND ";
+                        args.add(body.get(queryField));
                     }
-                    sql += " " + queryField.toUpperCase() + " = ? AND ";
-                    args.add(body.get(queryField));
+                    // 去掉最后一个AND
+                    sql = sql.substring(0, sql.length() - 5);
                 }
-                // 去掉最后一个AND
-                sql = sql.substring(0, sql.length() - 5);
-            }
-            if (StringUtils.isNotBlank(dataApiTableEntity.getQueryParams())) {
-                sql += (StringUtils.isNotBlank(queryFields) ? " AND " : " WHERE ") + dataApiTableEntity.getQueryParams();
-            }
-
-            // 增量字段,使用INSTR函数判断是否包含增量字段值
-            TableForeignKeyEntity tableForeignKeyEntity = tableForeignKeyRepository.findByTableNameAndDataSourceId(tableName, dataSourceId);
-            if (tableForeignKeyEntity != null && StringUtils.isNotBlank(tableForeignKeyEntity.getIncrementField())) {
-                // 如果增量字段值为空,则不拼接增量查询条件
-                if (StringUtils.isNotBlank(body.get(tableForeignKeyEntity.getIncrementField()).toString())) {
-                    sql += (sql.contains(" WHERE ") ? " AND " : " WHERE ") + " INSTR(" + tableForeignKeyEntity.getIncrementField().toUpperCase() + ", ?) > 0";
-                    args.add(body.get(tableForeignKeyEntity.getIncrementField()));
+                if (StringUtils.isNotBlank(dataApiTableEntity.getQueryParams())) {
+                    sql += (StringUtils.isNotBlank(queryFields) ? " AND " : " WHERE ") + dataApiTableEntity.getQueryParams();
                 }
-            }
-            
-            // 添加分页参数和排序参数
-            // 加offset数据量大的时候查询会导致性能问题,采用存储上一次查询的最后一条数据的排序字段值作为分页查询的起始值
-            // 验证sortField是否为合法的列名，防止SQL注入
-            String sortField = body.get("sortField").toString();
-            if (!isValidColumnName(sortField)) {
-                return Y9Result.failure("无效的排序字段");
-            }
-            Object lastSortValue = body.get("lastSortValue");
-            if (lastSortValue != null) {
-                sql += (sql.contains(" WHERE ") ? " AND " : " WHERE ") + sortField.toUpperCase() + " > ?";
-                args.add(lastSortValue);
-            }
-            sql += " ORDER BY " + sortField.toUpperCase() + " LIMIT " + body.get("size");
 
-            DataSourceEntity dataSourceEntity =
-                dataSourceService.getDataSourceById(dataApiTableEntity.getDataSourceId());
-            if (dataSourceEntity != null) {
-                List<Map<String, Object>> listMap =
-                    Y9SqlUtil.executeQuery(sql, dataSourceEntity.getUrl(), dataSourceEntity.getUsername(),
-                        dataSourceEntity.getPassword(), dataSourceEntity.getDriver(), args.toArray());
-                // 构建返回结果，包含数据列表和下一页的lastSortValue
-                Map<String, Object> resultMap = new HashMap<>();
-                resultMap.put("data", listMap);
-                // 如果有数据，获取最后一条记录的sortField值作为下一页的lastSortValue
-                if (!listMap.isEmpty()) {
-                    Map<String, Object> lastRecord = listMap.get(listMap.size() - 1);
-                    String nextLastSortValue = lastRecord.get(sortField.toUpperCase()) != null ? lastRecord.get(sortField.toUpperCase()).toString() : null;
-                    resultMap.put("lastSortValue", nextLastSortValue);
+                // 增量字段,使用INSTR函数判断是否包含增量字段值
+                TableForeignKeyEntity tableForeignKeyEntity = tableForeignKeyRepository.findByTableNameAndDataSourceId(tableName, dataSourceId);
+                if (tableForeignKeyEntity != null && StringUtils.isNotBlank(tableForeignKeyEntity.getIncrementField())) {
+                    // 如果增量字段值为空,则不拼接增量查询条件
+                    if (StringUtils.isNotBlank(body.get(tableForeignKeyEntity.getIncrementField()).toString())) {
+                        sql += (sql.contains(" WHERE ") ? " AND " : " WHERE ") + " INSTR(" + tableForeignKeyEntity.getIncrementField().toUpperCase() + ", ?) > 0";
+                        args.add(body.get(tableForeignKeyEntity.getIncrementField()));
+                    }
+                }
+                
+                // 添加分页参数和排序参数
+                // 加offset数据量大的时候查询会导致性能问题,采用存储上一次查询的最后一条数据的排序字段值作为分页查询的起始值
+                // 验证sortField是否为合法的列名，防止SQL注入
+                String sortField = body.get("sortField").toString();
+                if (!isValidColumnName(sortField)) {
+                    return Y9Result.failure("无效的排序字段");
+                }
+                Object lastSortValue = body.get("lastSortValue");
+                if (lastSortValue != null) {
+                    sql += (sql.contains(" WHERE ") ? " AND " : " WHERE ") + sortField.toUpperCase() + " > ?";
+                    args.add(lastSortValue);
+                }
+                sql += " ORDER BY " + sortField.toUpperCase() + " LIMIT " + body.get("size");
+
+                DataSourceEntity dataSourceEntity =
+                    dataSourceService.getDataSourceById(dataApiTableEntity.getDataSourceId());
+                if (dataSourceEntity != null) {
+                    List<Map<String, Object>> listMap =
+                        Y9SqlUtil.executeQuery(sql, dataSourceEntity.getUrl(), dataSourceEntity.getUsername(),
+                            dataSourceEntity.getPassword(), dataSourceEntity.getDriver(), args.toArray());
+                    // 构建返回结果，包含数据列表和下一页的lastSortValue
+                    Map<String, Object> resultMap = new HashMap<>();
+                    resultMap.put("data", listMap);
+                    // 如果有数据，获取最后一条记录的sortField值作为下一页的lastSortValue
+                    if (!listMap.isEmpty()) {
+                        Map<String, Object> lastRecord = listMap.get(listMap.size() - 1);
+                        String nextLastSortValue = lastRecord.get(sortField.toUpperCase()) != null ? lastRecord.get(sortField.toUpperCase()).toString() : null;
+                        resultMap.put("lastSortValue", nextLastSortValue);
+                    } else {
+                        resultMap.put("lastSortValue", null);
+                    }
+                    return Y9Result.success(resultMap);
                 } else {
-                    resultMap.put("lastSortValue", null);
+                    return Y9Result.failure("接口查不到数据源信息，请联系负责人处理");
                 }
-                return Y9Result.success(resultMap);
             } else {
-                return Y9Result.failure("接口查不到数据源信息，请联系负责人处理");
+                return Y9Result.failure("该账号接口申请不存在");
             }
-        } else {
-            return Y9Result.failure("该账号接口申请不存在");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Y9Result.failure("接口调用失败，联系管理员处理：" + e.getMessage());
         }
     }
 

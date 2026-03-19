@@ -28,13 +28,17 @@
             </template>
             <el-table :data="callRecords" style="width: 100%" :row-class-name="tableRowClassName">
                 <el-table-column prop="createTime" label="调用时间" width="180"></el-table-column>
+                <el-table-column prop="remark" label="API名称" width="220"></el-table-column>
                 <el-table-column prop="requestUrl" label="API路径"></el-table-column>
                 <el-table-column prop="serverIp" label="服务器IP" width="150"></el-table-column>
                 <el-table-column prop="apiType" label="接口类型" width="100"></el-table-column>
                 <el-table-column prop="result" label="状态" width="100">
                     <template #default="scope">
-                        <el-tag :type="scope.row.result === 'success' ? 'success' : 'danger'">
-                            {{ scope.row.result === 'success' ? $t('成功') : $t('失败') }}
+                        <el-tag
+                            :type="scope.row.result === 'success' ? 'success' : 'danger'"
+                            :title="scope.row.result === 'success' ? '' : scope.row.result"
+                        >
+                            {{ scope.row.result === 'success' ? '成功' : '失败' }}
                         </el-tag>
                     </template>
                 </el-table-column>

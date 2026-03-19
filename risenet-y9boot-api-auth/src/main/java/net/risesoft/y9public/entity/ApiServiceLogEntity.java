@@ -35,7 +35,7 @@ public class ApiServiceLogEntity extends BaseEntity {
     private String requestUrl;
 
     @Column(name = "APITYPE", length = 50)
-    @Comment(value = "接口类型：内部接口、转发接口")
+    @Comment(value = "接口类型：内部接口、订阅生成接口、其它接口")
     private String apiType;
 
     @Column(name = "HOSTIP", length = 50)
@@ -53,5 +53,9 @@ public class ApiServiceLogEntity extends BaseEntity {
     @Column(name = "RESULT", length = 500)
     @Comment(value = "请求结果")
     private String result;
+
+    @Column(name = "REMARK", length = 500)
+    @Comment(value = "备注")
+    private String remark;
 
 }

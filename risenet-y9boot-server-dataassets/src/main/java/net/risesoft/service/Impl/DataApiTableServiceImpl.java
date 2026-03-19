@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
 import net.risesoft.entity.DataApiTableEntity;
+import net.risesoft.entity.SubscribeEntity;
 import net.risesoft.entity.TableForeignKeyEntity;
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.repository.DataApiTableRepository;
+import net.risesoft.repository.SubscribeRepository;
 import net.risesoft.repository.TableForeignKeyRepository;
 import net.risesoft.service.DataApiTableService;
 import net.risesoft.y9.Y9LoginUserHolder;
@@ -27,6 +29,7 @@ public class DataApiTableServiceImpl implements DataApiTableService {
     private final DataApiTableRepository dataApiTableRepository;
     private final PersonRoleApiClient personRoleApiClient;
     private final TableForeignKeyRepository tableForeignKeyRepository;
+    private final SubscribeRepository subscribeRepository;
 
     @Override
     public Page<DataApiTableEntity> findByTableNameAndSubscribeId(String tableName, String subscribeId, Pageable pageable) {
@@ -52,11 +55,14 @@ public class DataApiTableServiceImpl implements DataApiTableService {
     @Override
     public String save(DataApiTableEntity dataApiTableEntity) {
         if (dataApiTableEntity.getId() == null) {
-            // 判断是否已经申请过该表，禁用的除外
+            // 判断是否已经申请过该表，禁用和审核不通过的除外
             DataApiTableEntity existingEntity = dataApiTableRepository.findByTableNameAndDataSourceIdAndCreatorIdAndIsDeleted(
             dataApiTableEntity.getTableName(), dataApiTableEntity.getDataSourceId(), Y9LoginUserHolder.getPersonId(), false);
             if (existingEntity != null) {
-                throw new IllegalArgumentException("您已申请过该表，无需重复申请");
+                SubscribeEntity subscribeEntity = subscribeRepository.findById(existingEntity.getSubscribeId()).orElse(null);
+                if(subscribeEntity != null && subscribeEntity.getReviewStatus().equals("通过")) {
+                    throw new IllegalArgumentException("您已申请过该表，不能重复申请，请联系管理员先禁用旧的申请");
+                }
             }
 
             dataApiTableEntity.setCreatorId(Y9LoginUserHolder.getPersonId());
@@ -65,6 +71,14 @@ public class DataApiTableServiceImpl implements DataApiTableService {
             DataApiTableEntity oldEntity = dataApiTableRepository.findById(dataApiTableEntity.getId()).orElse(null);
             if (oldEntity == null) {
                 throw new IllegalArgumentException("数据接口表不存在");
+            }
+            // 已经审核的数据不能再更新，管理员除外
+            SubscribeEntity subscribeEntity = subscribeRepository.findById(oldEntity.getSubscribeId()).orElse(null);
+            if(subscribeEntity != null && !subscribeEntity.getReviewStatus().equals("待审核")) {
+                boolean isAdmin = personRoleApiClient.hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId()).getData();
+                if(!isAdmin) {
+                    throw new IllegalArgumentException("该数据接口表已审核，不能更新");
+                }
             }
             dataApiTableEntity.setCreatorId(oldEntity.getCreatorId());
             dataApiTableEntity.setCreator(oldEntity.getCreator());
@@ -116,8 +130,7 @@ public class DataApiTableServiceImpl implements DataApiTableService {
             throw new IllegalArgumentException("数据不存在");
         }
         // 判断是否系统管理员
-        boolean isAdmin = personRoleApiClient.hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", 
-        null, "系统管理员", Y9LoginUserHolder.getPersonId()).getData();
+        boolean isAdmin = personRoleApiClient.hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId()).getData();
         // 已禁用设为未禁用，未禁用设为已禁用
         if (isAdmin && StringUtils.isNotBlank(dataApiTableEntity.getOwner())) {
             // 判断该表在禁用状态下有没有新的在用申请，有的话不能解禁
