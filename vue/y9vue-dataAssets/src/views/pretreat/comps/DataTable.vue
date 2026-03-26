@@ -100,15 +100,11 @@
         <el-button class="ml-4" type="primary" @click="submitSave">提交</el-button>
     </y9Dialog>
     <y9Dialog v-model:config="dialogConfig4">
-        <el-tree-select
-            v-model="checkTableData"
-            :data="tableTreeData"
-            multiple
-            filterable
-            check-strictly
-            :render-after-expand="false"
-        />
-        <el-button class="ml-4" type="primary" @click="submitSave2">提交</el-button>
+        <TableTransfer
+            v-if="dialogConfig4.show"
+            :assetsId="assetsId"
+            @close="close2"
+        ></TableTransfer>
     </y9Dialog>
 </template>
 
@@ -119,12 +115,13 @@
     import { useSettingStore } from '@/store/modules/settingStore';
     import y9_storage from '@/utils/storage';
     import { getStoragePageSize } from '@/utils';
-    import { deleteDataAssets, getSelectTree, getTableSelectTree, saveAssetsInterface, saveAssetsTable, searchPage } from '@/api/pretreat';
+    import { deleteDataAssets, getAssetsTable, getSelectTree, saveAssetsInterface, searchPage } from '@/api/pretreat';
     import type { UploadInstance } from 'element-plus';
     import settings from '@/settings';
     import router from '@/router';
     import FormView from '../comps/FormData.vue';
     import Details from '../comps/details.vue';
+    import TableTransfer from '../comps/TableTransfer.vue';
 
     const settingStore = useSettingStore();
     // 注入 字体对象
@@ -367,7 +364,6 @@
                 showFooter: false
             });
         } else if(type == 1) {
-            initTableTreeData();
             Object.assign(dialogConfig4.value, {
                 show: true,
                 width: '30%',
@@ -387,7 +383,7 @@
         let uploadUrl = import.meta.env.VUE_APP_CONTEXT + `vue/detail/fileUpload?assetsId=` + assetsId.value;
         const formData = new FormData();
         formData.append('file', content.file); // 添加文件到FormData对象中
- 
+
         // 使用 fetch API 发送请求，并设置 headers
         fetch(uploadUrl, {
             method: 'POST',
@@ -425,6 +421,11 @@
         await getSelectTree().then((res) => {
             if(res.success) {
                 interfaceTreeData.value = res.data;
+
+                // 获取已绑定数据
+                getAssetsTable(assetsId.value).then((res) => {
+                    checkInterfaceData.value = res.data;
+                });
             }
         });
     }
@@ -446,33 +447,9 @@
         });
     }
 
-    // 获取数据表列表
-    let checkTableData = ref('');
-    let tableTreeData = ref([]);
-    async function initTableTreeData() {
-        checkTableData.value = '';
-        tableTreeData.value = [];
-        await getTableSelectTree('table').then((res) => {
-            if(res.success) {
-                tableTreeData.value = res.data;
-            }
-        });
-    }
-
-    const submitSave2 = () => {
-        saveAssetsTable(checkTableData.value, assetsId.value).then((res) => {
-            if(res.success) {
-                dialogConfig4.value.show = false;
-                searchData();
-            }
-            ElNotification({
-                title: res.success ? t('成功') : t('失败'),
-                message: res.msg,
-                type: res.success ? 'success' : 'error',
-                duration: 2000,
-                offset: 80
-            });
-        });
+    const close2 = () => {
+        dialogConfig4.value.show = false;
+        searchData();
     }
 </script>
 <style lang="scss" scoped>

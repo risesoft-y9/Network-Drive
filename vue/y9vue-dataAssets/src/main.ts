@@ -1,27 +1,21 @@
-/*
- * @Author: your name
- * @Date: 2022-01-10 18:09:52
- * @LastEditTime: 2024-11-20 11:48:05
- * @LastEditors: yihong yihong@risesoft.net
- * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- * @FilePath: /sz- team-frontend-9.6.x/y9vue-dataAssets/src/main.js
- */
-import router from "@/router/index"
-import { setupStore } from '@/store'
-import 'animate.css'
-import 'normalize.css' // 样式初始化
-import 'remixicon/fonts/remixicon.css'
-import 'jsoneditor/dist/jsoneditor.min.css';
-import { createApp } from 'vue'
-import sso from "y9plugin-sso"
-import y9pluginComponents from "y9plugin-Components"
-import App from './App.vue'
-import './theme/global.scss'
-import 'viewerjs/dist/viewer.css'
-import VueViewer from 'v-viewer'
-import i18n from "./language"
-import uploader from 'vue-simple-uploader'
-import 'vue-simple-uploader/dist/style.css'
+import router from '@/router/index';
+import { setupStore } from '@/store';
+import 'animate.css';
+import 'normalize.css'; // 样式初始化
+import 'remixicon/fonts/remixicon.css';
+import { createApp } from 'vue';
+import sso from 'y9plugin-sso';
+import App from './App.vue';
+import './theme/global.scss';
+import i18n from './language';
+//有生云公共组件库
+import y9pluginComponents from 'y9plugin-components-auto';
+import 'y9plugin-components-auto/dist/style.css';
+import y9_zhCn from 'y9plugin-components-auto/dist/locale/zh-cn.mjs'; //默认的y9组件插件中文包
+import y9_en from 'y9plugin-components-auto/dist/locale/en.mjs'; //默认的y9组件插件英文包
+import { useSettingStore } from '@/store/modules/settingStore';
+import customDirective from '@/utils/directive'; //自定义指令
+import 'element-plus/theme-chalk/el-notification.css';// 解决ElNotification弹窗不显示的问题
 
 // 传入sso所需的环境变量
 const env = {
@@ -33,27 +27,32 @@ const env = {
         VUE_APP_SSO_CLIENT_ID: import.meta.env.VUE_APP_SSO_CLIENT_ID, //sso接口的固定字段
         VUE_APP_SSO_SECRET: import.meta.env.VUE_APP_SSO_SECRET, //sso接口的固定字段
         VUE_APP_SSO_GRANT_TYPE: import.meta.env.VUE_APP_SSO_GRANT_TYPE, //sso接口的固定字段
-        VUE_APP_SSO_SITETOKEN_KEY: import.meta.env.VUE_APP_SSO_SITETOKEN_KEY, //sso-token_key
-        // VUE_APP_REDISKEY: import.meta.env.VUE_APP_REDISKEY, //sso-redisKey
-        // VUE_APP_SESSIONSTORAGE_GUID: import.meta.env.VUE_APP_SESSIONSTORAGE_GUID, //sso-sessionStorage_guid
-        // VUE_APP_SERVER_REDIS: import.meta.env.VUE_APP_SERVER_REDIS //sso-redisServerUrl
+        VUE_APP_SSO_SITETOKEN_KEY: import.meta.env.VUE_APP_SSO_SITETOKEN_KEY //sso-token_key
     },
     logInfo: {
         showLog: true
     }
-}
+};
 
+const app: any = createApp(App);
+app.use(sso, { env });
+setupStore(app);
+let opts = ref({}); //y9组件选项配置
+watch(
+    () => useSettingStore().getWebLanguage, //监听语言变化，配置对应的语言包
+    (newLang) => {
+        opts.value.locale = newLang === 'en' ? y9_en : y9_zhCn;
+    },
+    {
+        immediate: true
+    }
+);
+app.use(y9pluginComponents, opts.value);
+app.use(router);
+app.use(customDirective);
 
+app.use(i18n);
 
-const app:any = createApp(App)
-app.use(sso, { env })
-app.use(y9pluginComponents)
-app.use(VueViewer)
-
-setupStore(app)
-app.use(router)
-app.use(i18n)
-app.use(uploader)
-app.mount('#app')
+app.mount('#app');
 
 export const $y9_SSO = app.$y9_SSO;

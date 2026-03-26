@@ -155,6 +155,18 @@ export const saveAssetsTable = async (ids, assetsId) => {
     });
 };
 
+/**
+ * 获取资产挂接的选中的数据key
+ */
+export const getAssetsTable = async (assetsId) => {
+    return await dataRequest({
+        url: '/vue/detail/getAssetsTable',
+        method: 'GET',
+        cType: false,
+        params: { assetsId: assetsId }
+    });
+};
+
 // 删除挂接数据
 export const deleteMountData = async (id) => {
     return await dataRequest({

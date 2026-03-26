@@ -12,8 +12,7 @@
     const settingStore = useSettingStore();
     const apiTest_el_tabs = ref('apiTest_el_tabs_' + randomString(10));
     const contentHeight = ref(settingStore.getWindowHeight - 60 - 30 - 30);
-    // 注入 字体对象
-    const fontSizeObj: any = inject('sizeObjInfo');
+    
     watch(
         () => settingStore.getWindowHeight,
         (windowHeight) => {
@@ -24,15 +23,10 @@
     const tokenValue = ref('');
     const Authorization = ref(false);
     const headerHeight = ref(70);
-    const sizeObjInfo = inject('sizeObjInfo');
-    const pageHeaderFontSize = ref(sizeObjInfo.extraLargeFont);
     const currentId = ref('');
-    const activeNode = ref(null);
     const folderName = ref('');
     const hightlightNode = ref(null);
     const showFolderPage = ref(true);
-    const currentExpandedKeys = reactive([]);
-    const defaultExpandAll = ref(false);
     const isblock = ref(false);
     /**
      *  初始化树组件数据
@@ -316,7 +310,6 @@
     const onTreeNodeClick = (node) => {
         currentId.value = node.id;
         if (node.type == 'folder') {
-            currentExpandedKeys[0] = node.id;
             folderName.value = searchByNodeId(node).name;
             showFolderPage.value = true;
         } else {
@@ -835,9 +828,7 @@
                 <y9Tree
                     :data="treeData"
                     ref="y9TreeDefaultActiveRef"
-                    :expandOnClickNode="true"
-                    :defaultExpandedKeys="currentExpandedKeys"
-                    :defaultExpandAll="defaultExpandAll"
+                    :expandOnClickNode="false"
                     @node-click="onTreeNodeClick"
                     :filterNodeMethod="filterNodeMethod"
                 >

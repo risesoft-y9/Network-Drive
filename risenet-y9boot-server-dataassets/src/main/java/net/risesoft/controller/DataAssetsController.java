@@ -274,4 +274,9 @@ public class DataAssetsController {
         }
     }
 
+    @RiseLog(operationName = "获取资产挂接的选中的数据key", logLevel = LogLevelEnum.RSLOG)
+    @GetMapping("/getAssetsTable")
+    public Y9Result<List<String>> getAssetsTable(Long assetsId) {
+        return Y9Result.success(dataAssetsService.getAssetsTable(assetsId));
+    }
 }
