@@ -414,7 +414,7 @@ function initDataFlowChart(sourceNames, dataCounts, todayDataCounts) {
 
 <style lang="scss" scoped>
 .monitor-container {
-    background-color: #f5f7fa;
+    //background-color: #f5f7fa;
     min-height: 100vh;
 }
 

@@ -230,4 +230,11 @@ public interface DataAssetsService {
      */
     SubscribeEntity findById(String id);
 
+    /**
+     * 获取资产挂接的选中的数据key
+     * @param assetsId
+     * @return
+     */
+    List<String> getAssetsTable(Long assetsId);
+
 }

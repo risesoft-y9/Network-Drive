@@ -44,15 +44,15 @@ public class FileInfo extends BaseEntity {
     private String identifier;
 
     @Column(name = "FILESIZE")
-    @Comment("大小")
+    @Comment("文件大小，文件类属性")
     private String fileSize;
 
     @Column(name = "FILETYPE")
-    @Comment("类型")
+    @Comment("类型:文件、数据表、数据库、接口")
     private String fileType;
 
     @Column(name = "FILEPATH")
-    @Comment("位置")
+    @Comment("文件系统id，文件类属性")
     private String filePath;
 
 }

@@ -419,6 +419,12 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     public Y9Result<String> saveAssetsInterface(String ids, Long assetsId) {
         try {
             String[] interfaceIds = ids.split(",");
+            // 判断不为空时先删除已绑定的数据
+            if(interfaceIds.length > 0) {
+                fileInfoRepository.deleteByAssetsId(assetsId);
+            } else {
+                return Y9Result.failure("绑定数据不能为空");
+            }
             for (String id : interfaceIds) {
                 DataApiOnlineEntity dataApiOnlineEntity = dataApiOnlineRepository.findById(id).orElse(null);
                 FileInfo info = new FileInfo();
@@ -444,8 +450,14 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     @Transactional(readOnly = false)
     public Y9Result<String> saveAssetsTable(String ids, Long assetsId) {
         try {
-            String[] interfaceIds = ids.split(",");
-            for (String id : interfaceIds) {
+            String[] tableIds = ids.split(",");
+            // 判断不为空时先删除已绑定的数据
+            if(tableIds.length > 0) {
+                fileInfoRepository.deleteByAssetsId(assetsId);
+            } else {
+                return Y9Result.failure("绑定数据不能为空");
+            }
+            for (String id : tableIds) {
                 if (id.startsWith("s-")) {// 数据库
                     DataSourceEntity dataSourceEntity = dataSourceService.getDataSourceById(id.split("-")[1]);
                     FileInfo info = new FileInfo();
@@ -829,4 +841,21 @@ public class DataAssetsServiceImpl implements DataAssetsService {
         return subscribeRepository.findById(id).orElse(null);
     }
 
+    @Override
+    public List<String> getAssetsTable(Long assetsId) {
+        List<String> list = new ArrayList<String>();
+        List<FileInfo> fileInfoList = fileInfoRepository.findByAssetsId(assetsId);
+        for(FileInfo fileInfo : fileInfoList) {
+            String key = "";
+            if(fileInfo.getFileType().equals("数据表")) {
+                key = "t-" + fileInfo.getIdentifier() + "-" + fileInfo.getName();
+            } else if(fileInfo.getFileType().equals("数据库")) {
+                key = "s-" + fileInfo.getIdentifier();
+            } else {
+                key = fileInfo.getIdentifier();
+            }
+            list.add(key);
+        }
+        return list;
+    }
 }

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;
 
 import net.risesoft.entity.FileInfo;
@@ -24,4 +25,10 @@ public interface FileInfoRepository extends JpaRepository<FileInfo, Long>, JpaSp
     List<FileInfo> findByAssetsIdAndIdentifierAndFileType(Long assetsId, String identifier, String fileType);
 
     long countByFileType(String fileType);
+
+    List<FileInfo> findByAssetsId(Long assetsId);
+
+    @Transactional
+    @Modifying
+    void deleteByAssetsId(Long assetsId);
 }
