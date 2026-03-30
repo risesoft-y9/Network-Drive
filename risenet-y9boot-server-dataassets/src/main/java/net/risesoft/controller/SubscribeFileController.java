@@ -6,8 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
+
 import net.risesoft.entity.SubscribeFileEntity;
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.log.LogLevelEnum;
@@ -47,10 +48,10 @@ public class SubscribeFileController {
     public Y9Result<String> fileUpload(@RequestParam MultipartFile[] files, @RequestParam String subscribeId) {
         String fileName = "";
         try {
-            if(files.length == 0) {
+            if (files.length == 0) {
                 return Y9Result.failure("请选择文件");
             }
-            for(MultipartFile file : files) {
+            for (MultipartFile file : files) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
                 fileName = file.getOriginalFilename();// 文件名称
                 String fileType = fileName.substring(fileName.lastIndexOf(".") + 1);// 文件类型

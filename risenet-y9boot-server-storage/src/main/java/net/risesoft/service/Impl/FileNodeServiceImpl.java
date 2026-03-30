@@ -596,7 +596,7 @@ public class FileNodeServiceImpl implements FileNodeService {
 
         // 构建查询条件
         Specification<FileNode> spec = (root, query, criteriaBuilder) -> {
-            List<javax.persistence.criteria.Predicate> predicates = new ArrayList<>();
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
 
             // 添加文件ID条件
             predicates.add(root.get("id").in(fileIds));
@@ -623,7 +623,7 @@ public class FileNodeServiceImpl implements FileNodeService {
                 predicates.add(criteriaBuilder.like(root.get("name"), "%" + searchName + "%"));
             }
 
-            return criteriaBuilder.and(predicates.toArray(new javax.persistence.criteria.Predicate[0]));
+            return criteriaBuilder.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
 
         // 执行查询并排序
