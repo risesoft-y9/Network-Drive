@@ -191,6 +191,9 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
     @Override
     public Y9Result<Map<String, Object>> getApiInfo(String id) {
         DataApiOnlineInfoEntity apiOnlineInfoEntity = dataApiOnlineInfoRepository.findById(id).orElse(null);
+        if (apiOnlineInfoEntity == null) {
+            return Y9Result.failure("接口不存在");
+        }
         return Y9Result.success(Y9JsonUtil.readHashMap(apiOnlineInfoEntity.getFormData()));
     }
 

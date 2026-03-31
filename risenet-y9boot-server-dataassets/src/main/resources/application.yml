@@ -130,6 +130,7 @@ y9:
             orgId: 1784650901097676800
     service:
         org:
+            name: server-platform
             directUrl: https://test.youshengyun.com
         cms:
             directUrl: https://test.youshengyun.com/server-cms
@@ -198,8 +199,6 @@ y9:
                     - http://localhost:8080
                     - http://127.0.0.1:7055
                     - http://127.0.0.1:7056
-                    - http//192.168.3.218:7056
-                    - http//192.168.3.171:7056
             xss:
                 ignoreParam:
                     - tables
@@ -208,13 +207,13 @@ y9:
                     - formDataJson
                     - rulesJson
                     - url
+                    - sqlData
+                    - queryParams
             csrf:
                 acceptedReferer:
                     - 127.0.0.1
                     - localhost
-                    - demo.youshengyun.com
                     - test.youshengyun.com
-                    - test-api.youshengyun.com
         oauth2:
             resource:
                 enabled: true

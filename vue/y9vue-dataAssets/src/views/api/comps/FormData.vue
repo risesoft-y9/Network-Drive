@@ -123,7 +123,7 @@
                             style="width: 220px; margin-right: 10px"
                         />
                         <el-button
-                            icon="Delete"
+                            :icon="Delete"
                             @click="removeParam(index)"
                         />
                     </div>
@@ -144,7 +144,7 @@
                 <el-form-item label="">
                     <el-input type="textarea" v-model="resultData" rows="6"></el-input>
                 </el-form-item>
-            </el-descriptions-item>           
+            </el-descriptions-item>
         </el-descriptions>
 
         <el-form-item style="float: right; margin-top: 15px;" v-if="!disabled">
@@ -161,6 +161,7 @@ import { ref, onMounted, watch, nextTick, computed, onBeforeUnmount } from 'vue'
 import { FormInstance, Action, ElNotification } from 'element-plus';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { getTableSelectTree } from '@/api/pretreat';
+import { Delete } from '@element-plus/icons-vue';
 import y9_storage from '@/utils/storage';
 import settings from '@/settings';
 import * as monaco from 'monaco-editor';

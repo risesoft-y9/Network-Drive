@@ -4,7 +4,7 @@ const monitorRouter = {
     name:'monitorIndex',
     redirect: '/datamonitor',
     meta: {
-        title: '数据监控',
+        title: '数据流转监控',
         icon: 'ri-bar-chart-box-line',
     },
     children:[
@@ -13,7 +13,7 @@ const monitorRouter = {
             component: () => import('@/views/monitor/index.vue'),
             name: 'datamonitor',
             meta: {
-                title: '数据监控',
+                title: '数据流转监控',
                 icon: 'ri-bar-chart-box-line',
             },
         }
