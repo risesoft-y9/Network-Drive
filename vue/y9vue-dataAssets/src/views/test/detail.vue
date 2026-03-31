@@ -4,7 +4,6 @@
     import { useSettingStore } from '@/store/modules/settingStore';
     import Y9Table2Comp from './comps/Y9Table2Comp.vue';
     import BodyTypeComp from './comps/BodyTypeComp.vue';
-    import JSONEditor from 'jsoneditor';
     import { cloneDeep, forEach, forIn } from 'lodash';
     import { getApiInfo, randomString } from './apiUtils';
     import { ElLoading, ElMessage, ElMessageBox } from 'element-plus';
@@ -172,7 +171,7 @@
         requstTime.value = 0;
         statusCode.value = 0;
         contentLength.value = '0';
-        editor.value.set();
+        jsonContainer.value = '';
         while (resposeRequestItemList.length) {
             resposeRequestItemList.pop();
         }
@@ -458,49 +457,17 @@
                 return response.json();
             })
             .then((data) => {
-                console.log(data);
-                editor.value.set(data);
+                jsonContainer.value = JSON.stringify(data);
                 requstTime.value = new Date().getTime() - t;
             })
             .catch((error) => {
                 console.log(error);
-                editor.value.set(error.toString());
+                jsonContainer.value = error.toString();
             });
     }
 
-    // 实时响应的json编辑器
-    const editor = ref(null);
-    const jsonContainer = ref(null);
-    function initJsonContainer() {
-        jsonContainer.value = document.getElementById('json-container');
-        const options = {
-            selectionStyle: 'tree',
-            mode: 'code',
-            statusBar: true,
-            mainMenuBar: false
-            // onChangeText() {
-            //     onJsonEditorChange(editor.value.getText());
-            // }
-        };
-        editor.value = new JSONEditor(jsonContainer.value, options);
-
-        // set json
-        // const initialJson = {
-        //     Array: [1, 2, 3],
-        //     Boolean: true,
-        //     Null: null,
-        //     Number: 123,
-        //     Object: { a: 'b', c: 'd' },
-        //     String: 'Hello World'
-        // };
-        // editor.set(initialJson);
-        editor.value.set();
-
-        document.querySelector('#json-container .jsoneditor').style.height = '66vh';
-        // console.log(editor);
-        // get json
-        // const updatedJson = editor.get();
-    }
+    // 实时响应的json
+    const jsonContainer = ref('');
 
     function getToken() {
         const json = JSON.parse(sessionStorage.getItem(tokenKey.value));
@@ -533,7 +500,6 @@
     }
 
     async function init() {
-        initJsonContainer();
         getApiData();
         autoAddToken();
     }
@@ -647,7 +613,7 @@
                                             <span></span>
                                         </div>
                                     </template>
-                                    <div id="json-container"></div>
+                                    <div v-html="jsonContainer"></div>
                                 </el-tab-pane>
                                 <el-tab-pane name="请求头">
                                     <template #label>

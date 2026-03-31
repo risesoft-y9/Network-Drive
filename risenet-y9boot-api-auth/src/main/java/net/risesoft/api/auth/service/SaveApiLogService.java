@@ -31,9 +31,8 @@ public class SaveApiLogService {
         apiServiceLogEntity.setResult(result);
         apiServiceLogEntity.setServerIp(Y9Context.getHostIp());
         // 根据请求地址判断接口类型
-        String url = Y9Context.getProperty("y9.common.dataAssetsBaseUrl");
-        if(requestUrl.contains(url + "/services/rest/get/") || requestUrl.contains(url + "/services/rest/post/")
-            || requestUrl.contains(url + "/services/rest/getPage/")) {
+        if(requestUrl.contains("dataassets/services/rest/get/") || requestUrl.contains("dataassets/services/rest/post/")
+            || requestUrl.contains("dataassets/services/rest/getPage/")) {
             apiServiceLogEntity.setApiType("内部接口");
             // 获取接口名称，获取请求地址“/“分割后的最后一个元素
             String apiServiceId = requestUrl.split("/")[requestUrl.split("/").length - 1];
@@ -43,7 +42,7 @@ public class SaveApiLogService {
             } else {
                 apiServiceLogEntity.setRemark("未找到接口名称");
             }
-        }else if(requestUrl.contains(url + "/services/rest/search")){
+        }else if(requestUrl.contains("dataassets/services/rest/search")){
             apiServiceLogEntity.setApiType("订阅生成接口");
             // 获取接口名称，获取请求地址“/“分割后的最后一个元素
             String name = requestUrl.split("/")[requestUrl.split("/").length - 1];

@@ -23,7 +23,6 @@
                     <el-button
                         :size="fontSizeObj.buttonSize"
                         :style="{ fontSize: fontSizeObj.baseFontSize }"
-                        class="global-btn-main"
                         @click="addData()"
                     >
                         <i class="ri-add-line" />

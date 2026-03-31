@@ -91,6 +91,7 @@
             <span><el-checkbox :size="size" :value="isSelectAll" @change="selectAll" /></span>
             <span>参数名</span>
             <span>参数值</span>
+            <span>备注</span>
             <span>操作</span>
         </div>
         <div class="y9-table-2__body" :id="Y9Table2Body_Id">
@@ -117,6 +118,13 @@
                         :value="item.Param"
                         @input="isBlankCheck(index)"
                 /></span>
+                <span
+                    ><el-input
+                        v-model="itemList[index]['Remark']"
+                        placeholder="Please input"
+                        :value="item.Remark"
+                        @input="isBlankCheck(index)"
+                /></span>
                 <span>
                     <i class="ri-add-box-line" v-if="index === 0" @click="addRowFunc"></i>
                     <i class="ri-delete-bin-line" v-else @click="deleteRowFunc(index)"></i>
@@ -134,9 +142,12 @@
             min-width: 30%;
         }
         &:nth-child(3) {
-            min-width: 60%;
+            min-width: 30%;
         }
         &:nth-child(4) {
+            min-width: 30%;
+        }
+        &:nth-child(5) {
             min-width: 7%;
         }
     }
@@ -176,9 +187,13 @@
                         margin-right: 15px;
                     }
                     &:nth-child(3) {
-                        min-width: calc(60% - 15px);
+                        min-width: calc(30% - 15px);
+                        margin-right: 15px;
                     }
                     &:nth-child(4) {
+                        min-width: calc(30% - 15px);
+                    }
+                    &:nth-child(5) {
                         font-size: v-bind('fontSizeObj.largerFontSize');
                         color: var(--el-color-primary);
                     }

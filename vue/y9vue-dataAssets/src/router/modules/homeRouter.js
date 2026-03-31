@@ -4,9 +4,9 @@ const homeRouter = {
     name:'homeIndex',
     redirect: '/home',
     meta: {
-        title: '首页',
+        title: '总体概览',
         icon: 'ri-home-2-line',
-        roles: ['systemAdmin'],
+        //roles: ['systemAdmin'],
     },
     children:[
         {
@@ -14,7 +14,7 @@ const homeRouter = {
             component: () => import('@/views/home/index.vue'),
             name: 'home',
             meta: {
-                title: '首页',
+                title: '总体概览',
                 icon: 'ri-home-2-line',
             },
         }
