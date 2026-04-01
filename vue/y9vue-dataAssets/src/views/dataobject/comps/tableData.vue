@@ -7,7 +7,7 @@
                     <el-descriptions-item label="数据源类型" align="center">{{tableDetail.sourceType}}</el-descriptions-item>
                     <el-descriptions-item label="备注" align="center" :span="2">{{tableDetail.remark}}</el-descriptions-item>
                     <el-descriptions-item label="表名称" align="center">{{currNode.name}}</el-descriptions-item>
-                    <el-descriptions-item label="中文名称" align="center">{{currNode.cname}}</el-descriptions-item>
+                    <el-descriptions-item label="中文名称" align="center">{{tableDetail.cname}}</el-descriptions-item>
                     <el-descriptions-item label="提供方" align="center">{{tableDetail.provider}}</el-descriptions-item>
                     <el-descriptions-item label="联系方式" align="center">{{tableDetail.contact}}</el-descriptions-item>
                     <el-descriptions-item label="数据量" align="center">{{tableDetail.rowCount}}</el-descriptions-item>

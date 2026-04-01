@@ -54,4 +54,19 @@ public class SaveApiLogService {
         apiServiceLogRepository.save(apiServiceLogEntity);
     }
 
+    @Async("taskExecutor")
+    public void asyncSave2(String remark, String requestUrl, String hostIp, String requestParams, String result) {
+        ApiServiceLogEntity apiServiceLogEntity = new ApiServiceLogEntity();
+        apiServiceLogEntity.setId(Y9IdGenerator.genId());
+        apiServiceLogEntity.setHostIp(hostIp);
+        apiServiceLogEntity.setRequestParams(requestParams);
+        apiServiceLogEntity.setRequestUrl(requestUrl);
+        apiServiceLogEntity.setResult(result);
+        apiServiceLogEntity.setServerIp(Y9Context.getHostIp());
+        apiServiceLogEntity.setRemark(remark);
+        apiServiceLogEntity.setApiType("公开接口");
+        apiServiceLogEntity.setAppName("无");
+        apiServiceLogRepository.save(apiServiceLogEntity);
+    }
+
 }

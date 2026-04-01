@@ -348,6 +348,11 @@ public class Y9SqlUtil {
             String countSql = "SELECT COUNT(*) FROM " + tableName;
             Long rowCount = jdbcTemplate.queryForObject(countSql, Long.class);
             tableInfo.put("rowCount", rowCount);
+
+            // 获取表备注名称
+            String tableNameSql = "SELECT TABLE_COMMENT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '" + tableName + "'";
+            String tableNameObj = jdbcTemplate.queryForObject(tableNameSql, String.class);
+            tableInfo.put("cname", tableNameObj);
             
             // 获取最新更新时间,如果报表中没有UPDATE_TIME字段,则返回查不到表的更新字段
             try {

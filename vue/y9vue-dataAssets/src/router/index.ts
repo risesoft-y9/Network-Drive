@@ -57,6 +57,7 @@ let routes: RouteRecordRaw[] = []
 //asyncRoutes需求动态判断权限并动态添加的页面  这里的路由模块顺序也是菜单显示的顺序（位置：src->router->modules）
 export const asyncRoutes = [
     homeRouter,
+    monitorRouter,
     subscriptionRouter,
     myRouter,
     apiApplyRouter,
@@ -67,7 +68,6 @@ export const asyncRoutes = [
     libraryRouter,
     dictionaryRouter,
     generateApiRouter,
-    monitorRouter,
     //...routes
     // 引入其他模块路由
 
