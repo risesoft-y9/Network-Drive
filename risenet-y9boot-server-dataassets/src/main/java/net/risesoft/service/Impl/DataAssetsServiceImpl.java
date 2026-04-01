@@ -369,7 +369,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
             // 保存下载日志
             DownloadLogEntity downloadLogEntity = new DownloadLogEntity();
             downloadLogEntity.setId(Y9IdGenerator.genId());
-            downloadLogEntity.setAssetsId(id);
+            downloadLogEntity.setAssetsId(file.getAssetsId());
             downloadLogEntity.setFileId(file.getId());
             downloadLogEntity.setDownloader(Y9LoginUserHolder.getUserInfo().getName());
             downloadLogEntity.setDownloaderId(Y9LoginUserHolder.getPersonId());
