@@ -74,9 +74,11 @@ public class FileNodeSpecification implements Specification<FileNode> {
     }
 
     public FileNodeSpecification(
-        String personId,String parentId,
-       List<String> idList, FileNodeType fileType,
-       String listType,
+        String personId,
+        String parentId,
+        List<String> idList,
+        FileNodeType fileType,
+        String listType,
         String searchName,
         boolean deleted) {
         this.userId = personId;
@@ -119,6 +121,25 @@ public class FileNodeSpecification implements Specification<FileNode> {
 
     public FileNodeSpecification(
         String parentId,
+        List<String> idList,
+        FileNodeType fileType,
+        String listType,
+        String searchName,
+        String orgId,
+        boolean deleted) {
+        this.orgId = orgId;
+        this.idList = idList;
+        this.parentId = parentId;
+        this.fileType = fileType;
+        this.name = searchName;
+        this.listType = listType;
+        this.deleted = deleted;
+    }
+
+    // 公共文件搜索
+    public FileNodeSpecification(
+        String parentId,
+        List<String> idList,
         FileNodeType fileType,
         String listType,
         String searchName,
@@ -126,6 +147,7 @@ public class FileNodeSpecification implements Specification<FileNode> {
         Date endDate,
         boolean deleted) {
         this.parentId = parentId;
+        this.idList = idList;
         this.fileType = fileType;
         this.name = searchName;
         this.listType = listType;

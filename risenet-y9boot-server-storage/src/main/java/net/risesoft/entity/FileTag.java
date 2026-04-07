@@ -11,6 +11,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.GenericGenerator;
@@ -78,5 +79,8 @@ public class FileTag implements Serializable {
     @Column(name = "TABINDEX")
     @Comment("排序字段")
     private Integer tabIndex;
+
+    @Transient
+    private String listType;
 
 }

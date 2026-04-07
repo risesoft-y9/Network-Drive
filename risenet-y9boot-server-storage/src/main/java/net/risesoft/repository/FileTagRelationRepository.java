@@ -40,4 +40,10 @@ public interface FileTagRelationRepository
     FileTagRelation findByFileIdAndTagId(String fileId, String tagId);
 
     FileTagRelation findByFileIdAndTagIdAndOperatorId(String fileId, String tagId, String operatorId);
+
+    List<FileTagRelation> findByTagIdIn(List<String> tagId);
+
+    @Query("DELETE FROM FileTagRelation WHERE fileId IN (?1)")
+    void deleteByFileIdIn(List<String> fileIdList);
+
 }

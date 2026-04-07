@@ -165,7 +165,7 @@ public class MobileFileNodeController {
             if (StringUtils.isNotBlank(fileNodeType)) {
                 fileType = FileNodeType.getByValue(Integer.valueOf(fileNodeType));
             }
-            List<FileNode> subFileList = fileNodeService.subPublicList(folderId, fileType, searchName, startTime,
+            List<FileNode> subFileList = fileNodeService.subPublicList(folderId, null, fileType, searchName, startTime,
                 endTime, listType, orderRequest);
             List<FileNodeDTO> fileNodeDTOList = FileNodeDTO.from(subFileList);
 
@@ -223,7 +223,7 @@ public class MobileFileNodeController {
             if (StringUtils.isNotBlank(fileNodeType)) {
                 fileType = FileNodeType.getByValue(Integer.valueOf(fileNodeType));
             }
-            List<FileNode> subFileList = fileNodeService.subManageList(folderId, fileType, searchName, startTime,
+            List<FileNode> subFileList = fileNodeService.subManageList(folderId, null, fileType, searchName, startTime,
                 endTime, listType, orderRequest);
             List<FileNodeDTO> fileNodeDTOList = FileNodeDTO.from(subFileList);
 

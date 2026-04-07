@@ -50,6 +50,7 @@ import net.risesoft.service.FileDownLoadRecordService;
 import net.risesoft.service.FileNodeCollectService;
 import net.risesoft.service.FileNodeService;
 import net.risesoft.service.FileNodeShareService;
+import net.risesoft.service.FileTagRelationService;
 import net.risesoft.service.FileTagService;
 import net.risesoft.support.FileListType;
 import net.risesoft.support.FileNodeType;
@@ -73,6 +74,7 @@ public class FileNodeController {
     private final FileNodeShareService fileNodeShareService;
     private final FileNodeCollectService fileNodeCollectService;
     private final FileTagService fileTagService;
+    private final FileTagRelationService fileTagRelationService;
 
     /**
      * 取消文件夹密码
@@ -438,17 +440,8 @@ public class FileNodeController {
         @RequestParam(required = false) String searchName, @RequestParam(required = false) List<String> tagIds,
         @RequestParam(required = false) String listType, OrderRequest orderRequest) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
-
-        List<FileNode> subFileList = new ArrayList<>();
-
-        // 如果提供了标签IDs，则通过标签关联关系查询文件
-        // if (tagIds != null && !tagIds.isEmpty()) {
-        // // 调用 service 方法通过多个标签ID和搜索名称查询文件
-        // subFileList = fileNodeService.listFilesByTagIds(positionId, id, fileNodeType, searchName, tagIds, listType,
-        // orderRequest);
-        // } else {
-        subFileList = fileNodeService.subList(positionId, id, fileNodeType, searchName, tagIds, listType, orderRequest);
-        // }
+        List<FileNode> subFileList =
+            fileNodeService.subList(positionId, id, fileNodeType, searchName, tagIds, listType, orderRequest);
         List<FileNodeDTO> fileNodeDTOList = FileNodeDTO.from(subFileList);
 
         for (FileNodeDTO fileNodeDTO : fileNodeDTOList) {
@@ -521,15 +514,17 @@ public class FileNodeController {
     @GetMapping(value = "/manageList")
     public Y9Result<FileNodeListDTO> manageList(@RequestParam(required = false) String id,
         @RequestParam(required = false) FileNodeType fileNodeType, @RequestParam(required = false) String searchName,
-        @RequestParam(required = false) String startTime, @RequestParam(required = false) String endTime,
-        @RequestParam(required = false) String listType, OrderRequest orderRequest) {
+        @RequestParam(required = false) List<String> tagIds, @RequestParam(required = false) String startTime,
+        @RequestParam(required = false) String endTime, @RequestParam(required = false) String listType,
+        OrderRequest orderRequest) {
 
-        List<FileNode> subFileList =
-            fileNodeService.subManageList(id, fileNodeType, searchName, startTime, endTime, listType, orderRequest);
+        List<FileNode> subFileList = fileNodeService.subManageList(id, tagIds, fileNodeType, searchName, startTime,
+            endTime, listType, orderRequest);
         List<FileNodeDTO> fileNodeDTOList = FileNodeDTO.from(subFileList);
-
-        if (StringUtils.isNotBlank(searchName)) {
-            for (FileNodeDTO fileNodeDTO : fileNodeDTOList) {
+        for (FileNodeDTO fileNodeDTO : fileNodeDTOList) {
+            List<FileTag> tags = fileTagService.getTagsByFileId(fileNodeDTO.getId());
+            fileNodeDTO.setFileTags(tags);
+            if (StringUtils.isNotBlank(searchName)) {
                 FileNode parentFileNode = fileNodeService.getParent(fileNodeDTO.getParentId());
                 fileNodeDTO.setParentFileNode(FileNodeDTO.from(parentFileNode));
             }
@@ -613,6 +608,7 @@ public class FileNodeController {
     public Y9Result<Object> permanentlyDelete(@RequestParam(name = "ids") List<String> idList) {
         fileNodeShareService.deleteByFileNodeIdList(Y9LoginUserHolder.getUserInfo().getPersonId(), idList);
         fileNodeService.permanentlyDelete(idList);
+        fileTagRelationService.deleteFileTagRelation(idList);
         return Y9Result.success(null, "删除成功");
     }
 
@@ -627,18 +623,20 @@ public class FileNodeController {
     @GetMapping(value = "/publicList")
     public Y9Result<FileNodeListDTO> publicList(@RequestParam(required = false) String id,
         @RequestParam(required = false) FileNodeType fileNodeType, @RequestParam(required = false) String searchName,
-        @RequestParam(required = false) String startTime, @RequestParam(required = false) String endTime,
-        @RequestParam(required = false) String listType, OrderRequest orderRequest) {
+        @RequestParam(required = false) List<String> tagIds, @RequestParam(required = false) String startTime,
+        @RequestParam(required = false) String endTime, @RequestParam(required = false) String listType,
+        OrderRequest orderRequest) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
-        List<FileNode> subFileList =
-            fileNodeService.subPublicList(id, fileNodeType, searchName, startTime, endTime, listType, orderRequest);
+        List<FileNode> subFileList = fileNodeService.subPublicList(id, tagIds, fileNodeType, searchName, startTime,
+            endTime, listType, orderRequest);
         List<FileNodeDTO> fileNodeDTOList = FileNodeDTO.from(subFileList);
 
         // if (StringUtils.isNotBlank(searchName)) {
         for (FileNodeDTO fileNodeDTO : fileNodeDTOList) {
             // FileNode parentFileNode = fileNodeService.getParent(fileNodeDTO.getParentId());
             // fileNodeDTO.setParentFileNode(FileNodeDTO.from(parentFileNode));
-
+            List<FileTag> tags = fileTagService.getTagsByFileId(fileNodeDTO.getId());
+            fileNodeDTO.setFileTags(tags);
             boolean isCollect = fileNodeCollectService.findByCollectUserIdAndFileIdAndListName(userInfo.getPersonId(),
                 fileNodeDTO.getId(), fileNodeDTO.getListType());
             fileNodeDTO.setCollect(isCollect);

@@ -2,8 +2,6 @@ package net.risesoft.service;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.RequestParam;
-
 import net.risesoft.entity.FileTag;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
@@ -20,9 +18,11 @@ public interface FileTagService {
 
     List<FileTag> getTagsByFileId(String fileId);
 
-    Y9Result<Object> updateFileTag(FileTag fileTag);
+    FileTag findById(String id);
 
-    Y9Result<Object> saveCustomTag(FileTag fileTag, @RequestParam String fileId);
+    Y9Result<Object> updateFileTag(FileTag fileTag, String fileId);
+
+    Y9Result<Object> saveCustomTag(FileTag fileTag, String fileId);
 
     void removeTagFromFile(String fileId, String tagId, String operatorId);
 

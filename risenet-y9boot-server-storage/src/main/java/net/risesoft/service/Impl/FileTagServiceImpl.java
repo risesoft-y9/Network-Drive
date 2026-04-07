@@ -64,6 +64,8 @@ public class FileTagServiceImpl implements FileTagService {
             fileTag.setCreateTime(new Date());
             fileTag.setCreateId(userInfo.getPersonId());
             fileTag.setCreateName(userInfo.getName());
+            Integer tabIndex = fileTagRepository.getMaxTabIndex();
+            fileTag.setTabIndex(null != tabIndex ? tabIndex + 1 : 1);
         } else {
             // 更新逻辑 - 从数据库获取现有记录并更新属性
             if (!existingTags.isEmpty()) {
@@ -102,30 +104,30 @@ public class FileTagServiceImpl implements FileTagService {
     }
 
     @Override
+    public FileTag findById(String id) {
+        return fileTagRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public Y9Result<Object> updateFileTag(FileTag fileTag, String fileId) {
+        FileTag existingTag = this.findById(fileTag.getId());
+        if (existingTag != null) {
+            existingTag.setTagName(fileTag.getTagName());
+            existingTag.setTagColor(fileTag.getTagColor());
+            existingTag.setUpdateTime(new Date());
+            fileTagRepository.save(existingTag);
+            return Y9Result.success("更新标签成功");
+        }
+        return Y9Result.failure("标签不存在");
+    }
+
+    @Override
     public void removeTagFromFile(String fileId, String tagId, String operatorId) {
         FileTagRelation fileTagRelation =
             fileTagRelationRepository.findByFileIdAndTagIdAndOperatorId(fileId, tagId, operatorId);
         if (fileTagRelation != null) {
             fileTagRelationRepository.delete(fileTagRelation);
         }
-    }
-
-    @Override
-    public Y9Result<Object> updateFileTag(FileTag fileTag) {
-        try {
-            List<FileTag> existingTags = fileTagRepository.findByTagName(fileTag.getTagName());
-            if (null == existingTags || existingTags.isEmpty()) {
-                FileTag tag = fileTagRepository.findById(fileTag.getId()).orElse(null);
-                if (tag != null) {
-                    tag.setTagName(fileTag.getTagName());
-                    fileTagRepository.save(tag);
-                }
-                return Y9Result.success(null, "更新标签成功");
-            }
-        } catch (Exception e) {
-            return Y9Result.failure("更新标签失败");
-        }
-        return Y9Result.failure("标签名称已存在");
     }
 
     @Override
@@ -138,24 +140,15 @@ public class FileTagServiceImpl implements FileTagService {
 
         if (StringUtils.isBlank(fileTag.getId())) {
             if (!existingTags.isEmpty()) {
-                return Y9Result.success(existingTags.get(0), "标签名称已存在");
+                FileTag existingTag = existingTags.get(0);
+                return Y9Result.success(existingTag, "标签名称已存在");
             }
             fileTag.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
             fileTag.setCreateTime(new Date());
             fileTag.setCreateId(operatorId);
             fileTag.setCreateName(operatorName);
-        } else {
-            // 更新逻辑 - 从数据库获取现有记录并更新属性
-            if (!existingTags.isEmpty()) {
-                return Y9Result.failure(existingTags.get(0), "标签名称已存在");
-            }
-            FileTag existingTag = fileTagRepository.findById(fileTag.getId()).orElse(null);
-            if (existingTag != null) {
-                existingTag.setTagName(fileTag.getTagName());
-                existingTag.setTagColor(fileTag.getTagColor());
-                existingTag.setUpdateTime(new Date());
-                fileTag = existingTag;
-            }
+            Integer tabIndex = fileTagRepository.getMaxTabIndex();
+            fileTag.setTabIndex(null != tabIndex ? tabIndex + 1 : 1);
         }
         fileTagRepository.save(fileTag);
         FileTagRelation fileTagRelation = new FileTagRelation();
