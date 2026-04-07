@@ -117,6 +117,7 @@ public interface FileNodeService {
      * 根据条件查询公共文件列表
      *
      * @param id
+     * @param tagIds
      * @param fileType
      * @param searchName
      * @param startTime
@@ -125,13 +126,14 @@ public interface FileNodeService {
      * @param orderRequest
      * @return
      */
-    List<FileNode> subPublicList(String id, FileNodeType fileType, String searchName, String startTime, String endTime,
-        String listType, OrderRequest orderRequest);
+    List<FileNode> subPublicList(String id, List<String> tagIds, FileNodeType fileType, String searchName,
+        String startTime, String endTime, String listType, OrderRequest orderRequest);
 
     /**
      * 根据条件查询公共管理文件列表
      *
      * @param id
+     * @param tagIds
      * @param fileType
      * @param searchName
      * @param startTime
@@ -140,8 +142,8 @@ public interface FileNodeService {
      * @param orderRequest
      * @return
      */
-    List<FileNode> subManageList(String id, FileNodeType fileType, String searchName, String startTime, String endTime,
-        String listType, OrderRequest orderRequest);
+    List<FileNode> subManageList(String id, List<String> tagIds, FileNodeType fileType, String searchName,
+        String startTime, String endTime, String listType, OrderRequest orderRequest);
 
     // 添加标签相关方法
     List<FileNode> subListByTag(String positionId, String parentId, String tagId, String listType,

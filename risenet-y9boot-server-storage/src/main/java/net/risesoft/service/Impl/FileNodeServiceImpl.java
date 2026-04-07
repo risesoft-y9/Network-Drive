@@ -529,9 +529,10 @@ public class FileNodeServiceImpl implements FileNodeService {
             String tenantId = Y9LoginUserHolder.getTenantId();
             if (listType.equals(FileListType.DEPT.getValue())) {
                 OrgUnit orgUnit = orgUnitApiClient.getOrgUnitParent(tenantId, positionId).getData();
-
+                // 通过FileTagRelation表查询同时具有所有指定标签的文件ID列表
+                List<String> fileIds = fileTagRelationService.findFileIdsByTagIds(tagIds);
                 FileNodeSpecification spec =
-                    new FileNodeSpecification(id, fileType, listType, searchName, orgUnit.getId(), false);
+                    new FileNodeSpecification(id, fileIds, fileType, listType, searchName, orgUnit.getId(), false);
                 fileNodeList = fileNodeRepository.findAll(spec);
             } else if (listType.equals(FileListType.SHARED.getValue())) {
                 // FileNodeShare share = fileNodeShareRepository.findByFileNodeIdAndToOrgUnitId(id,personId);
@@ -641,8 +642,8 @@ public class FileNodeServiceImpl implements FileNodeService {
     // }
 
     @Override
-    public List<FileNode> subPublicList(String id, FileNodeType fileType, String searchName, String startTime,
-        String endTime, String listType, OrderRequest orderRequest) {
+    public List<FileNode> subPublicList(String id, List<String> tagIds, FileNodeType fileType, String searchName,
+        String startTime, String endTime, String listType, OrderRequest orderRequest) {
         List<FileNode> newFileNodeList = new ArrayList<FileNode>();
         String guidPath = Y9LoginUserHolder.getUserInfo().getGuidPath();
         String[] guidArray = StringUtils.split(guidPath, ",");
@@ -660,8 +661,9 @@ public class FileNodeServiceImpl implements FileNodeService {
                 endTime = endTime + " 23:59:59";
                 endDate = sdf.parse(endTime);
             }
+            List<String> fileIds = fileTagRelationService.findFileIdsByTagIds(tagIds);
             FileNodeSpecification spec =
-                new FileNodeSpecification(id, fileType, listType, searchName, startDate, endDate, false);
+                new FileNodeSpecification(id, fileIds, fileType, listType, searchName, startDate, endDate, false);
             List<FileNode> fileNodeList = fileNodeRepository.findAll(spec);
             for (FileNode fileNode : fileNodeList) {
                 List<FileNodeShare> shareList = fileNodeShareRepository.findByFileNodeId(fileNode.getId());
@@ -690,8 +692,8 @@ public class FileNodeServiceImpl implements FileNodeService {
     }
 
     @Override
-    public List<FileNode> subManageList(String id, FileNodeType fileType, String searchName, String startTime,
-        String endTime, String listType, OrderRequest orderRequest) {
+    public List<FileNode> subManageList(String id, List<String> tagIds, FileNodeType fileType, String searchName,
+        String startTime, String endTime, String listType, OrderRequest orderRequest) {
         List<FileNode> fileNodeList = new ArrayList<FileNode>();
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -705,8 +707,9 @@ public class FileNodeServiceImpl implements FileNodeService {
                 endTime = endTime + " 23:59:59";
                 endDate = sdf.parse(endTime);
             }
+            List<String> fileIds = fileTagRelationService.findFileIdsByTagIds(tagIds);
             FileNodeSpecification spec =
-                new FileNodeSpecification(id, fileType, listType, searchName, startDate, endDate, false);
+                new FileNodeSpecification(id, fileIds, fileType, listType, searchName, startDate, endDate, false);
             fileNodeList = fileNodeRepository.findAll(spec);
         } catch (ParseException e) {
             e.printStackTrace();

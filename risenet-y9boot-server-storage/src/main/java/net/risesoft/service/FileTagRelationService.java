@@ -2,6 +2,7 @@ package net.risesoft.service;
 
 import java.util.List;
 
+import net.risesoft.entity.FileTagRelation;
 import net.risesoft.pojo.Y9Result;
 
 public interface FileTagRelationService {
@@ -23,6 +24,14 @@ public interface FileTagRelationService {
     List<String> findFileIdsByTagIds(List<String> tagIds);
 
     /**
+     * 通过标签id查询文件标签关系
+     *
+     * @param tagIds
+     * @return
+     */
+    List<FileTagRelation> findByTagIds(List<String> tagIds);
+
+    /**
      * 单文件关联标签
      * 
      * @param tagId
@@ -30,4 +39,11 @@ public interface FileTagRelationService {
      * @return
      */
     Y9Result<Object> simpleFileToTag(String tagId, String fileId);
+
+    /**
+     * 删除文件标签关系
+     *
+     * @param fileIdList
+     */
+    void deleteFileTagRelation(List<String> fileIdList);
 }

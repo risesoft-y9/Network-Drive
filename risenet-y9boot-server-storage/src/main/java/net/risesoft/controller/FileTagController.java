@@ -1,5 +1,6 @@
 package net.risesoft.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 
 import net.risesoft.entity.FileTag;
+import net.risesoft.entity.FileTagRelation;
 import net.risesoft.log.OperationTypeEnum;
 import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.user.UserInfo;
@@ -47,10 +49,23 @@ public class FileTagController {
         return Y9Result.success(fileTagService.listAll(), "获取标签列表成功");
     }
 
+    @PostMapping("/checkIsUsed")
+    public Y9Result<Object> checkIsUsed(@RequestParam(name = "tagIds") List<String> tagIdList) {
+        List<FileTagRelation> fileTagRelationList = fileTagRelationService.findByTagIds(tagIdList);
+        List<FileTag> fileTagList = new ArrayList<>();
+        if (null != fileTagRelationList && !fileTagRelationList.isEmpty()) {
+            for (FileTagRelation fileTagRelation : fileTagRelationList) {
+                fileTagList.add(fileTagService.findById(fileTagRelation.getTagId()));
+            }
+            return Y9Result.success(fileTagList, "标签被使用");
+        }
+        return Y9Result.success(null, "标签未被使用");
+    }
+
     /**
      * 标签管理保存标签
      */
-    @RiseLog(operationName = "新增文件标签", operationType = OperationTypeEnum.ADD)
+    @RiseLog(operationName = "新增文件标签", operationType = OperationTypeEnum.ADD, saveParams = true)
     @PostMapping("/saveFileTag")
     public Y9Result<Object> saveFileTag(FileTag fileTag) {
         fileTag.setTagType("systemTag");
@@ -63,9 +78,9 @@ public class FileTagController {
      * @param idList
      * @return
      */
-    @RiseLog(operationName = "删除文件标签", operationType = OperationTypeEnum.DELETE)
+    @RiseLog(operationName = "删除文件标签", operationType = OperationTypeEnum.DELETE, saveParams = true)
     @RequestMapping(value = "/deleteFileTag")
-    public Y9Result<Object> deleteFileTag(@RequestParam(name = "ids") List<String> idList) {
+    public Y9Result<Object> deleteFileTag(@RequestParam(name = "ids") List<String> idList, String listType) {
         fileTagService.deleteFileTag(idList);
         return Y9Result.success(null, "删除成功");
     }
@@ -77,10 +92,10 @@ public class FileTagController {
      * @param tagIdsList
      * @return
      */
-    @RiseLog(operationName = "对多个文件增加多个标签", operationType = OperationTypeEnum.ADD)
+    @RiseLog(operationName = "对多个文件增加多个标签", operationType = OperationTypeEnum.ADD, saveParams = true)
     @PostMapping("/addFileTagToFile")
     public Y9Result<Object> addFileTagToFile(@RequestParam(name = "fileNodeIds") List<String> fileNodeIdList,
-        @RequestParam(name = "tagIds") List<String> tagIdsList) {
+        @RequestParam(name = "tagIds") List<String> tagIdsList, String listType) {
         fileTagRelationService.addFileTagToFile(fileNodeIdList, tagIdsList);
         return Y9Result.success(null, "文件添加标签成功");
     }
@@ -92,9 +107,9 @@ public class FileTagController {
      * @param fileId
      * @return
      */
-    @RiseLog(operationName = "单文件添加文件标签", operationType = OperationTypeEnum.ADD)
+    @RiseLog(operationName = "单文件添加文件标签", operationType = OperationTypeEnum.ADD, saveParams = true)
     @PostMapping("/simpleFileToTag")
-    public Y9Result<Object> simpleFileToTag(String tagId, String fileId) {
+    public Y9Result<Object> simpleFileToTag(String tagId, String fileId, String listType) {
         return fileTagRelationService.simpleFileToTag(tagId, fileId);
     }
 
@@ -105,9 +120,10 @@ public class FileTagController {
      * @param fileId
      * @return
      */
-    @RiseLog(operationName = "删除文件标签", operationType = OperationTypeEnum.DELETE)
+    @RiseLog(operationName = "删除文件标签", operationType = OperationTypeEnum.DELETE, saveParams = true)
     @DeleteMapping("/removeTagFromFile")
-    public Y9Result<Object> removeTagFromFile(@RequestParam String fileId, @RequestParam String tagId) {
+    public Y9Result<Object> removeTagFromFile(@RequestParam String fileId, @RequestParam String tagId,
+        String listType) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         fileTagService.removeTagFromFile(fileId, tagId, userInfo.getPersonId());
         return Y9Result.success(null, "标签移除成功");
@@ -120,7 +136,7 @@ public class FileTagController {
      * @param fileId
      * @return
      */
-    @RiseLog(operationName = "新增自定义文件标签", operationType = OperationTypeEnum.ADD)
+    @RiseLog(operationName = "新增自定义文件标签", operationType = OperationTypeEnum.ADD, saveParams = true)
     @PostMapping("/saveCustomTag")
     public Y9Result<Object> saveCustomTag(FileTag fileTag, @RequestParam String fileId) {
         return fileTagService.saveCustomTag(fileTag, fileId);
@@ -132,10 +148,10 @@ public class FileTagController {
      * @param fileTag
      * @return
      */
-    @RiseLog(operationName = "编辑自定义文件标签", operationType = OperationTypeEnum.MODIFY)
+    @RiseLog(operationName = "编辑自定义文件标签", operationType = OperationTypeEnum.MODIFY, saveParams = true)
     @PostMapping("/updateCustomTag")
-    public Y9Result<Object> updateFileTag(FileTag fileTag) {
-        return fileTagService.updateFileTag(fileTag);
+    public Y9Result<Object> updateFileTag(FileTag fileTag, @RequestParam String fileId) {
+        return fileTagService.saveCustomTag(fileTag, fileId);
     }
 
 }

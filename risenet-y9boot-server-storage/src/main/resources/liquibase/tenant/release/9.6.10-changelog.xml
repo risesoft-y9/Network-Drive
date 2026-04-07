@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="170200140583810-1-1" author="yihong" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="Y9_STORAGE_TAG"/>
+            </not>
+        </preConditions>
+        <createTable remarks="文件标签表"
+                     tableName="Y9_STORAGE_TAG">
+            <column name="ID" remarks="主键id" type="VARCHAR(38)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="CREATETIME" remarks="创建时间" type="datetime">
+            </column>
+            <column name="UPDATETIME" remarks="更新时间" type="datetime">
+            </column>
+            <column name="TAGNAME" remarks="标签名称" type="VARCHAR(100)">
+            </column>
+            <column name="TAGTYPE" remarks="标签类型" type="VARCHAR(50)">
+            </column>
+            <column name="TAGCOLOR" remarks="标签颜色" type="VARCHAR(50)">
+            </column>
+            <column name="CREATEID" remarks="创建人id" type="VARCHAR(38)">
+            </column>
+            <column name="CREATENAME" remarks="创建人姓名" type="VARCHAR(50)">
+            </column>
+            <column name="TABINDEX" remarks="排序字段" type="INT">
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="170200140583810-1-2" author="yihong" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="Y9_STORAGE_TAG_RELATION"/>
+            </not>
+        </preConditions>
+        <createTable remarks="文件标签关联表"
+                     tableName="Y9_STORAGE_TAG_RELATION">
+            <column name="ID" remarks="主键id" type="VARCHAR(38)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="FILEID" remarks="文件id" type="VARCHAR(50)">
+            </column>
+            <column name="TAGID" remarks="标签id" type="VARCHAR(50)">
+            </column>
+            <column name="OPERATORID" remarks="操作人id" type="VARCHAR(50)">
+            </column>
+            <column name="OPERATETIME" remarks="操作时间" type="datetime">
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

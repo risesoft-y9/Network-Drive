@@ -48,6 +48,11 @@ public class FileTagRelationServiceImpl implements FileTagRelationService {
     }
 
     @Override
+    public List<FileTagRelation> findByTagIds(List<String> tagIds) {
+        return fileTagRelationRepository.findByTagIdIn(tagIds);
+    }
+
+    @Override
     public Y9Result<Object> simpleFileToTag(String tagId, String fileId) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         try {
@@ -62,5 +67,10 @@ public class FileTagRelationServiceImpl implements FileTagRelationService {
         } catch (Exception e) {
             return Y9Result.failure("单文件添加文件标签关系失败");
         }
+    }
+
+    @Override
+    public void deleteFileTagRelation(List<String> fileIdList) {
+        fileTagRelationRepository.deleteByFileIdIn(fileIdList);
     }
 }
