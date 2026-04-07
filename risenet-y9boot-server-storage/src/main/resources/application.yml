@@ -126,15 +126,19 @@ y9:
             publicManagerRoleName: 公共文件管理角色
             capacityManagerRoleName: 存储空间管理角色
             reportManagerRoleName: 文件上报管理角色
+            tagManagerRoleName: 标签管理角色
             productDocument: 95b19opvx9d40458c002dd61c41eb2c
     service:
         org:
-            directUrl: http://localhost:7055
+            directUrl: http://test-internal.youshengyun.com
+        log:
+            directUrl: http://test-internal.youshengyun.com
     common:
-        orgBaseUrl: http://127.0.0.1:7055/server-platform
+        kafkaEnabled: false
+        orgBaseUrl: http://test-internal.youshengyun.com/server-platform
         jodconverterBaseUrl: https://www.youshengyun.com/jodconverter/onlinePreview?url=
-        storageBaseUrl: http://localhost:7058/server-storage
-        logBaseUrl: http://localhost:7056/server-log
+        storageBaseUrl: https://test.youshengyun.com/server-storage
+        logBaseUrl: https://test.youshengyun.com/server-log
         userOnlineBaseUrl: http://localhost:7056/server-useronline
     feature:
         file:
@@ -143,13 +147,13 @@ y9:
             #privateKey:
             #publicKey:
             rest:
-                fileManagerUrl: http://localhost:8080/filemanager
+                fileManagerUrl: http://test-api.youshengyun.com/filemanager
             ftp:
                 enabled: true
-                host: localhost
+                host: repo-internal.youshengyun.com
                 port: 21
                 username: y9admin
-                password: '111111'
+                password: '83204585'
                 blockWhenExhausted: true
                 bufferSize: 10240
                 connectTimeOut: 50000
@@ -208,7 +212,7 @@ y9:
                     - http://localhost:8081
                     - http://localhost:8082
                     - http://localhost:8083
-                    - http://localhost:8084
+                    - http://localhost:7080
                     - http://127.0.0.1:7055
                     - http://127.0.0.1:7056
         oauth2:
@@ -221,5 +225,5 @@ y9:
                 opaque:
                     client-id: clientid_oidc
                     client-secret: secret_oidc
-                    introspection-uri: http://localhost:7055/sso/oidc/introspect
-                    profile-uri: http://localhost:7055/sso/oidc/profile
+                    introspection-uri: http://test-internal.youshengyun.com/sso/oidc/introspect
+                    profile-uri: http://test-internal.youshengyun.com/sso/oidc/profile
