@@ -1,6 +1,7 @@
 <template>
-    <y9Card :showHeader="false">
-        <div class="toolbar">
+    <y9Card :showHeader="true" :showHeaderSplit="false" :headerPadding="false">
+        <template #header>
+            <div class="toolbar">
             <div class="toolbar-left">
                 <el-upload
                     v-if="roleType === 'manage'"
@@ -19,7 +20,7 @@
                     </el-button>
                 </el-upload>
                 <el-button-group>
-                    <el-button
+                    <!-- <el-button
                         v-if="!fileNodeType && roleType === 'manage'"
                         :size="fontSizeObj.buttonSize"
                         :style="{ fontSize: fontSizeObj.baseFontSize }"
@@ -94,7 +95,43 @@
                         plain
                         @click="refresh"
                         ><i class="ri-refresh-line"></i>{{ $t('刷新') }}
-                    </el-button>
+                    </el-button> -->
+                   <!-- 常规显示的按钮 -->
+                        <template v-for="(button, index) in visibleButtons" :key="index">
+                            <el-button
+                                :size="fontSizeObj.buttonSize"
+                                :style="{ fontSize: fontSizeObj.baseFontSize }"
+                                v-if="button.condition !== undefined ? button.condition : true"
+                                :class="button.class"
+                                v-on="button.handler ? { click: button.handler } : {}"
+                                :disabled="button.disabled"
+                                plain
+                            >
+                                <i :class="button.icon"></i>{{ $t(button.text) }}
+                            </el-button>
+                        </template>
+
+                        <!-- 下拉菜单按钮 -->
+                        <el-dropdown v-if="hiddenButtons.length > 0">
+                            <el-button 
+                                :size="fontSizeObj.buttonSize"
+                                :style="{ fontSize: fontSizeObj.baseFontSize }"
+                                class="global-btn-second"
+                                plain
+                            >
+                                <i class="ri-more-line"></i>{{ $t('更多') }}
+                            </el-button>
+                            <template #dropdown>
+                                <el-dropdown-menu>
+                                    <el-dropdown-item 
+                                        v-for="(button, index) in hiddenButtons" 
+                                        :key="'hidden-'+index"
+                                        v-on="button.handler ? { click: button.handler } : {}"
+                                    ><i :class="button.icon"></i>{{ $t(button.text) }}
+                                    </el-dropdown-item>
+                                </el-dropdown-menu>
+                            </template>
+                        </el-dropdown>
                 </el-button-group>
             </div>
             <div class="toolbar-right">
@@ -107,6 +144,25 @@
                             clearable
                         >
                         </el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-select
+                            v-model="fileTagKey"
+                            multiple
+                            filterable
+                            collapse-tags
+                            collapse-tags-tooltip
+                            placeholder="选择标签"
+                            style="width: 10vw;margin-right: 10px;"
+                            @change="tagChange"
+                            >
+                            <el-option
+                                v-for="item in tagOptions"
+                                :key="item.id"
+                                :label="item.tagName"
+                                :value="item.id"
+                            />
+                            </el-select>
                     </el-form-item>
                     <el-form-item>
                         <el-date-picker
@@ -122,16 +178,8 @@
                             @change="selectdDate()"
                         ></el-date-picker>
                     </el-form-item>
-                    <el-form-item>
-                        <el-button
-                            :size="fontSizeObj.buttonSize"
-                            :style="{ fontSize: fontSizeObj.baseFontSize }"
-                            class="global-btn-second"
-                            @click="toSearchView"
-                            ><i class="ri-search-line"></i>{{ $t('查询') }}
-                        </el-button>
-                    </el-form-item>
-                    <el-form-item>
+                    
+                    <!-- <el-form-item>
                         <el-dropdown>
                             <span class="el-dropdown-link">
                                 <el-button
@@ -170,10 +218,22 @@
                                 </el-dropdown-menu>
                             </template>
                         </el-dropdown>
-                    </el-form-item>
+                    </el-form-item> -->
                 </el-form>
+                <el-button
+                    class="global-btn-second"
+                    :size="fontSizeObj.buttonSize"
+                    :style="{ fontSize: fontSizeObj.baseFontSize }" @click="toSearchView"
+                    ><i class="ri-search-line"></i>{{ $t('查询') }}</el-button>
+                   <el-button
+                    class="global-btn-second"
+                    :size="fontSizeObj.buttonSize"
+                    :style="{ fontSize: fontSizeObj.baseFontSize }" @click="resetSearch"
+                    ><i class="ri-reset-left-line"></i>{{ $t('重置') }}</el-button>
             </div>
         </div>
+        </template>
+        
         <div class="nav">
             <div class="location">
                 {{ $t('所在目录') }}：<span @click="backSuperior">{{ backSign }}</span>
@@ -319,6 +379,50 @@
                         </el-col>
                     </el-row>
                 </template>
+                <template #fileTag="{ row, column, index }"> 
+                    <div v-if="row.fileType != 0 " class="file-tag-container">
+                        <template v-if="row.fileTags && row.fileTags.length > 0">
+                            <div v-for="tag in row.fileTags" :key="tag.id" class="tag-wrapper">
+                                <el-tooltip 
+                                    :content="tag.tagType === 'customTag' ? $t('自定义标签') : $t('系统标签')"
+                                    placement="left-start"
+                                >
+                                    <el-tag 
+                                        :closable="roleType === 'manage' ? true : false"
+                                        @close="removeTag(row, tag)"
+                                        @click="viewTag(row, tag)"
+                                        class="tag-item"
+                                        :style="{
+                                        backgroundColor: tag.tagColor + '33',
+                                        color: tag.tagColor
+                                        }"
+                                    >
+                                       <!-- 自定义标签标识 -->
+                                       <i v-if="tag.tagType === 'customTag'" class="ri-user-star-line custom-tag-icon"></i>
+                                        {{ $t(tag.tagName) }}
+                                    </el-tag>
+                                 </el-tooltip>
+                            </div>
+                        </template>
+                        <span v-else class="no-tag">---</span>
+                        <el-dropdown v-if="roleType === 'manage'" trigger="click" @command="(command) => handleTagMenuClick(command, row)" placement="bottom-start">
+                                <i class="ri-add-circle-line add-tag-icon" :title="$t('添加标签')"></i>
+                            <template #dropdown>
+                                <el-dropdown-menu>
+                                    <el-dropdown-item command="systemTag">
+                                        <i class="ri-price-tag-3-line"></i>
+                                        {{ $t('系统标签') }}
+                                    </el-dropdown-item>
+                                    <el-dropdown-item command="customTag">
+                                        <i class="ri-edit-line"></i>
+                                        {{ $t('自定义标签') }}
+                                    </el-dropdown-item>
+                                </el-dropdown-menu>
+                            </template>
+                        </el-dropdown>
+                    </div>
+                    <span v-else class="no-tag">---</span>
+                </template>
                 <template #collect="{ row, column, index }">
                     <i
                         v-if="row.collect"
@@ -405,12 +509,21 @@
                 :reloadTable="loadList"
                 @openFolder="openFolder"
             />
+            <Tag v-if="dialogConfig.type == 'Tag'" ref="fileTagRef"/>
+            <TagView v-if="dialogConfig.type == 'TagView'" ref="tagViewRef" :currentViewFile="currentViewFile" :currentViewTag="currentViewTag"/>
+            <!-- 自定义标签组件 -->
+            <CustomTag 
+                v-if="dialogConfig.type == 'CustomTag'" 
+                ref="customTagRef" 
+                :tagData="currentViewTag"
+                @success="handleCustomTagSuccess"
+            />
         </y9Dialog>
     </y9Card>
 </template>
 
 <script lang="ts" setup>
-    import { ref, onMounted, watch, computed, reactive, toRefs, nextTick, inject } from 'vue';
+    import { ref, onMounted, watch, computed, reactive, toRefs, nextTick, inject,h,resolveComponent } from 'vue';
     import FileApi from '@/api/storage/file';
     import FileNameWithIcon from '@/components/storage/FileNameWithIcon/index.vue';
     import OrgUnitSelector from '@/components/storage/OrgUnitSelector/index.vue';
@@ -421,15 +534,19 @@
     import TextViewer from '@/components/file/TextViewer.vue';
     import AudioPlayer from '@/components/file/AudioPlayer.vue';
     import FileNodeShareApi from '@/api/storage/fileNodeShare';
+    import TagView from '@/components/storage/Tag/tagDetail.vue';
+    import CustomTag from '@/components/storage/Tag/addTag.vue';
     import y9_storage from '@/utils/storage';
     import settings from '@/settings';
     import { useRoute, useRouter } from 'vue-router';
     import { useStorageStore } from '@/store/modules/storageStore';
     import { useSettingStore } from '@/store/modules/settingStore';
+    import FileTagApi from '@/api/storage/fileTag';
     import axios from 'axios';
     import posterImg from '@/assets/images/bg.jpg';
     import { api as viewerApi } from 'v-viewer';
     import { useI18n } from 'vue-i18n';
+    import { $filteredNullObj } from '@/utils/object';
 
     const { t } = useI18n();
     // 注入 字体对象
@@ -469,11 +586,11 @@
         name: { required: true, message: t('请输入文件夹名称'), trigger: 'blur' }
     });
     //调整表格高度适应屏幕
-    const tableHeight = ref(useSettingStore().getWindowHeight - 260 - 25);
+    const tableHeight = ref(useSettingStore().getWindowHeight - 260 - 15);
 
     window.onresize = () => {
         return (() => {
-            tableHeight.value = useSettingStore().getWindowHeight - 260 - 25;
+            tableHeight.value = useSettingStore().getWindowHeight - 260 - 15;
         })();
     };
     const data = reactive({
@@ -547,6 +664,7 @@
                     sortable: true,
                     slot: 'name'
                 },
+                { title: computed(() => t('所属标签')), key: "fileTags", align: "left", width: '240', slot: 'fileTag' },
                 {
                     title: computed(() => t('收藏')),
                     key: 'collect',
@@ -581,7 +699,7 @@
                             reject();
                             return;
                         }
-                    } else {
+                    } else if (dialogConfig.value.type == 'moveNode'){
                         if (treeSelectedData.value) {
                             // 判断要移动到的路径是否为当前目录或其子目录
                             let pathValid = true;
@@ -616,6 +734,101 @@
                             reject();
                             return;
                         }
+                    }else if (dialogConfig.value.type == 'Tag') { 
+                        let tagSelect = fileTagRef.value.tagSelect;
+                        let tagIds = tagSelect.map((item) => item.id);
+                        if (tagIds.length == 0) {
+                            ElMessage({ type: 'error', message: t('请选择文件标签'), offset: 65 });
+                            reject();
+                            return;
+                        }
+                        console.log("标签选择",tagSelect.map((item) => item.id));
+                        console.log('multipleSelection.value', multipleSelection.value);
+                        
+                        let filesFilter = multipleSelection.value.filter(item => item.fileType !== 0);
+                        if (filesFilter.length == 0) {
+                            ElMessage({ type: 'error', message: t('请选择要添加标签的文件'), offset: 65 });
+                            reject();
+                            return;
+                        }
+                        let fileNodeIds = filesFilter.map((item) => item.id);
+                        FileTagApi.addFileTagToFile(fileNodeIds, tagIds,listType.value).then(() => {
+                            ElMessage({
+                                type: 'success',
+                                message: t("添加标签成功"),
+                                offset: 65
+                            });
+                            loadList();
+                            resolve();
+                        });
+                    }else if (dialogConfig.value.type == 'CustomTag') {
+                        // 自定义标签保存
+                        let formRef = customTagRef.value.formRef;
+                        if (!formRef) {
+                            resolve();
+                            return;
+                        }
+                        formRef.validate().then((valid) => {
+                            if (valid) {
+                                let formData = customTagRef.value.formData;
+                                formData.tagType = 'customTag';
+                                formData.listType = listType.value;
+                                let fileId = currentViewFile.value.id;
+                                
+                                FileTagApi.saveCustomTag($filteredNullObj(formData), fileId,tagOpt.value).then((res) => {
+                                    if (res.success) {
+                                        if (res.msg && res.msg.indexOf('标签名称已存在') > -1) {
+                                            // 标签名称已存在，询问是否使用全局标签
+                                            ElMessageBox.confirm(t('该标签已存在，是否直接使用全局标签？'), t('提示'), {
+                                                confirmButtonText: t('确定'),
+                                                cancelButtonText: t('取消'),
+                                                type: 'info'
+                                            }).then(() => {
+                                                // 用户确认使用全局标签
+                                                FileTagApi.simpleFileToTag(fileId, res.data.id,listType.value).then(() => {
+                                                    ElMessage({ type: 'success', message: t('标签添加成功'), offset: 65 });
+                                                    dialogConfig.value.show = false;
+                                                    loadList();
+                                                    resolve();
+                                                });
+                                            }).catch(() => {
+                                                // 用户取消，保持弹窗打开让用户修改名称
+                                                ElMessage({ type: 'info', message: t('请修改自定义标签名称（避免冲突）！'), offset: 65 });
+                                                // 关键：确保弹窗保持打开状态
+                                                dialogConfig.value.show = true;
+                                                // 停止 loading 状态
+                                                dialogConfig.value.onOkLoading = false;
+                                                // 不调用 resolve()，让弹窗保持打开
+                                            });
+                                        } else {
+                                            // 保存成功，无冲突
+                                            ElMessage({ type: 'success', message: t('自定义标签添加成功'), offset: 65 });
+                                            dialogConfig.value.show = false;
+                                            loadList();
+                                            resolve();
+                                        }
+                                    } else {
+                                        // 其他错误，保持弹窗打开
+                                        ElMessage({ type: 'error', message: res.msg || t('保存失败'), offset: 65 });
+                                        dialogConfig.value.show = true;
+                                        dialogConfig.value.onOkLoading = false;
+                                    }
+                                }).catch((err) => {
+                                    // 接口调用失败，保持弹窗打开
+                                    ElMessage({ type: 'error', message: t('保存失败'), offset: 65 });
+                                    dialogConfig.value.show = true;
+                                    dialogConfig.value.onOkLoading = false;
+                                });
+                            } else {
+                                // 表单验证失败，保持弹窗打开
+                                ElMessage({ type: 'warning', message: t('请填写标签必填信息'), offset: 65 });
+                                dialogConfig.value.show = true;
+                                dialogConfig.value.onOkLoading = false;
+                            }
+                        }).catch(() => {
+                            dialogConfig.value.show = true;
+                            dialogConfig.value.onOkLoading = false;
+                        });
                     }
                 });
             },
@@ -624,7 +837,15 @@
                     treeSelectedData.value = {};
                 }
             }
-        }
+        },
+        maxVisibleButtons: 5,
+        fileTagKey: [],
+        tagOptions: [],
+        fileTagRef: null,
+        currentViewFile: {},  // 当前查看的文件
+        currentViewTag: {},   // 当前查看的标签
+        customTagRef: null,
+        tagOpt: '',
     });
 
     let {
@@ -667,7 +888,15 @@
         treeApiObj,
         listType,
         selectedDate,
-        backSign
+        backSign,
+        maxVisibleButtons,
+        fileTagKey,
+        tagOptions,
+        fileTagRef,
+        currentViewFile,
+        currentViewTag,
+        customTagRef,
+        tagOpt,
     } = toRefs(data);
 
     onMounted(() => {
@@ -722,6 +951,122 @@
             immediate: true
         }
     );
+
+    // 在 script 部分添加计算属性
+    const allButtons = computed(() => {
+        const buttons = [];
+        
+        // 文件夹按钮
+        if (!props.fileNodeType && props.roleType === 'manage') {
+            buttons.push({
+                condition: true,
+                class: "global-btn-second",
+                handler: createFolder,
+                icon: "ri-folder-add-line",
+                text: "文件夹",
+                disabled: false
+            });
+        }
+
+        // 批量标签按钮
+        if (multipleSelection.value.length && props.roleType === 'manage') {
+            buttons.push({
+                condition: true,
+                class: "global-btn-second",
+                handler: multiTagTable,
+                icon: "ri-price-tag-3-line",
+                text: "批量标签",
+                disabled: false
+            });
+        }
+        
+        // 下载按钮
+        if (multipleSelection.value.length) {
+            buttons.push({
+                condition: true,
+                class: "global-btn-second",
+                handler: download,
+                icon: "ri-download-2-line",
+                text: "下载",
+                disabled: false
+            });
+        }
+        
+        // 删除按钮
+        if (multipleSelection.value.length && props.roleType === 'manage') {
+            buttons.push({
+                condition: true,
+                class: "global-btn-second",
+                handler: deleteSelect,
+                icon: "ri-delete-bin-line",
+                text: "删除",
+                disabled: notCurrentSelectedOwner.value
+            });
+        }
+        
+        // 移动按钮
+        if (multipleSelection.value.length && props.roleType === 'manage') {
+            buttons.push({
+                condition: true,
+                class: "global-btn-second",
+                handler: move,
+                icon: "ri-login-box-line",
+                text: "移动到",
+                disabled: notCurrentSelectedOwner.value
+            });
+        }
+        
+        // 公开至按钮
+        if (multipleSelection.value.length >= 1 && props.roleType === 'manage') {
+            buttons.push({
+                condition: true,
+                class: "global-btn-second",
+                handler: publicTo,
+                icon: "ri-share-fill",
+                text: "公开至",
+                disabled: notCurrentSelectedOwner.value
+            });
+        }
+        
+        // 重命名按钮
+        if (multipleSelection.value.length === 1 && props.roleType === 'manage') {
+            buttons.push({
+                condition: true,
+                class: "global-btn-second",
+                handler: renameOutBtn,
+                icon: "ri-edit-2-line",
+                text: "重命名",
+                disabled: notCurrentSelectedOwner.value
+            });
+        }
+        
+        // 刷新按钮（始终显示）
+        buttons.push({
+            condition: true,
+            class: "global-btn-second",
+            handler: loadList,
+            icon: "ri-refresh-line",
+            text: "刷新",
+            disabled: false
+        });
+        
+        return buttons;
+    });
+
+    const visibleButtons = computed(() => {
+        return allButtons.value.slice(0, data.maxVisibleButtons);
+    });
+
+    const hiddenButtons = computed(() => {
+        return allButtons.value.slice(data.maxVisibleButtons);
+    });
+
+    async function loadTagList() { 
+        let res = await FileTagApi.getAllTag();
+        if (res.data != null) {
+            tagOptions.value = res.data;
+        }
+    }
 
     const selectdDate = () => {
         startTime.value = selectedDate.value[0];
@@ -813,6 +1158,7 @@
             FileApi.manageList(
                 props.parentId,
                 searchKey.value,
+                fileTagKey.value.join(),
                 props.fileNodeType,
                 startTime.value,
                 endTime.value,
@@ -828,6 +1174,7 @@
             FileApi.publicList(
                 props.parentId,
                 searchKey.value,
+                fileTagKey.value.join(),
                 props.fileNodeType,
                 startTime.value,
                 endTime.value,
@@ -840,6 +1187,7 @@
                 recursiveToRootFileNodeList.value = res.data.recursiveToRootFileNodeList;
             });
         }
+        loadTagList();
     }
 
     function subList(row) {
@@ -1272,6 +1620,156 @@
         }
         titleLeave(id);
     }
+
+    function tagChange(){
+        console.log('tagChange',fileTagKey.value);
+    }
+
+    function searchTagTable(){
+        loadList();
+    }
+
+    function resetSearch(){
+        searchKey.value = '';
+        fileTagKey.value = [];
+        loadList();
+    }
+
+    // 处理标签菜单点击
+    function handleTagMenuClick(command: string, row?: any) {
+        currentViewFile.value = row;
+        if (command === 'systemTag') {
+            // 打开管理标签弹窗（现有 Tag 组件）
+            openTagTable(currentViewFile.value);
+        } else if (command === 'customTag') {
+            // 打开自定义标签弹窗（可以新建组件或复用）
+            tagOpt.value = 'add';
+            currentViewTag.value = {};
+            addCustomTagTable(currentViewFile.value);
+        }
+    }
+
+    // 删除标签
+    async function removeTag(row, tag) {
+        ElMessageBox.confirm(
+            t('确认要删除该标签吗？'),
+            t('提示'),
+            {
+                confirmButtonText: t('确定'),
+                cancelButtonText: t('取消'),
+                type: 'warning'
+            }
+        ).then(async () => {
+            const res = await FileTagApi.removeFileTag(row.id, tag.id,listType.value);
+            if (res.success) {
+                ElMessage({ type: 'success', message: t('删除标签成功'), offset: 65 });
+                loadList();
+            } else {
+                ElMessage({ type: 'error', message: res.msg, offset: 65 });
+            }
+        }).catch(() => {});
+    }
+
+    // 查看标签详情（带编辑功能）
+    function viewTag(row, tag) {
+        currentViewFile.value = row;
+        currentViewTag.value = tag;
+        if(tag.tagType == 'systemTag'){
+            openTagDetail();
+        } else {
+            // 处理非系统标签的逻辑
+            if(props.roleType === 'manage'){
+                tagOpt.value = 'edit';
+                if(tag.createId == y9UserInfo.value.personId){
+                    editCustomTagTable(row);
+                }else{
+                    openTagDetail();
+                }
+            }else{
+                openTagDetail();
+            }
+        }
+    }
+
+    function openTagDetail() { 
+        Object.assign(dialogConfig.value, {
+            show: true,
+            width: '20%',
+            title: computed(() => t('标签详情')),
+            type: 'TagView',
+            //okText: computed(() => t('设置标签')),
+            showFooter: false
+        });
+    }
+
+    function multiTagTable(){
+        let count = multipleSelection.value.length;
+        ElMessageBox.confirm(
+            t('是否对选中的' + count + '个文件执行该操作？'),
+            t('提示'),
+            {
+                confirmButtonText: t('确定'),
+                cancelButtonText: t('取消'),
+                type: 'warning'
+            }
+        ).then(async () => {
+            Object.assign(dialogConfig.value, {
+                show: true,
+                width: '25%',
+                title: computed(() => t('文件标签')),
+                type: 'Tag',
+                okText: computed(() => t('设置标签')),
+                showFooter: true
+            });
+        }).catch(() => {
+
+        });
+        
+    }
+    
+    function openTagTable(row) {
+        Object.assign(dialogConfig.value, {
+            show: true,
+            width: '25%',
+            title: computed(() => t('文件标签')),
+            type: 'Tag',
+            okText: computed(() => t('设置标签')),
+            showFooter: true
+        });
+    }
+
+    // 打开自定义标签弹窗
+    function addCustomTagTable(row) {
+        currentViewFile.value = row;
+        Object.assign(dialogConfig.value, {
+            show: true,
+            width: '30%',
+            title: computed(() => t('添加自定义标签')),
+            type: 'CustomTag',
+            okText: computed(() => t('确定')),
+            cancelText: computed(() => t('取消')),
+            showFooter: true
+        });
+    }
+
+    // 打开自定义标签弹窗
+    function editCustomTagTable(row) {
+        currentViewFile.value = row;
+        Object.assign(dialogConfig.value, {
+            show: true,
+            width: '30%',
+            title: computed(() => t('编辑自定义标签')),
+            type: 'CustomTag',
+            okText: computed(() => t('确定')),
+            cancelText: computed(() => t('取消')),
+            showFooter: true
+        });
+    }
+    
+    function handleCustomTagSuccess() {
+        dialogConfig.value.show = false;
+        loadList();
+    }
 </script>
 
 <style lang="scss" scoped>
@@ -1309,8 +1807,8 @@
             .el-table__body {
                 .el-table__row:hover {
                     td {
-                        border-top: 1px solid var(--el-color-primary);
-                        border-bottom-color: var(--el-color-primary);
+                        // border-top: 1px solid var(--el-color-primary);
+                        // border-bottom-color: var(--el-color-primary);
                         border-left: 0px;
                         border-right: 0px;
                         background-color: var(--el-color-primary-light-9);
@@ -1354,7 +1852,7 @@
     :deep(.el-form-item) {
         display: inline-flex;
         vertical-align: middle;
-        margin-right: 10px;
+        margin-right: 0px;
         margin-bottom: 0px;
 
         .el-form-item__label {
@@ -1394,6 +1892,10 @@
         height: 0px;
     }
 
+    :deep(.y9-card-content){
+        padding: 0px 15px !important;
+    }
+
     :deep(.el-dropdown) {
         line-height: 25px;
     }
@@ -1426,6 +1928,17 @@
     .toolbar-right {
         /* display: inline-block; */
         float: right;
+        :deep(.el-button) {
+            height: 30px;
+            line-height: 0;
+            min-width: 0px;
+            //box-shadow: 0px 0px 0px 0px rgb(0 0 0 / 6%);
+            padding: 8px 15px;
+            
+        }
+        :deep(.el-form-item__label) {
+            font-size: v-bind('fontSizeObj.baseFontSize');
+        }
     }
 
     .search-input {
@@ -1441,7 +1954,7 @@
 
     .nav {
         font-size: v-bind('fontSizeObj.baseFontSize');
-        padding: 15px 0 11px 0;
+        padding: 5px 0 11px 0;
     }
 
     .back {
@@ -1497,7 +2010,306 @@
         padding: 0.3vw;
 
         i {
-            margin-right: 4px;
+           margin-right: 0px !important;
         }
     }
+
+    .toolbar {
+    padding: 15px 0px;
+    background: linear-gradient(to bottom, #f5f7fa, rgb(246 251 255));
+    // border-radius: 8px;
+    box-shadow: 0 0.1px 0.2px rgba(0, 0, 0, 0.1);
+  
+  .toolbar-left {
+    float: left;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-left: 15px;
+    
+    .el-button {
+      transition: all 0.3s ease;
+      border-radius: 6px;
+      border: none !important;
+      border: 1px solid transparent;
+      padding: 10px 10px;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      &:not(:last-child) {
+          border-right: 1px solid #d0d7e7 !important;
+        }
+      
+      &.global-btn-main {
+        // background: linear-gradient(135deg, #409eff, #1a73e8);
+        border-color: #1a73e8;
+        
+        &:hover {
+        //   background: linear-gradient(135deg, #1a73e8, #0d5bb8);
+          border-color: #0d5bb8;
+        }
+      }
+      
+      &.global-btn-second {
+        background: #fff;
+        border: 1px solid #dcdfe6;
+        color: #606266;
+        
+        &:hover {
+        //   border-color: #409eff;
+        //   color: #409eff;
+          background: #f5f9ff;
+        }
+      }
+    }
+    
+    .el-button-group {
+    //   margin-left: 0.7vw;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      
+      .el-button {
+        border-radius: 0;
+        margin-right: 0;
+        border-left: 1px solid #dcdfe6;
+        
+        &:first-child {
+          border-left: none;
+        }
+      }
+    }
+  }
+  
+  .toolbar-right {
+    float: right;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-right: 15px;
+
+
+    
+    .el-button {
+      transition: all 0.3s ease;
+      border-radius: 6px;
+      border: none;
+      box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.06);
+      margin-left: 0px;
+      
+      &:hover {
+        //transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+    } 
+  }
+}
+
+:deep(.toolbar-right .el-dropdown) {
+  outline: none !important;
+  
+  .el-button {
+    outline: none !important;
+    border: none;
+    //border: 1px solid #dcdfe6 !important;
+    box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.06);
+    //box-shadow: none !important;
+    
+    &:focus,
+    &:focus-visible,
+    &:active,
+    &:hover {
+      outline: none !important;
+      border-color: #dcdfe6 !important;
+      box-shadow: none !important;
+    }
+    
+    &:hover {
+      border-color: #586cb1 !important;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+    }
+  }
+  
+  &:focus,
+  &:focus-within,
+  &:focus-visible,
+  &:hover {
+    outline: none !important;
+  }
+}
+
+.file-tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    min-height: 32px;
+    
+    .tag-wrapper {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        
+        .tag-item {
+            cursor: pointer;
+
+            .custom-tag-icon {
+                font-size: 14px;
+                animation: twinkle 2s infinite;
+            }
+
+            :deep(.el-tag__close) {
+                &:hover {
+                    color: var(--el-color-white) !important;
+                    background-color: var(--el-color-danger);
+                }
+            }
+            
+        }
+        
+        .tag-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            
+            .tag-action-icon {
+                cursor: pointer;
+                font-size: 14px;
+                color: var(--el-color-info);
+                padding: 2px;
+                border-radius: 2px;
+                
+                &:hover {
+                    color: var(--el-color-primary);
+                    background-color: var(--el-color-primary-light-9);
+                }
+            }
+        }
+    }
+    
+    .no-tag {
+        color: var(--el-color-info-light-5);
+        font-size: 12px;
+    }
+    
+    .add-tag-icon {
+        cursor: pointer;
+        color: var(--el-color-primary);
+        font-size: 18px;
+        padding: 2px;
+        border-radius: 50%;
+        
+        &:hover {
+            color: var(--el-color-primary-light-3);
+            background-color: var(--el-color-primary-light-9);
+        }
+    }
+
+    .add-tag-icon {
+        cursor: pointer;
+        color: var(--el-color-primary);
+        font-size: 18px;
+        padding: 2px;
+        border-radius: 50%;
+        
+        &:hover {
+            color: var(--el-color-primary-light-3);
+            background-color: var(--el-color-primary-light-9);
+        }
+    }
+
+    
+    // 下拉菜单样式
+    :deep(.el-dropdown) {
+        display: inline-flex;
+        align-items: center;
+        
+        .el-dropdown-menu__item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            
+            i {
+                font-size: 16px;
+            }
+        }
+    }
+}
+
+// 标签详情弹窗样式
+.tag-detail-messagebox {
+    width: 400px !important;
+    
+    .el-message-box__header {
+        padding-bottom: 15px;
+    }
+    
+    .el-message-box__content {
+        padding: 10px 0;
+    }
+    
+    .tag-detail-container {
+        .tag-detail-row {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--el-border-color-lighter);
+            
+            &:last-child {
+                border-bottom: none;
+            }
+            
+            .tag-detail-label {
+                width: 100px;
+                font-weight: 600;
+                color: var(--el-text-color-regular);
+                flex-shrink: 0;
+                font-size: 14px;
+            }
+            
+            .tag-detail-value {
+                flex: 1;
+                color: var(--el-text-color-primary);
+                word-break: break-all;
+                font-size: 14px;
+            }
+            
+            .tag-name-input {
+                flex: 1;
+                
+                :deep(.el-input__wrapper) {
+                    padding: 5px 10px;
+                    box-shadow: 0 0 0 1px var(--el-border-color) inset;
+                    
+                    &:hover {
+                        box-shadow: 0 0 0 1px var(--el-color-primary-light-5) inset;
+                    }
+                    
+                    &.is-focus {
+                        box-shadow: 0 0 0 1px var(--el-color-primary) inset;
+                    }
+                }
+                
+                :deep(.el-input__inner) {
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+    
+    .el-message-box__btns {
+        padding-top: 20px;
+        
+        .el-button {
+            min-width: 80px;
+        }
+    }
+}
+:deep(.el-tag .el-tag__close:hover) {
+    color: var(--el-color-white) !important;
+    background-color: var(--el-tag-hover-color);
+}
 </style>

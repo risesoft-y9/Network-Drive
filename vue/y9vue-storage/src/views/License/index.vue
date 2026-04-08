@@ -9,34 +9,30 @@
 <template>
     <div class="login">
         <div class="form">
-            <h1 class="title"> 401 Error </h1>
-            <p class="msg">{{ $t('抱歉，该用户不是管理员人员，没有权限！！！') }}</p>
-            <el-button
-                :size="fontSizeObj.buttonSize"
-                :style="{ fontSize: fontSizeObj.baseFontSize }"
-                size="mini"
-                type="primary"
-                @click="logout"
-                >{{ $t('退出重新登录') }}
-            </el-button>
+            <h1 class="title">{{ $t('License过期') }} </h1>
+            <p class="msg">{{ $t('License过期') }}</p>
         </div>
     </div>
 </template>
-<script lang="ts" setup>
-    import { $y9_SSO } from '@/main';
+<script setup>
+import { onMounted } from 'vue';
+import { useI18n } from 'vue-i18n'
+    const { t } = useI18n();
+    const infoKey = ref("License过期");
+    onMounted(() => {
+        window.location.href.split("?")[1].split("&").forEach((item) => {
+            if (item.startsWith("info=")) {
+                infoKey.value = item.split("=")[1];
+            }
+        });
+        /**
+         * 当过期的时候，修复开发环境下，没有及时清除缓存的bug
+         * 但是生产环境，如果 domainURL 和单点登录服务的domainURL不一致时，可能同样会遇到这个问题
+         */ 
+        localStorage.removeItem("lastCheckDate");
+    });
+    
 
-    const fontSizeObj: any = inject('sizeObjInfo') || {};
-
-    function logout() {
-        try {
-            const params = {
-                redirect_uri: window.location.origin + import.meta.env.VUE_APP_PUBLIC_PATH
-            };
-            $y9_SSO.ssoLogout(params);
-        } catch (error) {
-            ElMessage.error(error.msg || 'Has Error');
-        }
-    }
 </script>
 <style scoped>
     .login {

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-12-22 14:38:02
- * @LastEditTime: 2025-04-08 17:46:43
+ * @LastEditTime: 2026-03-23 15:59:12
  * @LastEditors: yihong yihong@risesoft.net
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /sz-team-frontend-9.5.x/y9vue-storage/src/router/checkRouter.js
@@ -70,6 +70,8 @@ async function check() {
 
     const y9UserInfo = JSON.parse(sessionStorage.getItem('ssoUserInfo'));
     let result = await OrgApi.checkManager();
+    console.log("managerLevel:",y9UserInfo.managerLevel);
+    
     if (y9UserInfo.managerLevel === 0) {
         userRole = ['user'];
     }
@@ -85,6 +87,10 @@ async function check() {
     if (result.data.reportManager) {
         userRole.push('reportManager');
     }
+    if (result.data.tagManager) {
+        userRole.push('tagManager');
+    }
+    sessionStorage.setItem('tagManager', result.data.tagManager);
     isRoleValid = (await checkRole(userRole)) ? true : false;
     // 根据角色权限获取路由
     // let isLoadRouter = sessionStorage.getItem('isLoadRouter');

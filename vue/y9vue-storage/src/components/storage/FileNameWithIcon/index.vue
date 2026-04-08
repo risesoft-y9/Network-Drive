@@ -71,6 +71,10 @@
     watch(
         () => props.fileNode,
         (newVal) => {
+            if (!newVal) {
+                fileNodeObj.value = {};
+                return;
+            }
             fileNodeObj.value = $deepAssignObject(newVal);
             if (newVal.id == '') {
                 fileNodeObj.value.fileType = 0;
