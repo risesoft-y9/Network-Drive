@@ -379,3 +379,19 @@ export function $objValueNotEmpty(_obj) {
     if (getLength(_obj) === 0) return false; //判断长度
     return isObjValue(_obj, true); //默认flag为true
 }
+
+/***
+ *
+ * 去除对象中值为null的字段
+ * @param obj
+ * @returns
+ */
+
+export function $filteredNullObj(obj) {
+    return Object.keys(obj).reduce((acc, key) => {
+        if (obj[key] !== null) {
+            acc[key] = obj[key];
+        }
+        return acc;
+    }, {});
+}

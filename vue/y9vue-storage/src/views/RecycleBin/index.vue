@@ -1,13 +1,15 @@
 <template>
-    <y9Card :showHeader="false">
-        <div class="toolbar">
+    <y9Card :showHeader="true" :showHeaderSplit="false" :headerPadding="false">
+        <template #header>
+            <div class="toolbar">
             <div class="toolbar-left">
+                <el-button-group style="margin-left: 0.7vw;">
                 <el-button
                     v-if="multipleSelection.length"
                     :size="fontSizeObj.buttonSize"
                     :style="{ fontSize: fontSizeObj.baseFontSize }"
                     class="global-btn-second"
-                    type="primary"
+                    plain
                     @click="permanentlyDelete"
                     ><i class="ri-delete-bin-line"></i>{{ $t('彻底删除') }}
                 </el-button>
@@ -30,81 +32,103 @@
                 <el-button
                     :size="fontSizeObj.buttonSize"
                     :style="{ fontSize: fontSizeObj.baseFontSize }"
-                    class="global-btn-main"
-                    type="primary"
+                    class="global-btn-second"
+                    plain
                     @click="loadList"
                     ><i class="ri-refresh-line"></i>{{ $t('刷新') }}
                 </el-button>
+                </el-button-group>
             </div>
         </div>
-        <el-table
+        </template>
+        <y9Table
             ref="multipleTable"
+            :config="y9TableConfig"
             v-loading="loading"
-            :data="rows"
-            :empty-text="$t('暂无文件')"
-            :height="tableHeight"
-            style="width: 100%"
-            tooltip-effect="dark"
-            @selection-change="handleSelectionChange"
-            @row-click="toggleSelection"
-        >
-            <el-table-column type="selection" width="45"></el-table-column>
-            <!-- <el-table-column type="index" label="序号" width="60"></el-table-column> -->
-            <el-table-column :label="$t('文件名')" prop="name">
-                <template #default="name">
-                    <FileNameWithIcon :file-node="name.row" />
-                </template>
-            </el-table-column>
-            <el-table-column :label="$t('大小')" prop="fileSize" width="120">
-                <template #default="fileSize">
-                    {{ fileSize.row.fileSize ? fileSize.row.fileSize : '-' }}
-                </template>
-            </el-table-column>
-            <el-table-column :label="$t('删除时间')" prop="updateTime" width="200"></el-table-column>
-        </el-table>
+            :element-loading-text="loadingTitle"
+            :empty-text="$t('暂无数据')"
+            element-loading-spinner="el-icon-loading"
+            element-loading-background="rgba(0, 0, 0, 0.8)"
+            @on-change="handleSelectionChange"
+            @row-click="selectRow"
+            @select-all="selectAll"
+            >
+            <template #name="{ row, column, index }">
+                <div class="file-name-cell">
+                    <FileNameWithIcon :file-node="row" />
+                </div>
+            </template>
+            <template #fileSize="{ row, column, index }">
+                <span>{{ row.fileSize ? row.fileSize : '-' }}</span>
+            </template>
+            <template #updateTime="{ row, column, index }">
+                <span>{{ row.updateTime }}</span>
+            </template>
+       </y9Table>
     </y9Card>
 </template>
 
 <script lang="ts" setup>
-    import { onMounted, reactive, toRefs } from 'vue';
+    import { onMounted, reactive, toRefs ,inject,ref,computed} from 'vue';
     import FileApi from '@/api/storage/file';
     import FileNameWithIcon from '@/components/storage/FileNameWithIcon/index.vue';
     import { useI18n } from 'vue-i18n';
+    import { useSettingStore } from '@/store/modules/settingStore';
 
     const { t } = useI18n();
     // 注入 字体对象
     const fontSizeObj: any = inject('sizeObjInfo') || {};
+    //调整表格高度适应屏幕
+    const tableHeight = ref(useSettingStore().getWindowHeight - 240);
+
+    window.onresize = () => {
+        return (() => {
+            tableHeight.value = useSettingStore().getWindowHeight - 240;
+        })();
+    };
     const data = reactive({
         multipleTable: '',
         rows: [],
         multipleSelection: [],
         loading: false,
-        tableHeight: window.innerHeight - 240,
-        tableScreenHeight: window.innerHeight
+        loadingTitle: t('加载中...'),
+        y9TableConfig: {
+            border: 0,
+            height: tableHeight.value,
+            pageConfig: false,
+            columns: [
+                {
+                    type: 'selection',
+                    width: '55',
+                },
+                { title: computed(() => t('文件名')), key: 'name', align: 'left', minWidth: '500',sortable: true, slot: 'name' },
+                { title: computed(() => t('大小')), key: 'fileSize', width: '100', sortable: true,slot: 'fileSize' },
+                { title: computed(() => t('删除时间')), key: 'updateTime', width: '200',sortable: true, slot: 'updateTime' }
+            ],
+            tableData: []
+        },
     });
 
-    let { multipleTable, rows, multipleSelection, loading, tableHeight, tableScreenHeight } = toRefs(data);
+    let { multipleTable, rows, multipleSelection, loading,y9TableConfig, tableScreenHeight } = toRefs(data);
 
     onMounted(() => {
         loadList();
-        window.onresize = () => {
-            return (() => {
-                window.screenHeight = window.innerHeight;
-                tableScreenHeight.value = window.screenHeight;
-            })();
-        };
     });
 
-    function toggleSelection(rows) {
-        if (rows) {
-            multipleTable.value.toggleRowSelection(rows);
+    function selectRow(row, column, event) {
+        if (row.id != '') {
+            multipleTable.value.elTableRef.toggleRowSelection(row);
         } else {
-            multipleTable.value.clearSelection();
+            multipleTable.value.elTableRef.clearSelection();
         }
     }
 
-    function handleSelectionChange(val) {
-        multipleSelection.value = val;
+    function selectAll(selection) {
+        console.log('selectAll-multipleSelection.value', multipleSelection.value);
+    }
+
+    function handleSelectionChange(id, data) {
+        multipleSelection.value = data;
     }
 
     function permanentlyDelete() {
@@ -127,8 +151,8 @@
     function loadList() {
         loading.value = true;
         FileApi.deletedList().then((res) => {
-            rows.value = res.data;
             loading.value = false;
+            y9TableConfig.value.tableData = res.data;
         });
     }
 
@@ -183,6 +207,10 @@
         height: 0px;
     }
 
+    :deep(.y9-card-content){
+        padding: 0px 15px !important;
+    }
+
     .toolbar:after {
         clear: both;
         content: '';
@@ -200,4 +228,91 @@
     :deep(.el-table__empty-text) {
         font-size: v-bind('fontSizeObj.baseFontSize');
     }
+
+    .toolbar {
+    padding: 15px 0px;
+    background: linear-gradient(to bottom, #f5f7fa, rgb(246 251 255));
+    box-shadow: 0 0.1px 0.2px rgba(0, 0, 0, 0.1);
+  
+  .toolbar-left {
+    float: left;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-left: 15px;
+    
+    .el-button {
+      transition: all 0.3s ease;
+      border-radius: 6px;
+      border: none !important;
+      border: 1px solid transparent;
+      padding: 10px 10px;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      &:not(:last-child) {
+          border-right: 1px solid #d0d7e7 !important;
+        }
+      
+      &.global-btn-main {
+        border-color: #1a73e8;
+        
+        &:hover {
+          border-color: #0d5bb8;
+        }
+      }
+      
+      &.global-btn-second {
+        background: #fff;
+        border: 1px solid #dcdfe6;
+        color: #606266;
+        
+        &:hover {
+          background: #f5f9ff;
+        }
+      }
+    }
+    
+    .el-button-group {
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      
+      .el-button {
+        border-radius: 0;
+        margin-right: 0;
+        border-left: 1px solid #dcdfe6;
+        
+        &:first-child {
+          border-left: none;
+        }
+      }
+    }
+  }
+  
+  .toolbar-right {
+    float: right;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-right: 15px;
+
+
+    
+    .el-button {
+      transition: all 0.3s ease;
+      border-radius: 6px;
+      border: none;
+      box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.06);
+      margin-left: 0px;
+      
+      &:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+    } 
+  }
+}
 </style>

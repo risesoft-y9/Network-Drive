@@ -1,6 +1,7 @@
 <template>
-    <y9Card :showHeader="false">
-        <div class="toolbar">
+    <y9Card :showHeader="true" :showHeaderSplit="false" :headerPadding="false">
+        <template #header>
+            <div class="toolbar">
             <div class="toolbar-left">
                 <el-button
                     :size="fontSizeObj.buttonSize"
@@ -36,6 +37,7 @@
                 </el-form>
             </div>
         </div>
+        </template>
         <y9Table :config="tableConfig" @on-curr-page-change="onCurrPageChange" @on-page-size-change="onPageSizeChange">
             <template #capacitySlot="{ row, column, index }">
                 <el-form ref="capacityForm" :model="formData" class="formClass">
@@ -87,12 +89,21 @@
 </template>
 
 <script lang="ts" setup>
-    import { onMounted, computed, reactive, toRefs, inject } from 'vue';
+    import { onMounted, computed, reactive, toRefs, inject, ref } from 'vue';
     import CapacityApi from '@/api/storage/capacity';
     import { useI18n } from 'vue-i18n';
+    import { useSettingStore } from '@/store/modules/settingStore';
 
     const { t } = useI18n();
     const fontSizeObj: any = inject('sizeObjInfo') || {};
+    //调整表格高度适应屏幕
+    const tableHeight = ref(useSettingStore().getWindowHeight - 260 - 50);
+
+    window.onresize = () => {
+        return (() => {
+            tableHeight.value = useSettingStore().getWindowHeight - 260 - 50;
+        })();
+    };
     const data = reactive({
         capacityForm: '',
         formData: { id: '', capacitySize: '' },
@@ -121,7 +132,7 @@
                 total: 0
             },
             border: 0,
-            height: window.innerHeight - 315
+            height: tableHeight.value
         }
     });
 
@@ -197,6 +208,10 @@
         height: 0px;
     }
 
+    :deep(.y9-card-content){
+        padding: 0px 15px 15px 15px !important;
+    }
+
     .toolbar:after {
         clear: both;
         content: '';
@@ -231,4 +246,102 @@
         width: 250px;
         margin-right: 10px;
     }
+
+    :deep(.el-form-item) {
+        display: inline-flex;
+        vertical-align: middle;
+        margin-right: 0px;
+        margin-bottom: 0px;
+    }
+
+    .toolbar {
+    padding: 15px 0px;
+    background: linear-gradient(to bottom, #f5f7fa, rgb(246 251 255));
+    box-shadow: 0 0.1px 0.2px rgba(0, 0, 0, 0.1);
+  
+  .toolbar-left {
+    float: left;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-left: 15px;
+    
+    .el-button {
+      transition: all 0.3s ease;
+      border-radius: 6px;
+      border: none !important;
+      border: 1px solid transparent;
+      padding: 10px 10px;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      &:not(:last-child) {
+          border-right: 1px solid #d0d7e7 !important;
+        }
+      
+      &.global-btn-main {
+        border-color: #1a73e8;
+        
+        &:hover {
+          border-color: #0d5bb8;
+        }
+      }
+      
+      &.global-btn-second {
+        background: #fff;
+        border: 1px solid #dcdfe6;
+        color: #606266;
+        
+        &:hover {
+          background: #f5f9ff;
+        }
+      }
+    }
+    
+    .el-button-group {
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      
+      .el-button {
+        border-radius: 0;
+        margin-right: 0;
+        border-left: 1px solid #dcdfe6;
+        
+        &:first-child {
+          border-left: none;
+        }
+      }
+    }
+  }
+  
+  .toolbar-right {
+    float: right;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-right: 15px;
+
+
+    
+    .el-button {
+      transition: all 0.3s ease;
+      border-radius: 6px;
+      border: none;
+      box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.06);
+      margin-left: 0px;
+      
+      &:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+    } 
+  }
+}
+
+:deep(.el-input-group__append, .el-input-group__prepend) {
+    padding: 0 20px 0px 0px !important;
+}
 </style>

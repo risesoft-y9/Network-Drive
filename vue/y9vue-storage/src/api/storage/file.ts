@@ -15,12 +15,14 @@ export default {
         var url = '/vue/fileNode/listPublicFolder?id=' + params.parentId;
         return storageRequest.get(url);
     },
-    list(id = '', searchName = '', fileNodeType, listType, orderProp, orderAsc) {
+    list(id = '', searchName = '',tagIds = '', fileNodeType, listType, orderProp, orderAsc) {
         var url =
             '/vue/fileNode/list?id=' +
             id +
             '&searchName=' +
             searchName +
+            '&tagIds=' +
+            tagIds +
             '&fileNodeType=' +
             fileNodeType +
             '&listType=' +
@@ -31,12 +33,14 @@ export default {
             orderAsc;
         return storageRequest.get(url);
     },
-    publicList(id = '', searchName = '', fileNodeType, startTime, endTime, listType, orderProp, orderAsc) {
+    publicList(id = '', searchName = '',tagIds = '',  fileNodeType, startTime, endTime, listType, orderProp, orderAsc) {
         var url =
             '/vue/fileNode/publicList?id=' +
             id +
             '&searchName=' +
             searchName +
+            '&tagIds=' +
+            tagIds +
             '&startTime=' +
             startTime +
             '&endTime=' +
@@ -51,12 +55,14 @@ export default {
             orderAsc;
         return storageRequest.get(url);
     },
-    manageList(id = '', searchName = '', fileNodeType, startTime, endTime, listType, orderProp, orderAsc) {
+    manageList(id = '', searchName = '',tagIds = '', fileNodeType, startTime, endTime, listType, orderProp, orderAsc) {
         var url =
             '/vue/fileNode/manageList?id=' +
             id +
             '&searchName=' +
             searchName +
+            '&tagIds=' +
+            tagIds +
             '&startTime=' +
             startTime +
             '&endTime=' +

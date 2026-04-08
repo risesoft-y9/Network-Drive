@@ -1,10 +1,10 @@
 /*
  * @Author: your name
  * @Date: 2022-01-10 18:09:52
- * @LastEditTime: 2026-01-13 16:43:39
- * @LastEditors: mengjuhua
+ * @LastEditTime: 2026-03-13 10:30:36
+ * @LastEditors: yihong yihong@risesoft.net
  * @Description: 初始设置
- * @FilePath: \vue\y9vue-storage\src\main.ts
+ * @FilePath: \y9-vue\y9vue-storage\src\main.ts
  */
 import router from '@/router/index';
 import {setupStore} from '@/store';
@@ -39,7 +39,7 @@ const env = {
         VUE_APP_SSO_CLIENT_ID: import.meta.env.VUE_APP_SSO_CLIENT_ID, //sso接口的固定字段
         VUE_APP_SSO_SECRET: import.meta.env.VUE_APP_SSO_SECRET, //sso接口的固定字段
         VUE_APP_SSO_GRANT_TYPE: import.meta.env.VUE_APP_SSO_GRANT_TYPE, //sso接口的固定字段
-        VUE_APP_SSO_SITETOKEN_KEY: import.meta.env.VUE_APP_SSO_SITETOKEN_KEY //sso-token_key
+        VUE_APP_SSO_SITETOKEN_KEY: import.meta.env.VUE_APP_SSO_SITETOKEN_KEY, //sso-token_key
     },
     logInfo: {
         showLog: true
@@ -47,7 +47,7 @@ const env = {
 };
 
 const app: any = createApp(App);
-app.use(sso, { env });
+app.use(sso, {env});
 
 setupStore(app);
 let opts = ref({} as any); //y9组件选项配置

@@ -1,6 +1,7 @@
 <template>
-    <y9Card :showHeader="false">
-        <div class="toolbar">
+    <y9Card :showHeader="true" :showHeaderSplit="false" :headerPadding="false">
+        <template #header>
+            <div class="toolbar">
             <div class="toolbar-left">
                 <el-button
                     :size="fontSizeObj.buttonSize"
@@ -137,6 +138,8 @@
                 </el-form>
             </div>
         </div>
+        </template>
+        
         <div class="nav">
             <div class="location">
                 {{ $t('所在目录') }}：<span @click="backSuperior">{{ backSign }}</span>
@@ -341,11 +344,11 @@
         name: { required: true, message: t('请输入文件夹名称'), trigger: 'blur' }
     });
     //调整表格高度适应屏幕
-    const tableHeight = ref(useSettingStore().getWindowHeight - 260 - 25);
+    const tableHeight = ref(useSettingStore().getWindowHeight - 260 - 15);
 
     window.onresize = () => {
         return (() => {
-            tableHeight.value = useSettingStore().getWindowHeight - 260 - 25;
+            tableHeight.value = useSettingStore().getWindowHeight - 260 - 15;
         })();
     };
     const data = reactive({
@@ -625,7 +628,7 @@
             });
         }
 
-        FileApi.list(props.parentId, searchKey.value, '', props.listType, orderProp.value, orderAsc.value).then(
+        FileApi.list(props.parentId, searchKey.value,'', '', props.listType, orderProp.value, orderAsc.value).then(
             (res) => {
                 loading.value = false;
                 y9TableConfig.value.tableData = res.data.subFileNodeList;
@@ -988,31 +991,16 @@
             .el-table__body {
                 .el-table__row:hover {
                     td {
-                        border-top: 1px solid var(--el-color-primary);
-                        border-bottom-color: var(--el-color-primary);
                         border-left: 0px;
                         border-right: 0px;
                         background-color: var(--el-color-primary-light-9);
                     }
-
-                    // td:nth-child(1) {
-                    //   border-left: 0px solid var(--el-color-primary);
-                    // }
-                    // td:last-child{
-                    //   border-right: 0px solid var(--el-color-primary);
-                    // }
                 }
 
                 .global-btn-main i {
                     color: var(--el-color-white);
                 }
             }
-        }
-    }
-
-    .optButtonCss {
-        i {
-            color: var(--el-color-primary) !important;
         }
     }
 
@@ -1067,12 +1055,15 @@
         height: 0px;
     }
 
+    :deep(.y9-card-content){
+        padding: 0px 15px !important;
+    }
+
     :deep(.el-dropdown) {
         line-height: 25px;
     }
 
     .tree-div {
-        //width: calc(100% - 20px);
         height: 335px;
         overflow-y: auto;
         padding: 10px;
@@ -1092,7 +1083,6 @@
     }
 
     .toolbar-right {
-        /* display: inline-block; */
         float: right;
     }
 
@@ -1109,7 +1099,7 @@
 
     .nav {
         font-size: v-bind('fontSizeObj.baseFontSize');
-        padding: 15px 0 11px 0;
+        padding: 5px 0 11px 0;
     }
 
     .back {
@@ -1153,7 +1143,125 @@
         padding: 0.3vw;
 
         i {
-            margin-right: 4px;
+            margin-right: 0px !important;
         }
     }
+
+    .toolbar {
+    padding: 15px 0px;
+    background: linear-gradient(to bottom, #f5f7fa, rgb(246 251 255));
+    box-shadow: 0 0.1px 0.2px rgba(0, 0, 0, 0.1);
+  
+  .toolbar-left {
+    float: left;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-left: 15px;
+    
+    .el-button {
+      transition: all 0.3s ease;
+      border-radius: 6px;
+      border: none !important;
+      border: 1px solid transparent;
+      padding: 10px 10px;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      &:not(:last-child) {
+          border-right: 1px solid #d0d7e7 !important;
+        }
+      
+      &.global-btn-main {
+        border-color: #1a73e8;
+        
+        &:hover {
+          border-color: #0d5bb8;
+        }
+      }
+      
+      &.global-btn-second {
+        background: #fff;
+        border: 1px solid #dcdfe6;
+        color: #606266;
+        
+        &:hover {
+          background: #f5f9ff;
+        }
+      }
+    }
+    
+    .el-button-group {
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      
+      .el-button {
+        border-radius: 0;
+        margin-right: 0;
+        border-left: 1px solid #dcdfe6;
+        
+        &:first-child {
+          border-left: none;
+        }
+      }
+    }
+  }
+  
+  .toolbar-right {
+    float: right;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-right: 15px;
+
+
+    
+    .el-button {
+      transition: all 0.3s ease;
+      border-radius: 6px;
+      border: none;
+      box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.06);
+      margin-left: 0px;
+      
+      &:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+    } 
+  }
+}
+
+:deep(.toolbar-right .el-dropdown) {
+  outline: none !important;
+  
+  .el-button {
+    outline: none !important;
+    border: none;
+    box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.06);
+    
+    &:focus,
+    &:focus-visible,
+    &:active,
+    &:hover {
+      outline: none !important;
+      border-color: #dcdfe6 !important;
+      box-shadow: none !important;
+    }
+    
+    &:hover {
+      border-color: #586cb1 !important;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+    }
+  }
+  
+  &:focus,
+  &:focus-within,
+  &:focus-visible,
+  &:hover {
+    outline: none !important;
+  }
+}
 </style>
