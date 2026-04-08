@@ -202,6 +202,14 @@ vue -- 前端工程
 
 ![生成直链](https://vue.youshengyun.com/files/img/网络硬盘生成直链.png)
 
+![标签字典管理](https://vue.youshengyun.com/files/img/标签字典管理.png)
+
+![标签文件列表](https://vue.youshengyun.com/files/img/标签文件列表.png)
+
+![文件设置标签](https://vue.youshengyun.com/files/img/文件设置标签.png)
+
+![自定义文件标签](https://vue.youshengyun.com/files/img/自定义文件标签.png)
+
 ## 依赖开源项目
 
 | 序&nbsp;号 | 项&nbsp;目&nbsp;&nbsp;名&nbsp;称          | 项目介绍           | 地&nbsp;址                                                                                                                                                          |
