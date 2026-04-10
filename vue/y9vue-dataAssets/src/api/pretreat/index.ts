@@ -282,6 +282,17 @@ export const getSubscribeBaseById = async (id) => {
     });
 };
 
+/**
+ * 获取填报过的库表推送信息
+ */
+export const getDataByUserId = async () => {
+    return await dataRequest({
+        url: '/vue/detail/getDataByUserId',
+        method: 'GET',
+        cType: false
+    });
+};
+
 // 检验订阅库表推送信息
 export const checkSubscribeBase = async (params) => {
     const data = qs.stringify(params);
@@ -322,5 +333,17 @@ export const deleteSubscribeFile = async (id) => {
         method: 'POST',
         cType: false,
         params: { id: id }
+    });
+};
+
+/**
+ * 获取资产挂接的数据表信息
+ */
+export const getTablesByAssetsId = async (assetsId) => {
+    return await dataRequest({
+        url: '/vue/detail/getTablesByAssetsId',
+        method: 'GET',
+        cType: false,
+        params: { assetsId: assetsId }
     });
 };

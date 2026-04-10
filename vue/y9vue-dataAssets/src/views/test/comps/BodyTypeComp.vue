@@ -1,7 +1,8 @@
 <script setup lang="ts">
     import JSONEditor from 'jsoneditor';
+    import 'jsoneditor/dist/jsoneditor.css'
     import Y9Table2Comp from './Y9Table2Comp.vue';
-    import {nextTick, watch} from 'vue';
+    import {nextTick, onMounted, reactive, ref, watch} from 'vue';
     import type { UploadInstance } from 'element-plus';
 
     const uploadRef = ref<UploadInstance>();
@@ -135,9 +136,6 @@
 
         document.querySelector('#body-type-json-container .jsoneditor').style.height =
             bodyTypeJsonContainerHeight.value + 'px';
-        // console.log(editor.value);
-        // get json
-        // const updatedJson = editor.value.get();
     }
     function init(value) {
         switch (value) {
@@ -153,11 +151,10 @@
     onMounted(() => {
         // init(props.type);
         nextTick(()=>{
-          initBodyTypeJsonContainer();
+            initBodyTypeJsonContainer();
         })
     });
     function onUploadChange(uploadFile, uploadFiles) {
-        console.log(uploadFiles);
         emits('onUploadChange', uploadFiles);
     }
 </script>

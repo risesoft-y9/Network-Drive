@@ -189,7 +189,7 @@ function downloadFile(id) {
 }
 
 let identifier = ref('');
-let currNode = ref({'name': '', 'sourceId': ''});
+let currNode = ref({'name': '', 'sourceId': '', type: '1'});
 function showPage(row) {
     if(row.fileType == '接口') {
         identifier.value = row.identifier

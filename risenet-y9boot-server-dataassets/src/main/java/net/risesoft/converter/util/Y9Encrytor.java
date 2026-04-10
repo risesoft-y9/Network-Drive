@@ -9,6 +9,8 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 
+import org.apache.commons.lang3.StringUtils;
+
 import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.util.base64.Y9Base64Util;
 
@@ -22,15 +24,17 @@ public class Y9Encrytor {
     // 标签长度
     private static final int GCM_TAG_LENGTH = 16;
     
-    public Y9Encrytor() {
+    public Y9Encrytor(String key) {
         try {
-        	String key = Y9Context.getProperty("y9.common.secret-key");
+            if(StringUtils.isBlank(key)) {
+                key = Y9Context.getProperty("y9.common.secret-key");
+            }
         	// 生成安全的AES密钥128位
-        	KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        	// 根据KEY规则初始化密钥生成器生成一个128位的随机源
-    		SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
-    		secureRandom.setSeed(key.getBytes());
-    		keyGenerator.init(128, secureRandom);
+            KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+            // 根据KEY规则初始化密钥生成器生成一个128位的随机源
+            SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
+            secureRandom.setSeed(key.getBytes());
+            keyGenerator.init(128, secureRandom);
             deskey = keyGenerator.generateKey();
 		} catch (Exception e) {
 			e.printStackTrace();
