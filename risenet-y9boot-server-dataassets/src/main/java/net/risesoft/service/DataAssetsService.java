@@ -237,4 +237,39 @@ public interface DataAssetsService {
      */
     List<String> getAssetsTable(Long assetsId);
 
+    /**
+     * 根据人员id获取填报过的库表推送信息
+     * @param userId
+     * @return
+     */
+    List<SubscribeBaseEntity> getDataByUserId(String userId);
+
+    /**
+     * 根据资产id获取资产挂接的数据表信息
+     * @param assetsId
+     * @return
+     */
+    List<Map<String, Object>> getTablesByAssetsId(Long assetsId);
+
+    /**
+     * 获取所有已上架的资产-给AI提供
+     * @return
+     */
+    List<Map<String, Object>> getAllAssets(String userId, String tenantId);
+
+    /**
+     * 获取人员已订阅的资产列表-给AI提供
+     * @param userId
+     * @param tenantId
+     * @return
+     */
+    List<Map<String, Object>> getAssetsByUserId(String userId, String tenantId);
+
+    /**
+     * 获取资产挂接的文件
+     * @param assetsId
+     * @return
+     */
+    Map<String, Object> getMountFileData(Long assetsId);
+
 }

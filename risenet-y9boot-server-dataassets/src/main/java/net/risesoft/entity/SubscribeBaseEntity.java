@@ -49,4 +49,12 @@ public class SubscribeBaseEntity extends BaseEntity {
     @Comment(value = "备注")
     private String remark;
 
+    @Column(name = "USERID", length = 38)
+    @Comment(value = "用户ID")
+    private String userId;
+
+    @Column(name = "RAWDATA", length = 38)
+    @Comment(value = "本表ID，用来判断同一个库")
+    private String rawData;
+
 }

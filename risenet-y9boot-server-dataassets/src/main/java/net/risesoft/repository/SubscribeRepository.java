@@ -21,4 +21,8 @@ public interface SubscribeRepository extends JpaRepository<SubscribeEntity, Stri
 	@Query("select count(s) from SubscribeEntity s")
 	Long countAll();
 
+	List<SubscribeEntity> findByUserIdAndTenantIdAndReviewStatus(String userId, String tenantId, String reviewStatus);
+
+	Long countByUserIdAndTenantIdAndReviewStatus(String userId, String tenantId, String reviewStatus);
+
 }

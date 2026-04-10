@@ -21,7 +21,7 @@
                 >
                 </y9Table>
             </el-tab-pane>
-            <el-tab-pane label="数据" name="third">
+            <el-tab-pane label="数据" name="third" v-if="currNode.type == '1'">
                 <y9Table
                     :config="tableConfig"
                     :filterConfig="filterConfig"

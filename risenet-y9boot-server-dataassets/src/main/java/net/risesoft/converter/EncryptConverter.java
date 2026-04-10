@@ -13,7 +13,7 @@ public class EncryptConverter implements AttributeConverter<String, String> {
         // 加密
         if (convertEnabled) {
             try {
-                Y9Encrytor y9Encrytor = new Y9Encrytor();
+                Y9Encrytor y9Encrytor = new Y9Encrytor("");
                 attribute = y9Encrytor.Encrytor(attribute);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -28,7 +28,7 @@ public class EncryptConverter implements AttributeConverter<String, String> {
         // 解密
         if (convertEnabled) {
             try {
-                Y9Encrytor y9Encrytor = new Y9Encrytor();
+                Y9Encrytor y9Encrytor = new Y9Encrytor("");
                 data = y9Encrytor.Decryptor(data);
             } catch (Exception e) {
                 e.printStackTrace();

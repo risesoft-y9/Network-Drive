@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -227,6 +228,11 @@ public class DataAssetsController {
             return Y9Result.failure("数据库驱动加载失败");
         }
 
+        String id = subscribeBaseEntity.getId();
+        if(StringUtils.isNotBlank(subscribeBaseEntity.getRawData())){
+            id = subscribeBaseEntity.getRawData();
+        }
+
         // 连接数据库
         try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
             // 根据推送库的连接url：jdbc:mysql://localhost:3306/y9_data获取数据库的类型、驱动信息
@@ -243,24 +249,19 @@ public class DataAssetsController {
             // 根据subscribeBaseEntity的id判断数据是否存在，存在返回查询到的名称
             String checkSql = "SELECT BASENAME FROM Y9_DATASERVICE_DATASOURCE WHERE ID = ?";
             try (PreparedStatement checkStatement = connection.prepareStatement(checkSql)) {
-                checkStatement.setString(1, subscribeBaseEntity.getId());
+                checkStatement.setString(1, id);
                 try (ResultSet resultSet = checkStatement.executeQuery()) {
                     if (resultSet.next()) {
                         return Y9Result.success(resultSet.getString(1));
                     }
                 }
             }
-            String name = "资产订阅推送库";
-            DataAssets dataAssetsEntity = dataAssetsService.findById(subscribeEntity.getAssetsId());
-            if (dataAssetsEntity != null) {
-                name = name + "-" + dataAssetsEntity.getName();
-            }
-            name = name + "-" + subscribeEntity.getUserName();
+            String name = "资产订阅推送库-" + subscribeEntity.getUserName();
 
-            Y9Encrytor y9Encrytor = new Y9Encrytor();
+            Y9Encrytor y9Encrytor = new Y9Encrytor("risedataflow");
             String encryptPassword = y9Encrytor.Encrytor(subscribeBaseEntity.getPassword());
             String sql = "INSERT INTO Y9_DATASERVICE_DATASOURCE (ID,CREATE_TIME,UPDATE_TIME,BASENAME,BASESCHEMA,BASETYPE,DIRECTORY,DRIVER,INITIALSIZE,ISLOOK,MAXACTIVE,MINIDLE,PASSWORD,REMARK,RUNTYPE,`TYPE`,URL,USERNAME,TENANTID,USERID,EXTERNALID,SYSTEMNAME) " +
-            "VALUES ('"+subscribeBaseEntity.getId()+"',null,null,'"+name+"','','"+databaseProductName+"','','"+driverName+"',1,0,20,1,'"+encryptPassword+"','"+subscribeBaseEntity.getRemark()+"',NULL,0,'"+subscribeBaseEntity.getUrl()+"','"+subscribeBaseEntity.getUsername()+"','"+Y9LoginUserHolder.getTenantId()+"','"+Y9LoginUserHolder.getPersonId()+"','"+subscribeId+"','dataassets')";
+            "VALUES ('"+id+"',null,null,'"+name+"','','"+databaseProductName+"','','"+driverName+"',1,0,20,1,'"+encryptPassword+"','"+subscribeBaseEntity.getRemark()+"',NULL,0,'"+subscribeBaseEntity.getUrl()+"','"+subscribeBaseEntity.getUsername()+"','"+Y9LoginUserHolder.getTenantId()+"','"+Y9LoginUserHolder.getPersonId()+"','"+subscribeId+"','dataassets')";
             // 执行SQL语句
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 int rowsAffected = preparedStatement.executeUpdate();
@@ -278,5 +279,24 @@ public class DataAssetsController {
     @GetMapping("/getAssetsTable")
     public Y9Result<List<String>> getAssetsTable(Long assetsId) {
         return Y9Result.success(dataAssetsService.getAssetsTable(assetsId));
+    }
+
+    @RiseLog(operationName = "根据人员id获取填报过的库表推送信息", logLevel = LogLevelEnum.RSLOG)
+    @GetMapping("/getDataByUserId")
+    public Y9Result<List<SubscribeBaseEntity>> getDataByUserId() {
+        List<SubscribeBaseEntity> list = dataAssetsService.getDataByUserId(Y9LoginUserHolder.getPersonId());
+        // 去除密码字段值
+        if(!list.isEmpty()) {
+            list.stream().forEach((item) -> {
+                item.setPassword("");
+            });
+        }
+        return Y9Result.success(list);
+    }
+
+    @RiseLog(operationName = "根据资产id获取资产挂接的数据表信息", logLevel = LogLevelEnum.RSLOG)
+    @GetMapping("/getTablesByAssetsId")
+    public Y9Result<List<Map<String, Object>>> getTablesByAssetsId(Long assetsId) {
+        return Y9Result.success(dataAssetsService.getTablesByAssetsId(assetsId));
     }
 }
