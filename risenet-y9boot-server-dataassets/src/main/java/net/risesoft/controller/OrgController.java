@@ -67,7 +67,6 @@ public class OrgController {
     public Y9Result<List<OrgUnit>> getOrgTree(@RequestParam(required = false) String id,
         @RequestParam(required = false) String name) {
         String tenantId = Y9LoginUserHolder.getTenantId();
-
         List<OrgUnit> orgUnitList;
         if (StringUtils.isNotBlank(name)) {
             orgUnitList = orgUnitManager.treeSearch(tenantId, null, name, OrgTreeTypeEnum.TREE_TYPE_PERSON).getData();

@@ -78,6 +78,7 @@
                                     class: 'global-btn-second',
                                     onClick: async () => {
                                         currNode.value = row;
+                                        currNode.value.type = '1';
                                         Object.assign(dialogConfig.value, {
                                             show: true,
                                             width: '60%',

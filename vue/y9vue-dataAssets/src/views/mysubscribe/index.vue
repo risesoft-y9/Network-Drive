@@ -41,6 +41,20 @@
     </y9Dialog>
     <y9Dialog v-model:config="dialogConfig3">
         <y9Form ref="ruleFormRef" :config="formConfig"></y9Form>
+        <div style="margin-top: 20px;">
+            <h3 style="margin-bottom: 10px;">{{ $t('资产表信息') }}</h3>
+            <y9Table
+                :config="fieldTableConfig"
+                uniqueIdent="fieldTable"
+            >
+            </y9Table>
+        </div>
+    </y9Dialog>
+    <y9Dialog v-model:config="dialogConfig4">
+        <TableData
+            v-if="dialogConfig4.show"
+            :currNode="currNode"
+        ></TableData>
     </y9Dialog>
 </template>
 
@@ -49,15 +63,18 @@
     import { useI18n } from 'vue-i18n';
     import { useSettingStore } from '@/store/modules/settingStore';
     import { getStoragePageSize } from '@/utils';
-    import { getSubscribeBaseById, saveSubscribeBase, searchSubscribePage } from '@/api/pretreat';
+    import { getDataByUserId, getSubscribeBaseById, getTablesByAssetsId, saveSubscribeBase, searchSubscribePage } from '@/api/pretreat';
     import Info from '@/views/subscribe/comps/Info.vue';
     import ItemData from '@/views/pretreat/comps/ItemData.vue';
     import { ElNotification } from 'element-plus';
+    import TableData from '@/views/dataobject/comps/tableData.vue';
 
     const settingStore = useSettingStore();
     // 注入 字体对象
     const fontSizeObj: any = inject('sizeObjInfo');
     const { t } = useI18n();
+
+    let currNode = ref({'name': '', 'sourceId': '', type: '2'});
 
     let assetsId = ref('');
     let subscribeId = ref('');
@@ -203,10 +220,8 @@
                                         class: 'global-btn-success',
                                         onClick: async () => {
                                             subscribeId.value = row.id;
+                                            assetsId.value = row.assetsId;
                                             await getSubscribeBase();
-                                            Object.assign(dialogConfig3.value, {
-                                                show: true
-                                            });
                                         }
                                     },
                                     [
@@ -264,6 +279,52 @@
         dialogConfig2: {
             show: false,
             title: ''
+        },
+        dialogConfig4: {
+            show: false,
+            title: ''
+        },
+        // 表信息表格配置
+        fieldTableConfig: {
+            loading: false,
+            columns: [
+                { title: computed(() => t('序号')), type: 'index', width: 60 },
+                { title: computed(() => t('表名称')), key: 'name' },
+                // { title: computed(() => t('中文名称')), key: 'cname' },
+                { title: computed(() => t('详情')), fixed: 'right', width: '100px', render: (row) => {
+                    let actions = [
+                        h(
+                            'span',
+                            {
+                                style: {
+                                    cursor: 'pointer',
+                                    marginLeft: '10px',
+                                },
+                                class: 'global-btn-second',
+                                onClick: async () => {
+                                    currNode.value.name = row.name;
+                                    currNode.value.sourceId = row.sourceId;
+                                    Object.assign(dialogConfig4.value, {
+                                        show: true,
+                                        width: '60%',
+                                        title: computed(() => t('数据详情')),
+                                        showFooter: false
+                                    });
+                                }
+                            },
+                            [
+                                h('i', { class: 'ri-eye-line' }),
+                                h('span', t('详情'))
+                            ]
+                        )
+                    ];
+                    return h('span', actions);
+                } }
+            ],
+            border: false,
+            headerBackground: true,
+            tableData: [],
+            pageConfig: false
         }
     });
 
@@ -273,6 +334,8 @@
         filterConfig,
         dialogConfig,
         dialogConfig2,
+        dialogConfig4,
+        fieldTableConfig
     } = toRefs(state);
 
     onMounted(() => {
@@ -314,6 +377,8 @@
 
     // 菜单表单ref
     const ruleFormRef = ref();
+    let dataList = ref([]);// 下拉菜单内容
+    let isEdit = ref(false);// 判断是更新还是新增
     // 菜单 表单
     let formConfig = ref({
         model: {},
@@ -325,12 +390,33 @@
         },
         itemList: [
             {
-                type: 'input',
+                type: 'select',
                 prop: 'url',
                 label: computed(() => t('连接信息')),
                 required: true,
                 props: {
-                    placeholder: `例：jdbc:mysql://{host}:{port}/{database}`
+                    placeholder: `可选可填，例：jdbc:mysql://{host}:{port}/{database}`,
+                    filterable: true,
+                    allowCreate: true,
+                    options: [],
+                    events:{
+                        change: (val) => {
+                            if(val) {
+                                let item = dataList.value.find(item => item.url == val);
+                                if(item) {
+                                    formConfig.value.model.url = item.url;
+                                    formConfig.value.model.username = item.username;
+                                    formConfig.value.model.password = item.password;
+                                    formConfig.value.model.rawData = item.id;
+                                } else {
+                                    formConfig.value.model.url = val;
+                                    formConfig.value.model.rawData = '';
+                                }
+                            } else {
+                                formConfig.value.model = {};
+                            }
+                        }
+                    }
                 }
             },
             {
@@ -403,10 +489,34 @@
 
     // 根据id获取订阅-库表推送信息
     async function getSubscribeBase() {
-        let result = await getSubscribeBaseById(subscribeId.value);
-        if (result.success) {
-            formConfig.value.model = result.data || {};
+        formConfig.value.model = {};
+
+        let res = await getDataByUserId();
+        if (res.success) {
+            dataList.value = res.data || [];
+            formConfig.value.itemList[0].props.options = dataList.value.map(item => ({
+                label: item.url,
+                value: item.url
+            }));
         }
+
+        let result = await getSubscribeBaseById(subscribeId.value);
+        if (result.success && result.data != null) {
+            isEdit.value = true;
+            formConfig.value.model = result.data;
+        } else {
+            isEdit.value = false;
+        }
+
+        // 获取资产挂接的数据表信息
+        let tablesRes = await getTablesByAssetsId(assetsId.value);
+        if(tablesRes.success) {
+            fieldTableConfig.value.tableData = tablesRes.data || [];
+        }
+        
+        Object.assign(dialogConfig3.value, {
+            show: true
+        });
     }
 </script>
 <style lang="scss" scoped>

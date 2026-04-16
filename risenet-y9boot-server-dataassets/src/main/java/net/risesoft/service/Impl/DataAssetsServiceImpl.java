@@ -824,9 +824,10 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     @Override
     @Transactional(readOnly = false)
     public Y9Result<String> saveSubscribeBase(SubscribeBaseEntity subscribeBaseEntity) {
-        if (subscribeBaseEntity.getId() == null) {
+        if (StringUtils.isBlank(subscribeBaseEntity.getId())) {
             subscribeBaseEntity.setId(Y9IdGenerator.genId());
         }
+        subscribeBaseEntity.setUserId(Y9LoginUserHolder.getPersonId());
         subscribeBaseRepository.save(subscribeBaseEntity);
         return Y9Result.successMsg("保存成功");
     }
@@ -857,5 +858,101 @@ public class DataAssetsServiceImpl implements DataAssetsService {
             list.add(key);
         }
         return list;
+    }
+
+    @Override
+    public List<SubscribeBaseEntity> getDataByUserId(String userId) {
+        return subscribeBaseRepository.findByUserIdAndRawDataIsEmpty(userId);
+    }
+
+    @Override
+    public List<Map<String, Object>> getTablesByAssetsId(Long assetsId) {
+        List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+        List<FileInfo> fileInfoList = fileInfoRepository.findByAssetsIdAndFileType(assetsId, "数据表");
+        for(FileInfo fileInfo : fileInfoList) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("name", fileInfo.getName());
+            map.put("sourceId", fileInfo.getIdentifier());
+            listMap.add(map);
+        }
+        List<FileInfo> fileInfoList2 = fileInfoRepository.findByAssetsIdAndFileType(assetsId, "数据库");
+        for(FileInfo fileInfo : fileInfoList2) {
+            List<Map<String, Object>> dataList = dataSourceService.getTablePage(fileInfo.getIdentifier(), null);
+            if(dataList != null) {
+                listMap.addAll(dataList);
+            }
+        }
+        return listMap;
+    }
+
+    @Override
+    public List<Map<String, Object>> getAllAssets(String userId, String tenantId) {
+        List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+        DataAssetsSpecification spec = new DataAssetsSpecification("", "", tenantId, "",
+            false, 1, "in", "", "", "", "", "");
+        List<DataAssets> assetsPage = dataAssetsRepository.findAll(spec);
+        for (DataAssets dataAssets : assetsPage) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("assetsId", dataAssets.getId());
+            map.put("name", dataAssets.getName());
+            map.put("dataType", dictionaryOptionService.findByCodeAndType(dataAssets.getDataType(), "assetsType"));
+            map.put("dataPurpose", dataAssets.getDataPurpose());
+            map.put("dataZone", dataAssets.getDataZone());
+            map.put("mountType", dataAssets.getMountType());
+            Long count = subscribeRepository.countByUserIdAndTenantIdAndReviewStatus(userId, tenantId, "通过");
+            map.put("isSubscribe", count > 0);
+            listMap.add(map);
+        }
+        return listMap;
+    }
+
+    @Override
+    public List<Map<String, Object>> getAssetsByUserId(String userId, String tenantId) {
+        List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+        List<SubscribeEntity> dataList = subscribeRepository.findByUserIdAndTenantIdAndReviewStatus(userId, tenantId, "通过");
+        if(dataList != null) {
+            for(SubscribeEntity subscribeEntity : dataList) {
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("assetsId", subscribeEntity.getAssetsId());
+                DataAssets dataAssets = findById(subscribeEntity.getAssetsId());
+                map.put("name", dataAssets.getName());
+                map.put("dataType", dictionaryOptionService.findByCodeAndType(dataAssets.getDataType(), "assetsType"));
+                map.put("dataPurpose", dataAssets.getDataPurpose());
+                map.put("dataZone", dataAssets.getDataZone());
+                map.put("mountType", dataAssets.getMountType());
+                listMap.add(map);
+            }
+        }
+        return listMap;
+    }
+
+    @Override
+    public Map<String, Object> getMountFileData(Long assetsId) {
+        Map<String, Object> datMap = new HashMap<String, Object>();
+        DataAssets dataAssets = findById(assetsId);
+        if(dataAssets == null) {
+            return datMap;
+        }
+        datMap.put("assetsId", assetsId);
+        datMap.put("name", dataAssets.getName());
+        datMap.put("dataType", dictionaryOptionService.findByCodeAndType(dataAssets.getDataType(), "assetsType"));
+        datMap.put("dataPurpose", dataAssets.getDataPurpose());
+        datMap.put("dataZone", dataAssets.getDataZone());
+
+        List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+        List<FileInfo> fileInfoList = fileInfoRepository.findByAssetsIdAndFileType(assetsId, "文件");
+        for(FileInfo fileInfo : fileInfoList) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            // 获取文件的url
+            Y9FileStore fileStore = y9FileStoreService.getById(fileInfo.getFilePath());
+            if(fileStore != null) {
+                map.put("fileName", fileStore.getFileName());
+                map.put("fileUrl", fileStore.getUrl());
+                map.put("fileType", fileStore.getFileExt());
+            }
+            listMap.add(map);
+        }
+        datMap.put("fileList", listMap);
+        return datMap;
     }
 }
