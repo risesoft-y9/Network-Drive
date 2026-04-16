@@ -73,4 +73,9 @@ public class FileTagRelationServiceImpl implements FileTagRelationService {
     public void deleteFileTagRelation(List<String> fileIdList) {
         fileTagRelationRepository.deleteByFileIdIn(fileIdList);
     }
+
+    @Override
+    public void delete(FileTagRelation fileTagRelation) {
+        fileTagRelationRepository.delete(fileTagRelation);
+    }
 }
