@@ -5,7 +5,10 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import net.risesoft.entity.FileTagRelation;
 
@@ -43,7 +46,9 @@ public interface FileTagRelationRepository
 
     List<FileTagRelation> findByTagIdIn(List<String> tagId);
 
-    @Query("DELETE FROM FileTagRelation WHERE fileId IN (?1)")
-    void deleteByFileIdIn(List<String> fileIdList);
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM FileTagRelation WHERE fileId IN :fileIds")
+    void deleteByFileIdIn(@Param("fileIds") List<String> fileIdList);
 
 }

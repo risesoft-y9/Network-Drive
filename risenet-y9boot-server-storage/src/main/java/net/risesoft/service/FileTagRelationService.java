@@ -46,4 +46,11 @@ public interface FileTagRelationService {
      * @param fileIdList
      */
     void deleteFileTagRelation(List<String> fileIdList);
+
+    /**
+     * 删除文件标签关系
+     *
+     * @param fileTagRelation
+     */
+    void delete(FileTagRelation fileTagRelation);
 }

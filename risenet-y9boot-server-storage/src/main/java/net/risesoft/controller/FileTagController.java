@@ -1,7 +1,9 @@
 package net.risesoft.controller;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,8 +56,15 @@ public class FileTagController {
         List<FileTagRelation> fileTagRelationList = fileTagRelationService.findByTagIds(tagIdList);
         List<FileTag> fileTagList = new ArrayList<>();
         if (null != fileTagRelationList && !fileTagRelationList.isEmpty()) {
+            Set<String> uniqueTagIds = new HashSet<>();
             for (FileTagRelation fileTagRelation : fileTagRelationList) {
-                fileTagList.add(fileTagService.findById(fileTagRelation.getTagId()));
+                String tagId = fileTagRelation.getTagId();
+                if (uniqueTagIds.add(tagId)) {
+                    FileTag fileTag = fileTagService.findById(tagId);
+                    if (fileTag != null) {
+                        fileTagList.add(fileTag);
+                    }
+                }
             }
             return Y9Result.success(fileTagList, "标签被使用");
         }
@@ -83,6 +92,25 @@ public class FileTagController {
     public Y9Result<Object> deleteFileTag(@RequestParam(name = "ids") List<String> idList, String listType) {
         fileTagService.deleteFileTag(idList);
         return Y9Result.success(null, "删除成功");
+    }
+
+    /**
+     * 删除标签和文件关联
+     *
+     * @param idList
+     * @return
+     */
+    @RiseLog(operationName = "删除标签和文件关联", operationType = OperationTypeEnum.DELETE, saveParams = true)
+    @RequestMapping(value = "/deleteTagAndRelation")
+    public Y9Result<Object> deleteTagAndRelation(@RequestParam(name = "ids") List<String> idList, String listType) {
+        fileTagService.deleteFileTag(idList);
+        List<FileTagRelation> fileTagRelationList = fileTagRelationService.findByTagIds(idList);
+        if (null != fileTagRelationList && !fileTagRelationList.isEmpty()) {
+            for (FileTagRelation fileTagRelation : fileTagRelationList) {
+                fileTagRelationService.delete(fileTagRelation);
+            }
+        }
+        return Y9Result.success(null, "删除标签和文件关联成功");
     }
 
     /**
