@@ -145,7 +145,7 @@
                             ref="nameSign"
                             v-model="formData.name"
                             clearable
-                            style="width: 25vw; margin-left: 15px"
+                            style="width: 20vw; margin-left: 15px"
                             @keyup.enter.native="saveData(fileForm)"
                         />
                         <el-button
@@ -474,7 +474,7 @@
                     sortable: true,
                     slot: 'name'
                 },
-                { title: computed(() => t('所属标签')), key: "fileTags", align: "left", width: '240', slot: 'fileTag' },
+                { title: computed(() => t('所属标签')), key: "fileTags", align: "left", width: '330', slot: 'fileTag' },
                 {
                     title: computed(() => t('收藏')),
                     key: 'collect',
@@ -1496,19 +1496,10 @@
             .el-table__body {
                 .el-table__row:hover {
                     td {
-                        // border-top: 1px solid var(--el-color-primary);
-                        // border-bottom-color: var(--el-color-primary);
                         border-left: 0px;
                         border-right: 0px;
                         background-color: var(--el-color-primary-light-9);
                     }
-
-                    // td:nth-child(1) {
-                    //   border-left: 0px solid var(--el-color-primary);
-                    // }
-                    // td:last-child{
-                    //   border-right: 0px solid var(--el-color-primary);
-                    // }
                 }
 
                 .global-btn-main i {
@@ -1571,7 +1562,6 @@
     }
 
     .tree-div {
-        //width: calc(100% - 20px);
         height: 335px;
         overflow-y: auto;
         padding: 10px;
@@ -1591,14 +1581,12 @@
     }
 
     .toolbar-right {
-        /* display: inline-block; */
         float: right;
 
         :deep(.el-button) {
             height: 30px;
             line-height: 0;
             min-width: 0px;
-            //box-shadow: 0px 0px 0px 0px rgb(0 0 0 / 6%);
             padding: 8px 15px;
         }
 
@@ -1655,7 +1643,6 @@
         color: black;
     }
     :deep(.el-button) {
-        min-width: 32px;
         font-size: 12px;
         height: $btnHeight;
         line-height: $btnHeight;
@@ -1669,8 +1656,7 @@
 
  .toolbar {
     padding: 15px 0px;
-    background: linear-gradient(to bottom, #f5f7fa, rgb(246 251 255));
-    // border-radius: 8px;
+    background: white;
     box-shadow: 0 0.1px 0.2px rgba(0, 0, 0, 0.1);
   
   .toolbar-left {
@@ -1682,56 +1668,10 @@
     
     .el-button {
       transition: all 0.3s ease;
-      border-radius: 6px;
-      border: none !important;
-      border: 1px solid transparent;
       padding: 10px 10px;
       
       &:hover {
-        transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-      }
-
-      &:not(:last-child) {
-          border-right: 1px solid #d0d7e7 !important;
-        }
-      
-      &.global-btn-main {
-        // background: linear-gradient(135deg, #409eff, #1a73e8);
-        border-color: #1a73e8;
-        
-        &:hover {
-        //   background: linear-gradient(135deg, #1a73e8, #0d5bb8);
-          border-color: #0d5bb8;
-        }
-      }
-      
-      &.global-btn-second {
-        background: #fff;
-        border: 1px solid #dcdfe6;
-        color: #606266;
-        
-        &:hover {
-        //   border-color: #409eff;
-        //   color: #409eff;
-          background: #f5f9ff;
-        }
-      }
-    }
-    
-    .el-button-group {
-      border-radius: 6px;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      
-      .el-button {
-        border-radius: 0;
-        margin-right: 0;
-        border-left: 1px solid #dcdfe6;
-        
-        &:first-child {
-          border-left: none;
-        }
       }
     }
   }
@@ -1747,14 +1687,11 @@
     
     .el-button {
       transition: all 0.3s ease;
-      border-radius: 6px;
-      border: none;
       box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.06);
       margin-left: 0px;
       
       &:hover {
-        //transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        //box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
       }
     } 
   }
@@ -1766,9 +1703,7 @@
   .el-button {
     outline: none !important;
     border: none;
-    //border: 1px solid #dcdfe6 !important;
     box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.06);
-    //box-shadow: none !important;
     
     &:focus,
     &:focus-visible,
