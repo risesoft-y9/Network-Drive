@@ -2,13 +2,15 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2025-12-02 15:55:05
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2026-03-24 16:36:11
+ * @LastEditTime: 2026-04-17 11:47:28
  * @FilePath: \y9-vue\y9vue-storage\src\components\storage\Tag\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
+    <div class="tagTable">
     <y9Table
         ref="tagTable"
+        
         :config="tagTableConfig"
         :filterConfig="filterConfig"
         v-loading="loading"
@@ -32,9 +34,10 @@
         </el-tag>
         </template>
     </y9Table>
+    </div>
 </template>
 <script lang="ts" setup>
-import { reactive } from 'vue';
+import { reactive,ref,onMounted,onUnmounted,nextTick,computed,toRefs } from 'vue';
 import { useI18n } from 'vue-i18n';
 import FileTagApi from '@/api/storage/fileTag';
 const { t } = useI18n();
@@ -44,7 +47,7 @@ const data = reactive({
     tagTableConfig: {
         //headerBackground: true,
         border: 0,
-        height: '400',
+        //height: '400',
         columns: [
             {
                 type: 'selection',
@@ -54,11 +57,7 @@ const data = reactive({
             { title: computed(() => t('标签颜色')), key: 'tagColor', align: 'center', width: 'auto',slot: 'color' },
         ],
         tableData: [],
-        pageConfig: {
-            currentPage: 1,
-            pageSize: 20,
-            total: 0
-        },
+        pageConfig: false
     },
     loading: false,
     loadingTitle: computed(() => t('加载中...')),
@@ -105,14 +104,12 @@ function loadList() {
     loading.value = true;
     let page = tagTableConfig.value.pageConfig.currentPage;
     let rows = tagTableConfig.value.pageConfig.pageSize;
-    FileTagApi.getTagList(
+    FileTagApi.getAllTagList(
         searchKey.value,
-        page,
-        rows
     ).then((res) => {
         loading.value = false;
-        tagTableConfig.value.tableData = res.rows;
-        tagTableConfig.value.pageConfig.total = res.total;
+        tagTableConfig.value.tableData = res.data;
+        //tagTableConfig.value.pageConfig.total = res.total;
     });
 }
 
@@ -142,3 +139,10 @@ defineExpose({
     tagSelect,
 })
 </script>
+<style lang="scss" scoped>
+.tagTable {
+    :deep(.el-scrollbar) {
+        height: 400px !important;
+    }
+}
+</style>
