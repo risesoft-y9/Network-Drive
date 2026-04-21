@@ -231,7 +231,7 @@
 
     .toolbar {
     padding: 15px 0px;
-    background: linear-gradient(to bottom, #f5f7fa, rgb(246 251 255));
+    background: white;
     box-shadow: 0 0.1px 0.2px rgba(0, 0, 0, 0.1);
   
   .toolbar-left {
@@ -243,52 +243,10 @@
     
     .el-button {
       transition: all 0.3s ease;
-      border-radius: 6px;
-      border: none !important;
-      border: 1px solid transparent;
       padding: 10px 10px;
       
       &:hover {
-        transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-      }
-
-      &:not(:last-child) {
-          border-right: 1px solid #d0d7e7 !important;
-        }
-      
-      &.global-btn-main {
-        border-color: #1a73e8;
-        
-        &:hover {
-          border-color: #0d5bb8;
-        }
-      }
-      
-      &.global-btn-second {
-        background: #fff;
-        border: 1px solid #dcdfe6;
-        color: #606266;
-        
-        &:hover {
-          background: #f5f9ff;
-        }
-      }
-    }
-    
-    .el-button-group {
-      border-radius: 6px;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      
-      .el-button {
-        border-radius: 0;
-        margin-right: 0;
-        border-left: 1px solid #dcdfe6;
-        
-        &:first-child {
-          border-left: none;
-        }
       }
     }
   }
@@ -304,13 +262,11 @@
     
     .el-button {
       transition: all 0.3s ease;
-      border-radius: 6px;
-      border: none;
       box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.06);
       margin-left: 0px;
       
       &:hover {
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        //box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
       }
     } 
   }
