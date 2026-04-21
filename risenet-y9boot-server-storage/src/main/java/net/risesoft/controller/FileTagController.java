@@ -43,6 +43,17 @@ public class FileTagController {
 
     /**
      * 获取所有标签
+     *
+     * @return
+     */
+    @GetMapping("/getAllTagList")
+    public Y9Result<List<FileTag>> getAllTagList(@RequestParam(required = false) String tagName) {
+        List<FileTag> fileTagList = fileTagService.listByTagName(tagName);
+        return Y9Result.success(fileTagList, "获取标签列表成功");
+    }
+
+    /**
+     * 获取所有标签
      * 
      * @return
      */

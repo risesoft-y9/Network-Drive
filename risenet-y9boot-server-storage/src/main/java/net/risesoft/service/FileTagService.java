@@ -10,6 +10,8 @@ public interface FileTagService {
 
     Y9Page<FileTag> list(Integer page, Integer rows, String tagName);
 
+    List<FileTag> listByTagName(String tagName);
+
     List<FileTag> listAll();
 
     Y9Result<Object> save(FileTag fileTag);
