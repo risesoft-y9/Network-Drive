@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2025-12-05 16:50:59
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2026-04-07 10:21:43
+ * @LastEditTime: 2026-04-16 17:46:55
  * @FilePath: \y9-vue\y9vue-storage\src\api\storage\fileTag.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,6 +17,9 @@ export default {
         let url = '/vue/fileTag/getTagList?tagName=' + tagName + '&page=' + page + '&rows=' + rows;
         return storageRequest.get(url);
     },
+    getAllTagList(tagName = '') {
+        return storageRequest.get('/vue/fileTag/getAllTagList?tagName=' + tagName);
+    },
     getAllTag() {
         return storageRequest.get('/vue/fileTag/getAllTag');
     },
@@ -25,6 +28,14 @@ export default {
     },
     deleteFileTag(ids = [],listType = '') {
         return storageRequest.delete('/vue/fileTag/deleteFileTag', {
+            params: {
+                ids: ids.join(),
+                listType: listType
+            }
+        });
+    },
+    deleteTagAndRelation(ids = [],listType = '') {
+        return storageRequest.delete('/vue/fileTag/deleteTagAndRelation', {
             params: {
                 ids: ids.join(),
                 listType: listType
