@@ -46,6 +46,17 @@ public class FileTagServiceImpl implements FileTagService {
     }
 
     @Override
+    public List<FileTag> listByTagName(String tagName) {
+        List<FileTag> list = new ArrayList<>();
+        if (StringUtils.isNotBlank(tagName)) {
+            list = fileTagRepository.findByTagNameLike("%" + tagName + "%");
+        } else {
+            list = fileTagRepository.findAll();
+        }
+        return list;
+    }
+
+    @Override
     public List<FileTag> listAll() {
         return fileTagRepository.findAll();
     }

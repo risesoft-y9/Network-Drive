@@ -16,6 +16,8 @@ public interface FileTagRepository extends JpaRepository<FileTag, String>, JpaSp
 
     List<FileTag> findByTagName(String tagName);
 
+    List<FileTag> findByTagNameLike(String tagName);
+
     @Query("SELECT MAX(ft.tabIndex) FROM FileTag ft")
     Integer getMaxTabIndex();
 }
