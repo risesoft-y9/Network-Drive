@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import net.risesoft.api.platform.org.OrgUnitApi;
+import net.risesoft.api.platform.org.OrganizationApi;
 import net.risesoft.api.platform.org.PositionApi;
 import net.risesoft.api.platform.permission.cache.PersonRoleApi;
 import net.risesoft.enums.platform.org.OrgTreeTypeEnum;
@@ -26,9 +28,6 @@ import net.risesoft.model.user.UserInfo;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
-
-import y9.client.rest.platform.org.OrgUnitApiClient;
-import y9.client.rest.platform.org.OrganizationApiClient;
 
 /**
  * 组织架构、权限接口
@@ -42,9 +41,9 @@ import y9.client.rest.platform.org.OrganizationApiClient;
 @RequestMapping(value = "/vue/org")
 public class OrgController {
 
-    private final OrgUnitApiClient orgUnitManager;
+    private final OrgUnitApi orgUnitApi;
     private final PositionApi positionApi;
-    private final OrganizationApiClient organizationManager;
+    private final OrganizationApi organizationApi;
     private final PersonRoleApi personRoleApi;
 
     /**
@@ -88,7 +87,7 @@ public class OrgController {
     @GetMapping(value = "/getOrganization")
     public Y9Result<List<Organization>> getOrganization() {
         String tenantId = Y9LoginUserHolder.getTenantId();
-        List<Organization> organizationList = organizationManager.list(tenantId).getData();
+        List<Organization> organizationList = organizationApi.list(tenantId).getData();
         return Y9Result.success(organizationList);
     }
 
@@ -104,16 +103,16 @@ public class OrgController {
         @RequestParam(required = false) String name) {
         String tenantId = Y9LoginUserHolder.getTenantId();
         if (StringUtils.isBlank(id)) {
-            List<Organization> organizationList = organizationManager.list(tenantId).getData();
+            List<Organization> organizationList = organizationApi.list(tenantId).getData();
             if (organizationList != null && organizationList.size() > 0) {
                 id = organizationList.get(0).getId();
             }
         }
         List<OrgUnit> orgUnitList;
         if (StringUtils.isNotBlank(name)) {
-            orgUnitList = orgUnitManager.treeSearch(tenantId, id, name, OrgTreeTypeEnum.TREE_TYPE_PERSON).getData();
+            orgUnitList = orgUnitApi.treeSearch(tenantId, id, name, OrgTreeTypeEnum.TREE_TYPE_PERSON).getData();
         } else {
-            orgUnitList = orgUnitManager.getSubTree(tenantId, id, OrgTreeTypeEnum.TREE_TYPE_PERSON).getData();
+            orgUnitList = orgUnitApi.getSubTree(tenantId, id, OrgTreeTypeEnum.TREE_TYPE_PERSON).getData();
         }
         return Y9Result.success(orgUnitList);
     }

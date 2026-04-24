@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import net.risesoft.api.platform.tenant.TenantSystemApi;
 import net.risesoft.consts.SqlConstants;
 import net.risesoft.entity.DataSourceEntity;
 import net.risesoft.entity.DataStatisticsEntity;
@@ -23,11 +24,9 @@ import net.risesoft.repository.DataStatisticsRepository;
 import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.sqlddl.DbMetaDataUtil;
-import y9.client.rest.platform.tenant.TenantSystemApiClient;
 
 /**
- * 数据统计定时任务
- * 每天晚上11点50分执行，统计每个数据库的所有业务表的数据总量
+ * 数据统计定时任务 每天晚上11点50分执行，统计每个数据库的所有业务表的数据总量
  */
 @Component
 public class DataStatisticsScheduler {
@@ -41,20 +40,18 @@ public class DataStatisticsScheduler {
     private DataStatisticsRepository dataStatisticsRepository;
 
     @Autowired
-    private TenantSystemApiClient tenantSystemApiClient;
+    private TenantSystemApi tenantSystemApi;
 
     /**
-     * 每天晚上11点50分执行
-     * cron表达式：秒 分 时 日 月 周 年
-     * 50 23 * * * ? 表示每天23点50分执行
+     * 每天晚上11点50分执行 cron表达式：秒 分 时 日 月 周 年 50 23 * * * ? 表示每天23点50分执行
      */
     @Scheduled(cron = "0 50 23 * * ?")
     public void statisticsDataVolume() {
         logger.info("开始执行数据量统计定时任务...");
-        
+
         try {
             // 获取所有租户
-            List<Tenant> tenantList = tenantSystemApiClient.listTenantBySystemName(Y9Context.getSystemName()).getData();
+            List<Tenant> tenantList = tenantSystemApi.listTenantBySystemName(Y9Context.getSystemName()).getData();
             if (tenantList != null && !tenantList.isEmpty()) {
                 for (Tenant tenant : tenantList) {
                     Y9LoginUserHolder.setTenantId(tenant.getId());
@@ -78,6 +75,7 @@ public class DataStatisticsScheduler {
 
     /**
      * 统计单个数据源的数据量
+     * 
      * @param dataSource 数据源
      * @return 数据量
      */
@@ -87,6 +85,7 @@ public class DataStatisticsScheduler {
 
     /**
      * 统计单个数据源的数据量
+     * 
      * @param dataSource 数据源
      */
     private long statisticsDataSource(DataSourceEntity dataSource, Boolean isSave) {
@@ -97,16 +96,13 @@ public class DataStatisticsScheduler {
         try {
             // 加载驱动
             Class.forName(dataSource.getDriver());
-            
+
             // 建立连接
-            connection = DriverManager.getConnection(
-                dataSource.getUrl(),
-                dataSource.getUsername(),
-                dataSource.getPassword()
-            );
+            connection =
+                DriverManager.getConnection(dataSource.getUrl(), dataSource.getUsername(), dataSource.getPassword());
 
             statement = connection.createStatement();
-            
+
             // 获取所有表
             String sql = "";
             String dialect = DbMetaDataUtil.getDatabaseDialectNameByConnection(connection);
@@ -134,17 +130,17 @@ public class DataStatisticsScheduler {
                 if (isSystemTable(tableName)) {
                     continue;
                 }
-                
+
                 // 统计表数据量
                 long count = countTableRows(connection, tableName, dataSource.getBaseSchema());
                 totalCount += count;
             }
-            
+
             // 保存统计结果
             if (isSave) {
                 saveStatistics(dataSource.getId(), totalCount);
             }
-            
+
             logger.info("数据源 {} 的总数据量：{}", dataSource.getName(), totalCount);
         } catch (Exception e) {
             logger.error("统计数据源 {} 失败", dataSource.getName(), e);
@@ -169,6 +165,7 @@ public class DataStatisticsScheduler {
 
     /**
      * 统计表的行数
+     * 
      * @param connection 数据库连接
      * @param tableName 表名
      * @param schema 模式
@@ -178,24 +175,25 @@ public class DataStatisticsScheduler {
     private long countTableRows(Connection connection, String tableName, String schema) throws Exception {
         Statement statement = connection.createStatement();
         String sql = "SELECT COUNT(*) FROM ";
-        
+
         if (schema != null && !schema.isEmpty()) {
             sql += schema + ".";
         }
         sql += tableName;
-        
+
         ResultSet resultSet = statement.executeQuery(sql);
         resultSet.next();
         long count = resultSet.getLong(1);
-        
+
         resultSet.close();
         statement.close();
-        
+
         return count;
     }
 
     /**
      * 保存统计结果
+     * 
      * @param dataSource 数据源
      * @param count 数据量
      */
@@ -213,19 +211,21 @@ public class DataStatisticsScheduler {
 
     /**
      * 判断是否为系统表
+     * 
      * @param tableName 表名
      * @return 是否为系统表
      */
     private boolean isSystemTable(String tableName) {
         // 常见系统表前缀
-        String[] systemPrefixes = {"SYS_", "V$_", "DBA_", "ALL_", "USER_", "INFORMATION_SCHEMA.", "mysql.", "performance_schema."};
-        
+        String[] systemPrefixes =
+            {"SYS_", "V$_", "DBA_", "ALL_", "USER_", "INFORMATION_SCHEMA.", "mysql.", "performance_schema."};
+
         for (String prefix : systemPrefixes) {
             if (tableName.toUpperCase().startsWith(prefix)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 }

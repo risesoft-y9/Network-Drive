@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import net.risesoft.api.platform.org.PersonApi;
+import net.risesoft.api.platform.permission.cache.PersonRoleApi;
 import net.risesoft.entity.DataDemandAskEntity;
 import net.risesoft.entity.DataDemandEntity;
 import net.risesoft.entity.DataDemandEntity2;
@@ -32,8 +33,6 @@ import net.risesoft.service.DataDemandService;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.util.Y9BeanUtil;
 
-import y9.client.rest.platform.permission.cache.PersonRoleApiClient;
-
 @Service(value = "dataDemandService")
 @RequiredArgsConstructor
 public class DataDemandServiceImpl implements DataDemandService {
@@ -41,7 +40,7 @@ public class DataDemandServiceImpl implements DataDemandService {
     private final DataDemandRepository dataDemandRepository;
     private final DataDemandAskRepository dataDemandAskRepository;
     private final PersonApi personApi;
-    private final PersonRoleApiClient personRoleApiClient;
+    private final PersonRoleApi personRoleApi;
     private final DataDemandRepository2 dataDemandRepository2;
 
     @Override
@@ -137,7 +136,7 @@ public class DataDemandServiceImpl implements DataDemandService {
         List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createTime"));
         // 判断是否系统管理员
-        boolean isAdmin = personRoleApiClient
+        boolean isAdmin = personRoleApi
             .hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId())
             .getData();
         DataDemandSpecification spec = new DataDemandSpecification(searchText, null, null, null, null,
@@ -168,7 +167,7 @@ public class DataDemandServiceImpl implements DataDemandService {
     public Y9Result<String> examineData(String id, Integer examine) {
         try {
             // 判断是否系统管理员
-            boolean isAdmin = personRoleApiClient
+            boolean isAdmin = personRoleApi
                 .hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId())
                 .getData();
             if (!isAdmin) {
@@ -286,7 +285,7 @@ public class DataDemandServiceImpl implements DataDemandService {
         }
         return Y9Page.success(page, dataPage.getTotalPages(), dataPage.getTotalElements(), listMap, "获取数据成功");
     }
-    
+
     @Override
     @Transactional(readOnly = false)
     public Y9Result<String> saveData2(DataDemandEntity2 dataDemandEntity) {
@@ -323,13 +322,14 @@ public class DataDemandServiceImpl implements DataDemandService {
     public Y9Page<DataDemandEntity2> searchDemandPage(String searchText, String pageType, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createTime"));
         Page<DataDemandEntity2> dataPage = null;
-        if("1".equals(pageType)){// 管理员查所有
+        if ("1".equals(pageType)) {// 管理员查所有
             dataPage = dataDemandRepository2.findByTitleContaining(searchText, pageable);
         } else {
             dataPage = dataDemandRepository2.findByTitleContainingAndPublisherId(searchText,
                 Y9LoginUserHolder.getPersonId(), pageable);
         }
-        return Y9Page.success(page, dataPage.getTotalPages(), dataPage.getTotalElements(), dataPage.getContent(), "获取数据成功");
+        return Y9Page.success(page, dataPage.getTotalPages(), dataPage.getTotalElements(), dataPage.getContent(),
+            "获取数据成功");
     }
 
 }

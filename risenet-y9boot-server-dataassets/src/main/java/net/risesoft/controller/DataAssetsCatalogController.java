@@ -9,13 +9,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
+import net.risesoft.api.platform.permission.cache.PersonRoleApi;
+import net.risesoft.api.platform.resource.DataCatalogApi;
 import net.risesoft.enums.platform.permission.AuthorityEnum;
 import net.risesoft.model.platform.resource.DataCatalog;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.y9.Y9LoginUserHolder;
-
-import y9.client.rest.platform.permission.cache.PersonRoleApiClient;
-import y9.client.rest.platform.resource.DataCatalogApiClient;
 
 /**
  * 资产目录管理接口
@@ -28,8 +27,8 @@ import y9.client.rest.platform.resource.DataCatalogApiClient;
 @RequestMapping(value = "/vue/catalog")
 public class DataAssetsCatalogController {
 
-    private final DataCatalogApiClient dataCatalogApiClient;
-    private final PersonRoleApiClient personRoleApiClient;
+    private final DataCatalogApi dataCatalogApi;
+    private final PersonRoleApi personRoleApi;
 
     /**
      * 获取数据底座-数据资产的数据目录
@@ -40,7 +39,7 @@ public class DataAssetsCatalogController {
     @GetMapping("/getCatelogTree")
     public Y9Result<List<DataCatalog>> getCatelogTree(@RequestParam(required = false) String parentId) {
         String tenantId = Y9LoginUserHolder.getTenantId(), userId = Y9LoginUserHolder.getPersonId();
-        return dataCatalogApiClient.getTree("asset", parentId, false, tenantId, userId, AuthorityEnum.BROWSE);
+        return dataCatalogApi.getTree("asset", parentId, false, tenantId, userId, AuthorityEnum.BROWSE);
     }
 
     /**
@@ -52,7 +51,7 @@ public class DataAssetsCatalogController {
     @GetMapping("/searchCatelogTree")
     public Y9Result<List<DataCatalog>> searchCatelogTree(@RequestParam(required = false) String name) {
         String tenantId = Y9LoginUserHolder.getTenantId(), userId = Y9LoginUserHolder.getPersonId();
-        return dataCatalogApiClient.treeSearch("asset", name, tenantId, userId, AuthorityEnum.BROWSE);
+        return dataCatalogApi.treeSearch("asset", name, tenantId, userId, AuthorityEnum.BROWSE);
     }
 
     /**
@@ -64,9 +63,9 @@ public class DataAssetsCatalogController {
     @GetMapping("/hasRole")
     public Y9Result<Boolean> hasRole() {
         String tenantId = Y9LoginUserHolder.getTenantId(), userId = Y9LoginUserHolder.getUserInfo().getPersonId();
-        return personRoleApiClient.hasRole(tenantId, "dataAssets", null, "系统管理员", userId);
+        return personRoleApi.hasRole(tenantId, "dataAssets", null, "系统管理员", userId);
     }
-    
+
     /**
      * 不分权限获取数据底座-数据资产的数据目录
      * 
@@ -76,7 +75,7 @@ public class DataAssetsCatalogController {
     @GetMapping("/getCatelogTree2")
     public Y9Result<List<DataCatalog>> getCatelogTree2(@RequestParam(required = false) String parentId) {
         String tenantId = Y9LoginUserHolder.getTenantId();
-        return dataCatalogApiClient.getTree("asset", parentId, false, tenantId, "", null);
+        return dataCatalogApi.getTree("asset", parentId, false, tenantId, "", null);
     }
 
     /**
@@ -88,7 +87,7 @@ public class DataAssetsCatalogController {
     @GetMapping("/searchCatelogTree2")
     public Y9Result<List<DataCatalog>> searchCatelogTree2(@RequestParam(required = false) String name) {
         String tenantId = Y9LoginUserHolder.getTenantId();
-        return dataCatalogApiClient.treeSearch("asset", name, tenantId, "", null);
+        return dataCatalogApi.treeSearch("asset", name, tenantId, "", null);
     }
 
 }
