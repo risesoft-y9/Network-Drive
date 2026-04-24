@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
+import net.risesoft.api.platform.org.OrgUnitApi;
 import net.risesoft.entity.FileNodeShare;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
@@ -21,14 +22,12 @@ import net.risesoft.service.FileNodeShareService;
 import net.risesoft.support.FileOptType;
 import net.risesoft.y9.Y9LoginUserHolder;
 
-import y9.client.rest.platform.org.OrgUnitApiClient;
-
 @Service
 @RequiredArgsConstructor
 public class FileNodeShareServiceImpl implements FileNodeShareService {
 
     private final FileNodeShareRepository fileNodeShareRepository;
-    private final OrgUnitApiClient orgUnitManager;
+    private final OrgUnitApi orgUnitApi;
 
     @Override
     public void cancelShare(String personId, List<String> fileNodeIdList) {
@@ -92,7 +91,7 @@ public class FileNodeShareServiceImpl implements FileNodeShareService {
     private void share(String fileNodeId, String orgUnitId) {
         FileNodeShare fileNodeShare = fileNodeShareRepository.findByFileNodeIdAndToOrgUnitId(fileNodeId, orgUnitId);
         if (fileNodeShare == null) {
-            OrgUnit orgUnit = orgUnitManager.getOrgUnit(Y9LoginUserHolder.getTenantId(), orgUnitId).getData();
+            OrgUnit orgUnit = orgUnitApi.getOrgUnit(Y9LoginUserHolder.getTenantId(), orgUnitId).getData();
             UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
 
             fileNodeShare = new FileNodeShare();
@@ -122,7 +121,7 @@ public class FileNodeShareServiceImpl implements FileNodeShareService {
     private void publicTo(String fileNodeId, String orgUnitId) {
         FileNodeShare fileNodeShare = fileNodeShareRepository.findByFileNodeIdAndToOrgUnitId(fileNodeId, orgUnitId);
         if (fileNodeShare == null) {
-            OrgUnit orgUnit = orgUnitManager.getOrgUnit(Y9LoginUserHolder.getTenantId(), orgUnitId).getData();
+            OrgUnit orgUnit = orgUnitApi.getOrgUnit(Y9LoginUserHolder.getTenantId(), orgUnitId).getData();
             UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
 
             fileNodeShare = new FileNodeShare();

@@ -26,6 +26,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
+import net.risesoft.api.platform.permission.cache.PersonRoleApi;
+import net.risesoft.api.platform.resource.DataCatalogApi;
 import net.risesoft.entity.DataApiOnlineEntity;
 import net.risesoft.entity.DataApiTableEntity;
 import net.risesoft.entity.DataAssets;
@@ -69,9 +71,6 @@ import net.risesoft.y9.util.Y9BeanUtil;
 import net.risesoft.y9public.entity.Y9FileStore;
 import net.risesoft.y9public.service.Y9FileStoreService;
 
-import y9.client.rest.platform.permission.cache.PersonRoleApiClient;
-import y9.client.rest.platform.resource.DataCatalogApiClient;
-
 import cn.hutool.core.util.NumberUtil;
 
 @Service
@@ -85,10 +84,10 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     private final Y9FileStoreService y9FileStoreService;
     private final DataApiOnlineRepository dataApiOnlineRepository;
     private final DataSourceService dataSourceService;
-    private final PersonRoleApiClient personRoleApiClient;
+    private final PersonRoleApi personRoleApi;
     private final DictionaryOptionService dictionaryOptionService;
     private final SubscribeRepository subscribeRepository;
-    private final DataCatalogApiClient dataCatalogApiClient;
+    private final DataCatalogApi dataCatalogApi;
     private final DataRecentService dataRecentService;
     private final DataApiTableRepository dataApiTableRepository;
 
@@ -156,7 +155,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
             page = 1;
         }
         // 判断是否系统管理员
-        boolean isAdmin = personRoleApiClient
+        boolean isAdmin = personRoleApi
             .hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId())
             .getData();
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "createTime"));
@@ -420,7 +419,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
         try {
             String[] interfaceIds = ids.split(",");
             // 判断不为空时先删除已绑定的数据
-            if(interfaceIds.length > 0) {
+            if (interfaceIds.length > 0) {
                 fileInfoRepository.deleteByAssetsId(assetsId);
             } else {
                 return Y9Result.failure("绑定数据不能为空");
@@ -452,7 +451,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
         try {
             String[] tableIds = ids.split(",");
             // 判断不为空时先删除已绑定的数据
-            if(tableIds.length > 0) {
+            if (tableIds.length > 0) {
                 fileInfoRepository.deleteByAssetsId(assetsId);
             } else {
                 return Y9Result.failure("绑定数据不能为空");
@@ -753,11 +752,11 @@ public class DataAssetsServiceImpl implements DataAssetsService {
             map.put("assetsId", subscribeEntity.getAssetsId());
             map.put("assetsName", dataAssets.getName());
             DataCatalog dataCatalog =
-                dataCatalogApiClient.getById(Y9LoginUserHolder.getTenantId(), dataAssets.getCategoryId()).getData();
+                dataCatalogApi.getById(Y9LoginUserHolder.getTenantId(), dataAssets.getCategoryId()).getData();
             if (dataCatalog != null) {
                 String catalog = dataCatalog.getName();
                 if (StringUtils.isNotBlank(dataCatalog.getParentId())) {
-                    catalog = dataCatalogApiClient.getById(Y9LoginUserHolder.getTenantId(), dataCatalog.getParentId())
+                    catalog = dataCatalogApi.getById(Y9LoginUserHolder.getTenantId(), dataCatalog.getParentId())
                         .getData()
                         .getName() + "/" + catalog;
                 }
@@ -787,11 +786,11 @@ public class DataAssetsServiceImpl implements DataAssetsService {
             return Y9Result.failure("保存失败，信息不存在");
         }
         // 审核通过时判断是否存在没授权的申请接口表
-        if(reviewStatus.equals("通过")) {
+        if (reviewStatus.equals("通过")) {
             List<DataApiTableEntity> dataApiTableEntities = dataApiTableRepository.findBySubscribeId(id);
-            if(dataApiTableEntities != null) {
-                for(DataApiTableEntity dataApiTableEntity : dataApiTableEntities) {
-                    if(StringUtils.isBlank(dataApiTableEntity.getOwner())) {
+            if (dataApiTableEntities != null) {
+                for (DataApiTableEntity dataApiTableEntity : dataApiTableEntities) {
+                    if (StringUtils.isBlank(dataApiTableEntity.getOwner())) {
                         return Y9Result.failure("保存失败，存在未处理的申请表:" + dataApiTableEntity.getTableName());
                     }
                 }
@@ -846,11 +845,11 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     public List<String> getAssetsTable(Long assetsId) {
         List<String> list = new ArrayList<String>();
         List<FileInfo> fileInfoList = fileInfoRepository.findByAssetsId(assetsId);
-        for(FileInfo fileInfo : fileInfoList) {
+        for (FileInfo fileInfo : fileInfoList) {
             String key = "";
-            if(fileInfo.getFileType().equals("数据表")) {
+            if (fileInfo.getFileType().equals("数据表")) {
                 key = "t-" + fileInfo.getIdentifier() + "-" + fileInfo.getName();
-            } else if(fileInfo.getFileType().equals("数据库")) {
+            } else if (fileInfo.getFileType().equals("数据库")) {
                 key = "s-" + fileInfo.getIdentifier();
             } else {
                 key = fileInfo.getIdentifier();
@@ -869,16 +868,16 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     public List<Map<String, Object>> getTablesByAssetsId(Long assetsId) {
         List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
         List<FileInfo> fileInfoList = fileInfoRepository.findByAssetsIdAndFileType(assetsId, "数据表");
-        for(FileInfo fileInfo : fileInfoList) {
+        for (FileInfo fileInfo : fileInfoList) {
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("name", fileInfo.getName());
             map.put("sourceId", fileInfo.getIdentifier());
             listMap.add(map);
         }
         List<FileInfo> fileInfoList2 = fileInfoRepository.findByAssetsIdAndFileType(assetsId, "数据库");
-        for(FileInfo fileInfo : fileInfoList2) {
+        for (FileInfo fileInfo : fileInfoList2) {
             List<Map<String, Object>> dataList = dataSourceService.getTablePage(fileInfo.getIdentifier(), null);
-            if(dataList != null) {
+            if (dataList != null) {
                 listMap.addAll(dataList);
             }
         }
@@ -888,8 +887,8 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     @Override
     public List<Map<String, Object>> getAllAssets(String userId, String tenantId) {
         List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
-        DataAssetsSpecification spec = new DataAssetsSpecification("", "", tenantId, "",
-            false, 1, "in", "", "", "", "", "");
+        DataAssetsSpecification spec =
+            new DataAssetsSpecification("", "", tenantId, "", false, 1, "in", "", "", "", "", "");
         List<DataAssets> assetsPage = dataAssetsRepository.findAll(spec);
         for (DataAssets dataAssets : assetsPage) {
             Map<String, Object> map = new HashMap<String, Object>();
@@ -909,9 +908,10 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     @Override
     public List<Map<String, Object>> getAssetsByUserId(String userId, String tenantId) {
         List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
-        List<SubscribeEntity> dataList = subscribeRepository.findByUserIdAndTenantIdAndReviewStatus(userId, tenantId, "通过");
-        if(dataList != null) {
-            for(SubscribeEntity subscribeEntity : dataList) {
+        List<SubscribeEntity> dataList =
+            subscribeRepository.findByUserIdAndTenantIdAndReviewStatus(userId, tenantId, "通过");
+        if (dataList != null) {
+            for (SubscribeEntity subscribeEntity : dataList) {
                 Map<String, Object> map = new HashMap<String, Object>();
                 map.put("assetsId", subscribeEntity.getAssetsId());
                 DataAssets dataAssets = findById(subscribeEntity.getAssetsId());
@@ -930,7 +930,7 @@ public class DataAssetsServiceImpl implements DataAssetsService {
     public Map<String, Object> getMountFileData(Long assetsId) {
         Map<String, Object> datMap = new HashMap<String, Object>();
         DataAssets dataAssets = findById(assetsId);
-        if(dataAssets == null) {
+        if (dataAssets == null) {
             return datMap;
         }
         datMap.put("assetsId", assetsId);
@@ -941,11 +941,11 @@ public class DataAssetsServiceImpl implements DataAssetsService {
 
         List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
         List<FileInfo> fileInfoList = fileInfoRepository.findByAssetsIdAndFileType(assetsId, "文件");
-        for(FileInfo fileInfo : fileInfoList) {
+        for (FileInfo fileInfo : fileInfoList) {
             Map<String, Object> map = new HashMap<String, Object>();
             // 获取文件的url
             Y9FileStore fileStore = y9FileStoreService.getById(fileInfo.getFilePath());
-            if(fileStore != null) {
+            if (fileStore != null) {
                 map.put("fileName", fileStore.getFileName());
                 map.put("fileUrl", fileStore.getUrl());
                 map.put("fileType", fileStore.getFileExt());

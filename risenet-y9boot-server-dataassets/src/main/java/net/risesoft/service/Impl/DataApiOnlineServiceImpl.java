@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import net.risesoft.api.platform.permission.cache.PersonRoleApi;
 import net.risesoft.entity.DataApiOnlineEntity;
 import net.risesoft.entity.DataApiOnlineInfoEntity;
 import net.risesoft.entity.DataRecentEntity;
@@ -23,15 +24,13 @@ import net.risesoft.service.DataRecentService;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.json.Y9JsonUtil;
 
-import y9.client.rest.platform.permission.cache.PersonRoleApiClient;
-
 @Service(value = "dataApiOnlineService")
 @RequiredArgsConstructor
 public class DataApiOnlineServiceImpl implements DataApiOnlineService {
 
     private final DataApiOnlineRepository dataApiOnlineRepository;
     private final DataApiOnlineInfoRepository dataApiOnlineInfoRepository;
-    private final PersonRoleApiClient personRoleApiClient;
+    private final PersonRoleApi personRoleApi;
     private final DataRecentService dataRecentService;
 
     @Override
@@ -51,12 +50,13 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
                 dataApiOnlineRepository.deleteById(id);
                 removeIds.add(id);
             }
-            
+
             // 保存最近操作数据
             DataRecentEntity dataRecentEntity = new DataRecentEntity();
             dataRecentEntity.setOperator(Y9LoginUserHolder.getUserInfo().getName());
             dataRecentEntity.setOperationType("接口注册");
-            dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 删除了接口：" + dataApiOnlineEntity.getName());
+            dataRecentEntity.setContent(
+                "用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 删除了接口：" + dataApiOnlineEntity.getName());
             dataRecentService.saveAsync(dataRecentEntity);
         } catch (Exception e) {
             return Y9Result.failure("删除失败，" + e.getMessage());
@@ -91,7 +91,8 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
             entity.setCreator(Y9LoginUserHolder.getUserInfo().getName());
             entity.setCreatorId(Y9LoginUserHolder.getPersonId());
 
-            dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 注册了接口：" + entity.getName());
+            dataRecentEntity
+                .setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 注册了接口：" + entity.getName());
         } else {
             DataApiOnlineEntity dataApiOnlineEntity = dataApiOnlineRepository.findById(entity.getId()).orElse(null);
             if (dataApiOnlineEntity != null) {
@@ -100,7 +101,8 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
             } else {
                 return Y9Result.failure("数据不存在，修改失败");
             }
-            dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 修改了接口信息：" + entity.getName());
+            dataRecentEntity
+                .setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 修改了接口信息：" + entity.getName());
         }
         if (infoEntity != null) {
             infoEntity.setId(entity.getId());
@@ -118,7 +120,7 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
             id = "0";
         }
         // 判断是否系统管理员
-        boolean isAdmin = personRoleApiClient
+        boolean isAdmin = personRoleApi
             .hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId())
             .getData();
         return getListMap(id, isAdmin);
@@ -158,7 +160,7 @@ public class DataApiOnlineServiceImpl implements DataApiOnlineService {
     @Override
     public List<Map<String, Object>> getSelectTree() {
         // 判断是否系统管理员
-        boolean isAdmin = personRoleApiClient
+        boolean isAdmin = personRoleApi
             .hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId())
             .getData();
         return getSelectListMap("0", isAdmin);

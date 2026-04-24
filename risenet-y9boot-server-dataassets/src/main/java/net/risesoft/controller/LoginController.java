@@ -11,17 +11,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
+import net.risesoft.api.platform.org.PersonApi;
 import net.risesoft.dto.platform.CreatePersonDTO;
 import net.risesoft.pojo.Y9Result;
-
-import y9.client.rest.platform.org.PersonApiClient;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "/service/register")
 public class LoginController {
 
-    private final PersonApiClient personApiClient;
+    private final PersonApi personApi;
 
     @Value("${y9.app.dataAssets.orgId}")
     private String orgId;
@@ -42,7 +41,7 @@ public class LoginController {
         personDTO.setName(name);
         personDTO.setPassword(password);
         personDTO.setParentId(orgId);
-        personApiClient.savePersonWithExt(tenantId, personDTO);
+        personApi.savePersonWithExt(tenantId, personDTO);
         return Y9Result.successMsg("注册成功");
     }
 

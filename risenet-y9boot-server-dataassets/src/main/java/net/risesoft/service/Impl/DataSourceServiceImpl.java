@@ -14,7 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
+
 import net.risesoft.api.auth.util.Y9SqlUtil;
+import net.risesoft.api.platform.permission.cache.PersonRoleApi;
 import net.risesoft.entity.DataRecentEntity;
 import net.risesoft.entity.DataSourceEntity;
 import net.risesoft.entity.DataSourceTypeEntity;
@@ -29,8 +31,6 @@ import net.risesoft.service.DataSourceService;
 import net.risesoft.util.Y9FormDbMetaDataUtil;
 import net.risesoft.y9.Y9LoginUserHolder;
 
-import y9.client.rest.platform.permission.cache.PersonRoleApiClient;
-
 import jodd.util.Base64;
 
 @Service(value = "dataSourceService")
@@ -39,7 +39,7 @@ public class DataSourceServiceImpl implements DataSourceService {
 
     private final DataSourceRepository datasourceRepository;
     private final DataSourceTypeRepository dataSourceTypeRepository;
-    private final PersonRoleApiClient personRoleApiClient;
+    private final PersonRoleApi personRoleApi;
     private final FileInfoRepository fileInfoRepository;
     private final DataRecentService dataRecentService;
 
@@ -56,13 +56,15 @@ public class DataSourceServiceImpl implements DataSourceService {
             if (StringUtils.isBlank(entity.getId())) {
                 entity.setId(Y9IdGenerator.genId());
 
-                dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 注册了数据源：" + entity.getName());
+                dataRecentEntity
+                    .setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 注册了数据源：" + entity.getName());
             } else {
                 df = datasourceRepository.findById(entity.getId()).orElse(null);
                 if (df != null && entity.getPassword().equals("******")) {
                     entity.setPassword(df.getPassword());
                 }
-                dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 修改了数据源信息：" + entity.getName());
+                dataRecentEntity
+                    .setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 修改了数据源信息：" + entity.getName());
             }
             if (entity.getIsLook() == null) {
                 entity.setIsLook(0);
@@ -111,7 +113,8 @@ public class DataSourceServiceImpl implements DataSourceService {
         DataRecentEntity dataRecentEntity = new DataRecentEntity();
         dataRecentEntity.setOperator(Y9LoginUserHolder.getUserInfo().getName());
         dataRecentEntity.setOperationType("库表注册");
-        dataRecentEntity.setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 删除了注册的数据源：" + dataSourceEntity.getName());
+        dataRecentEntity
+            .setContent("用户 " + Y9LoginUserHolder.getUserInfo().getName() + " 删除了注册的数据源：" + dataSourceEntity.getName());
         dataRecentService.saveAsync(dataRecentEntity);
 
         return Y9Result.successMsg("删除成功");
@@ -159,7 +162,7 @@ public class DataSourceServiceImpl implements DataSourceService {
     @Override
     public List<DataSourceEntity> findByBaseType(String baseType) {
         // 判断是否系统管理员
-        boolean isAdmin = personRoleApiClient
+        boolean isAdmin = personRoleApi
             .hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId())
             .getData();
         if (isAdmin) {
@@ -175,7 +178,7 @@ public class DataSourceServiceImpl implements DataSourceService {
     public List<Map<String, Object>> searchSource(String baseName) {
         List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
         // 判断是否系统管理员
-        boolean isAdmin = personRoleApiClient
+        boolean isAdmin = personRoleApi
             .hasRole(Y9LoginUserHolder.getTenantId(), "dataAssets", null, "系统管理员", Y9LoginUserHolder.getPersonId())
             .getData();
         List<DataSourceTypeEntity> list = dataSourceTypeRepository.findAll();
@@ -309,8 +312,8 @@ public class DataSourceServiceImpl implements DataSourceService {
                 map.put("disabled", true);
 
                 List<Map<String, Object>> child1 = new ArrayList<>();
-                List<DataSourceEntity> list = datasourceRepository.findByBaseTypeAndTenantIdOrderByCreateTime(entity.getName(),
-                Y9LoginUserHolder.getTenantId());
+                List<DataSourceEntity> list = datasourceRepository
+                    .findByBaseTypeAndTenantIdOrderByCreateTime(entity.getName(), Y9LoginUserHolder.getTenantId());
                 for (DataSourceEntity info : list) {
                     Map<String, Object> map2 = new HashMap<String, Object>();
                     map2.put("value", info.getId());
@@ -371,7 +374,8 @@ public class DataSourceServiceImpl implements DataSourceService {
     public List<String> getTableByAssetsId(Long assetsId, String identifier) {
         List<String> listMap = new ArrayList<String>();
         // 根据资产id获取挂接的数据表
-        List<FileInfo> fileInfoList = fileInfoRepository.findByAssetsIdAndIdentifierAndFileType(assetsId, identifier, "数据表");
+        List<FileInfo> fileInfoList =
+            fileInfoRepository.findByAssetsIdAndIdentifierAndFileType(assetsId, identifier, "数据表");
         for (FileInfo fileInfo : fileInfoList) {
             listMap.add(fileInfo.getName());
         }
@@ -385,7 +389,8 @@ public class DataSourceServiceImpl implements DataSourceService {
             DataSourceEntity dataSourceEntity = getDataSourceById(sourceId);
             if (dataSourceEntity != null) {
                 // 获取数据表详情
-                map = Y9SqlUtil.getTableInfo(tableName, dataSourceEntity.getUrl(), dataSourceEntity.getUsername(), dataSourceEntity.getPassword(), dataSourceEntity.getDriver());
+                map = Y9SqlUtil.getTableInfo(tableName, dataSourceEntity.getUrl(), dataSourceEntity.getUsername(),
+                    dataSourceEntity.getPassword(), dataSourceEntity.getDriver());
                 map.put("sourceType", dataSourceEntity.getBaseType());
                 map.put("sourceName", dataSourceEntity.getName());
                 map.put("provider", dataSourceEntity.getProvider());

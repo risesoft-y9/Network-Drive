@@ -23,6 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
+import net.risesoft.api.platform.org.OrgUnitApi;
+import net.risesoft.api.platform.org.PersonApi;
 import net.risesoft.api.platform.org.PositionApi;
 import net.risesoft.entity.FileNode;
 import net.risesoft.entity.FileNodeShare;
@@ -54,9 +56,6 @@ import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9public.entity.Y9FileStore;
 import net.risesoft.y9public.service.Y9FileStoreService;
 
-import y9.client.rest.platform.org.OrgUnitApiClient;
-import y9.client.rest.platform.org.PersonApiClient;
-
 @Service
 @RequiredArgsConstructor
 public class FileNodeServiceImpl implements FileNodeService {
@@ -82,8 +81,8 @@ public class FileNodeServiceImpl implements FileNodeService {
 
     private final FileNodeRepository fileNodeRepository;
     private final FileNodeShareRepository fileNodeShareRepository;
-    private final PersonApiClient personManager;
-    private final OrgUnitApiClient orgUnitApiClient;
+    private final PersonApi personApi;
+    private final OrgUnitApi orgUnitApi;
     private final PositionApi positionApi;
     private final Y9FileStoreService y9FileStoreService;
     private final StorageCapacityService storageCapacityService;
@@ -304,7 +303,7 @@ public class FileNodeServiceImpl implements FileNodeService {
             if (fileNode.getListType().equals(FileListType.DEPT.getValue())) {
                 String positionId = Y9LoginUserHolder.getPositionId();
                 String tenantId = Y9LoginUserHolder.getTenantId();
-                OrgUnit orgUnit = orgUnitApiClient.getOrgUnitParent(tenantId, positionId).getData();
+                OrgUnit orgUnit = orgUnitApi.getOrgUnitParent(tenantId, positionId).getData();
                 fileNode.setOrgId(orgUnit.getId());
             } else {
                 fileNode.setUserId(userInfo.getPersonId());
@@ -334,7 +333,7 @@ public class FileNodeServiceImpl implements FileNodeService {
         fold.setName(folder.getName());
         fold.setParentId(guid);
         fold.setUserId(userId);
-        fold.setUserName(personManager.get(tenantId, userId).getData().getName());
+        fold.setUserName(personApi.get(tenantId, userId).getData().getName());
         fileNodeRepository.save(fold);
 
         return guid1;
@@ -395,7 +394,7 @@ public class FileNodeServiceImpl implements FileNodeService {
                 fileNode.setListType(listType);
                 if (listType.equals(FileListType.DEPT.getValue())) {
                     String positionId = Y9LoginUserHolder.getPositionId();
-                    OrgUnit orgUnit = orgUnitApiClient.getOrgUnitParent(tenantId, positionId).getData();
+                    OrgUnit orgUnit = orgUnitApi.getOrgUnitParent(tenantId, positionId).getData();
                     Position position = positionApi.get(tenantId, positionId).getData();
                     fileNode.setOrgId(orgUnit.getId());
                     fileNode.setUserId(position.getId());
@@ -476,7 +475,7 @@ public class FileNodeServiceImpl implements FileNodeService {
         } else {
             String tenantId = Y9LoginUserHolder.getTenantId();
             if (listType.equals(FileListType.DEPT.getValue())) {
-                OrgUnit orgUnit = orgUnitApiClient.getOrgUnitParent(tenantId, positionId).getData();
+                OrgUnit orgUnit = orgUnitApi.getOrgUnitParent(tenantId, positionId).getData();
 
                 FileNodeSpecification spec =
                     new FileNodeSpecification(id, fileType, listType, searchName, orgUnit.getId(), false);
@@ -528,7 +527,7 @@ public class FileNodeServiceImpl implements FileNodeService {
         } else {
             String tenantId = Y9LoginUserHolder.getTenantId();
             if (listType.equals(FileListType.DEPT.getValue())) {
-                OrgUnit orgUnit = orgUnitApiClient.getOrgUnitParent(tenantId, positionId).getData();
+                OrgUnit orgUnit = orgUnitApi.getOrgUnitParent(tenantId, positionId).getData();
                 // 通过FileTagRelation表查询同时具有所有指定标签的文件ID列表
                 List<String> fileIds = fileTagRelationService.findFileIdsByTagIds(tagIds);
                 FileNodeSpecification spec =

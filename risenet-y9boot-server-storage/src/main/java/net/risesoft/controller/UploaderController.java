@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import net.risesoft.api.platform.org.OrgUnitApi;
 import net.risesoft.api.platform.org.PositionApi;
 import net.risesoft.entity.Chunk;
 import net.risesoft.entity.FileInfo;
@@ -49,8 +50,6 @@ import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9public.entity.Y9FileStore;
 import net.risesoft.y9public.service.Y9FileStoreService;
 
-import y9.client.rest.platform.org.OrgUnitApiClient;
-
 @RequiredArgsConstructor
 @Slf4j
 @RestController
@@ -62,7 +61,7 @@ public class UploaderController {
     private final Y9FileStoreService y9FileStoreService;
     private final StorageCapacityService storageCapacityService;
     private final FileNodeService fileNodeService;
-    private final OrgUnitApiClient orgUnitApiClient;
+    private final OrgUnitApi orgUnitApi;
     private final PositionApi positionApi;
     @Value("${y9.app.storage.defaultStorageCapacity}")
     private String defaultStorageCapacity;

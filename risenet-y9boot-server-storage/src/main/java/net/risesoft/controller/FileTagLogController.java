@@ -6,18 +6,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 
+import net.risesoft.api.log.AccessLogApi;
 import net.risesoft.model.log.AccessLog;
 import net.risesoft.model.log.AccessLogQuery;
 import net.risesoft.pojo.Y9Page;
-
-import y9.client.rest.log.AccessLogApiClient;
 
 @RestController
 @RequestMapping("/vue/fileTagLog")
 @RequiredArgsConstructor
 public class FileTagLogController {
 
-    private final AccessLogApiClient accessLogApiClient;
+    private final AccessLogApi accessLogApi;
 
     /**
      * 获取所有标签
@@ -28,7 +27,7 @@ public class FileTagLogController {
         // accessLogQuery.setParamsJson("dept");
         // accessLogQuery.setOperateName("新增自定义文件标签");
         accessLogQuery.setModularName("net.risesoft.controller.FileTagController");
-        return accessLogApiClient.search(accessLogQuery, page, rows);
+        return accessLogApi.search(accessLogQuery, page, rows);
     }
 
 }
