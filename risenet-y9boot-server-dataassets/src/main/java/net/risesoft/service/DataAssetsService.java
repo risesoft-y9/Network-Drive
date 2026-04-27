@@ -151,8 +151,8 @@ public interface DataAssetsService {
      * @param size
      * @return
      */
-    Y9Page<Map<String, Object>> searchPage2(String searchText, String categoryId, String appScenarios, String dataZone, String productType,
-        Integer sort, int page, int size);
+    Y9Page<Map<String, Object>> searchPage2(String searchText, String categoryId, String appScenarios, String dataZone,
+        String productType, Integer sort, int page, int size);
 
     /**
      * 根据id获取数据资产信息
@@ -176,34 +176,38 @@ public interface DataAssetsService {
      * @return
      */
     Y9Result<List<Map<String, Object>>> getDataFilter();
-    
+
     /**
      * 保存订阅信息
+     * 
      * @param subscribeEntity
      * @return
      */
     Y9Result<String> saveSubscribe(SubscribeEntity subscribeEntity);
-    
+
     /**
      * 获取订阅列表
+     * 
      * @param name 资产名称
      * @param page
      * @param size
      * @return
      */
     Y9Page<Map<String, Object>> searchSubscribePage(String type, String name, int page, int size);
-    
+
     /**
      * 审核订阅信息
+     * 
      * @param id
      * @param reviewStatus
      * @param reason
      * @return
      */
     Y9Result<String> review(String id, String reviewStatus, String reason);
-    
+
     /**
      * 根据id获取订阅信息
+     * 
      * @param id
      * @return
      */
@@ -211,6 +215,7 @@ public interface DataAssetsService {
 
     /**
      * 保存订阅-库表推送信息
+     * 
      * @param subscribeBaseEntity
      * @return
      */
@@ -218,6 +223,7 @@ public interface DataAssetsService {
 
     /**
      * 根据id获取订阅-库表推送信息
+     * 
      * @param id
      * @return
      */
@@ -225,6 +231,7 @@ public interface DataAssetsService {
 
     /**
      * 根据id获取订阅信息
+     * 
      * @param id
      * @return
      */
@@ -232,6 +239,7 @@ public interface DataAssetsService {
 
     /**
      * 获取资产挂接的选中的数据key
+     * 
      * @param assetsId
      * @return
      */
@@ -239,6 +247,7 @@ public interface DataAssetsService {
 
     /**
      * 根据人员id获取填报过的库表推送信息
+     * 
      * @param userId
      * @return
      */
@@ -246,6 +255,7 @@ public interface DataAssetsService {
 
     /**
      * 根据资产id获取资产挂接的数据表信息
+     * 
      * @param assetsId
      * @return
      */
@@ -253,12 +263,14 @@ public interface DataAssetsService {
 
     /**
      * 获取所有已上架的资产-给AI提供
+     * 
      * @return
      */
     List<Map<String, Object>> getAllAssets(String userId, String tenantId);
 
     /**
      * 获取人员已订阅的资产列表-给AI提供
+     * 
      * @param userId
      * @param tenantId
      * @return
@@ -267,6 +279,7 @@ public interface DataAssetsService {
 
     /**
      * 获取资产挂接的文件
+     * 
      * @param assetsId
      * @return
      */

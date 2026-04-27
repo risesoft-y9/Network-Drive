@@ -10,19 +10,21 @@ import org.springframework.data.jpa.repository.Query;
 
 import net.risesoft.entity.SubscribeEntity;
 
-public interface SubscribeRepository extends JpaRepository<SubscribeEntity, String>, JpaSpecificationExecutor<SubscribeEntity> {
-	
-	Page<SubscribeEntity> findByUserIdAndAssetsIdIn(String userId, List<Long> assetsId, Pageable pageable);
-	
-	Page<SubscribeEntity> findByAssetsIdIn(List<Long> assetsId, Pageable pageable);
-	
-	SubscribeEntity findByAssetsIdAndProvideTypeAndUserIdAndReviewStatus(Long assetsId, String provideType, String userId, String reviewStatus);
+public interface SubscribeRepository
+    extends JpaRepository<SubscribeEntity, String>, JpaSpecificationExecutor<SubscribeEntity> {
 
-	@Query("select count(s) from SubscribeEntity s")
-	Long countAll();
+    Page<SubscribeEntity> findByUserIdAndAssetsIdIn(String userId, List<Long> assetsId, Pageable pageable);
 
-	List<SubscribeEntity> findByUserIdAndTenantIdAndReviewStatus(String userId, String tenantId, String reviewStatus);
+    Page<SubscribeEntity> findByAssetsIdIn(List<Long> assetsId, Pageable pageable);
 
-	Long countByUserIdAndTenantIdAndReviewStatus(String userId, String tenantId, String reviewStatus);
+    SubscribeEntity findByAssetsIdAndProvideTypeAndUserIdAndReviewStatus(Long assetsId, String provideType,
+        String userId, String reviewStatus);
+
+    @Query("select count(s) from SubscribeEntity s")
+    Long countAll();
+
+    List<SubscribeEntity> findByUserIdAndTenantIdAndReviewStatus(String userId, String tenantId, String reviewStatus);
+
+    Long countByUserIdAndTenantIdAndReviewStatus(String userId, String tenantId, String reviewStatus);
 
 }

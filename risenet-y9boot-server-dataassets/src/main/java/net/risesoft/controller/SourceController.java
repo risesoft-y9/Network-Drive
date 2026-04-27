@@ -222,7 +222,8 @@ public class SourceController {
         List<String> list = dataSourceService.getTableByAssetsId(assetsId, identifier);
         List<Map<String, Object>> listMap = dataSourceService.getTablePage(identifier, "");
         // 过滤掉listMap里name值不在list的元素
-        listMap = listMap.stream().filter((item) -> list.contains(item.get("name").toString())).collect(Collectors.toList());
+        listMap =
+            listMap.stream().filter((item) -> list.contains(item.get("name").toString())).collect(Collectors.toList());
         return Y9Result.success(listMap, "获取数据库表成功");
     }
 

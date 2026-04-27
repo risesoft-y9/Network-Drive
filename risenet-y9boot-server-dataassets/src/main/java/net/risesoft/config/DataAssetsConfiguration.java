@@ -1,6 +1,5 @@
 package net.risesoft.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -9,15 +8,17 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import lombok.RequiredArgsConstructor;
+
 import net.risesoft.api.auth.handler.ApiAuthInterceptor;
 import net.risesoft.converter.EncryptConverter;
 
 @Configuration
 @EnableScheduling
+@RequiredArgsConstructor
 public class DataAssetsConfiguration implements WebMvcConfigurer {
 
-    @Autowired
-    private ApiAuthInterceptor apiAuthInterceptor;
+    private final ApiAuthInterceptor apiAuthInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -32,6 +33,7 @@ public class DataAssetsConfiguration implements WebMvcConfigurer {
 
     /**
      * 创建RestTemplate实例
+     * 
      * @return RestTemplate实例
      */
     @Bean

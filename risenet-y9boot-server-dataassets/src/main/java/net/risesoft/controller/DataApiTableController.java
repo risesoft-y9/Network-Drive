@@ -33,14 +33,14 @@ public class DataApiTableController {
 
     @GetMapping(value = "/page")
     public Y9Page<DataApiTableEntity> page(@RequestParam(required = false) String tableName,
-                                                   @RequestParam(defaultValue = "1") int page,
-                                                   @RequestParam(defaultValue = "10") int size,
-                                                   @RequestParam String subscribeId) {
+        @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size,
+        @RequestParam String subscribeId) {
         try {
             Pageable pageable = PageRequest.of(page - 1, size);
-            Page<DataApiTableEntity> pageList = dataApiTableService.findByTableNameAndSubscribeId(tableName, subscribeId, pageable);
+            Page<DataApiTableEntity> pageList =
+                dataApiTableService.findByTableNameAndSubscribeId(tableName, subscribeId, pageable);
             return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), pageList.getContent(),
-            "获取数据成功");
+                "获取数据成功");
         } catch (Exception e) {
             e.printStackTrace();
             return Y9Page.failure(page, 0, 0, null, "查询失败：" + e.getMessage(), 500);
@@ -80,7 +80,8 @@ public class DataApiTableController {
     }
 
     @GetMapping(value = "/foreignKeys/{tableName}")
-    public Y9Result<List<String>> findForeignKeysByTableName(@PathVariable String tableName, @RequestParam String dataSourceId) {
+    public Y9Result<List<String>> findForeignKeysByTableName(@PathVariable String tableName,
+        @RequestParam String dataSourceId) {
         try {
             List<String> foreignKeys = dataApiTableService.findForeignKeysByTableName(tableName, dataSourceId);
             return Y9Result.success(foreignKeys);

@@ -74,7 +74,7 @@ public class DataConstant {
     public static String getYesterday() {
         // 1. 获取当前日期（本地日期，不含时间）
         LocalDate today = LocalDate.now();
-        
+
         // 2. 减去1天，得到昨天的日期
         LocalDate yesterday = today.minusDays(1);
         return yesterday.toString();

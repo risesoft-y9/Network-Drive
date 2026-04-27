@@ -1,8 +1,9 @@
 package net.risesoft.api.auth.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.y9.Y9Context;
@@ -12,13 +13,12 @@ import net.risesoft.y9public.repository.ApiServiceLogRepository;
 import net.risesoft.y9public.repository.ApiServiceRepository;
 
 @Service
+@RequiredArgsConstructor
 public class SaveApiLogService {
 
-    @Autowired
-    private ApiServiceLogRepository apiServiceLogRepository;
+    private final ApiServiceLogRepository apiServiceLogRepository;
 
-    @Autowired
-    private ApiServiceRepository apiServiceRepository;
+    private final ApiServiceRepository apiServiceRepository;
 
     @Async("taskExecutor")
     public void asyncSave(String appName, String requestUrl, String hostIp, String requestParams, String result) {
@@ -31,23 +31,24 @@ public class SaveApiLogService {
         apiServiceLogEntity.setResult(result);
         apiServiceLogEntity.setServerIp(Y9Context.getHostIp());
         // 根据请求地址判断接口类型
-        if(requestUrl.contains("dataassets/services/rest/get/") || requestUrl.contains("dataassets/services/rest/post/")
+        if (requestUrl.contains("dataassets/services/rest/get/")
+            || requestUrl.contains("dataassets/services/rest/post/")
             || requestUrl.contains("dataassets/services/rest/getPage/")) {
             apiServiceLogEntity.setApiType("内部接口");
             // 获取接口名称，获取请求地址“/“分割后的最后一个元素
             String apiServiceId = requestUrl.split("/")[requestUrl.split("/").length - 1];
             ApiServiceEntity apiServiceEntity = apiServiceRepository.findById(apiServiceId).orElse(null);
-            if(apiServiceEntity != null){
+            if (apiServiceEntity != null) {
                 apiServiceLogEntity.setRemark(apiServiceEntity.getApiName());
             } else {
                 apiServiceLogEntity.setRemark("未找到接口名称");
             }
-        }else if(requestUrl.contains("dataassets/services/rest/search")){
+        } else if (requestUrl.contains("dataassets/services/rest/search")) {
             apiServiceLogEntity.setApiType("订阅生成接口");
             // 获取接口名称，获取请求地址“/“分割后的最后一个元素
             String name = requestUrl.split("/")[requestUrl.split("/").length - 1];
             apiServiceLogEntity.setRemark("订阅表：" + name);
-        }else{
+        } else {
             apiServiceLogEntity.setApiType("其它接口");
             apiServiceLogEntity.setRemark("未找到接口名称");
         }

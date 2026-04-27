@@ -1,43 +1,45 @@
 package net.risesoft.api.auth.util;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.GCMParameterSpec;
-
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
+
 /**
  * AES加解密
+ * 
  * @author pzx
  *
  */
 public class Y9CipherUtil {
-	
-	// GCM模式推荐的IV长度
+
+    // GCM模式推荐的IV长度
     private static final int GCM_IV_LENGTH = 12;
     // 标签长度
     private static final int GCM_TAG_LENGTH = 16;
-	
+
     /**
      * 加密
+     * 
      * @param key
      * @param value
      * @return
      * @throws Exception
      */
     public static String encrypt(String key, String value) throws Exception {
-    	// 密钥生成器  
-        KeyGenerator keyGen = KeyGenerator.getInstance("AES");  
+        // 密钥生成器
+        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         // 根据KEY规则初始化密钥生成器生成一个128位的随机源
-		SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
-		secureRandom.setSeed(key.getBytes());
-		keyGen.init(128, secureRandom);
+        SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
+        secureRandom.setSeed(key.getBytes());
+        keyGen.init(128, secureRandom);
         SecretKey secretKey = keyGen.generateKey();
-        
+
         // 生成随机IV
         byte[] iv = new byte[GCM_IV_LENGTH];
         SecureRandom random = new SecureRandom();
@@ -47,7 +49,7 @@ public class Y9CipherUtil {
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         GCMParameterSpec parameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, parameterSpec);
-        
+
         // 加密明文，结果包含密文+认证标签，GCM模式自动生成标签
         byte[] ciphertext = cipher.doFinal(value.getBytes(StandardCharsets.UTF_8));
 
@@ -55,26 +57,27 @@ public class Y9CipherUtil {
         ByteBuffer byteBuffer = ByteBuffer.allocate(iv.length + ciphertext.length);
         byteBuffer.put(iv);
         byteBuffer.put(ciphertext);
-        byte[] encryptedData = byteBuffer.array();  
-        return Base64.getEncoder().encodeToString(encryptedData);  
-    }  
-  
+        byte[] encryptedData = byteBuffer.array();
+        return Base64.getEncoder().encodeToString(encryptedData);
+    }
+
     /**
      * 解密
+     * 
      * @param key
      * @param value
      * @return
      * @throws Exception
      */
-    public static String decrypt(String key, String value) throws Exception {  
-    	// 密钥生成器  
-        KeyGenerator keyGen = KeyGenerator.getInstance("AES");  
+    public static String decrypt(String key, String value) throws Exception {
+        // 密钥生成器
+        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         // 根据KEY规则初始化密钥生成器生成一个128位的随机源
-		SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
-		secureRandom.setSeed(key.getBytes());
-		keyGen.init(128, secureRandom);
+        SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
+        secureRandom.setSeed(key.getBytes());
+        keyGen.init(128, secureRandom);
         SecretKey secretKey = keyGen.generateKey();
-        
+
         // 解码Base64
         byte[] decodedData = Base64.getDecoder().decode(value);
 
@@ -93,12 +96,13 @@ public class Y9CipherUtil {
 
         // 解密
         byte[] plaintext = cipher.doFinal(ciphertextWithTag);
-        
+
         return new String(plaintext, StandardCharsets.UTF_8);
     }
-    
+
     /**
      * 生成appKey
+     * 
      * @return
      */
     public static String generateAppKey() {

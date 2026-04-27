@@ -7,11 +7,11 @@ import java.sql.Statement;
 import java.util.Date;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.api.platform.tenant.TenantSystemApi;
 import net.risesoft.consts.SqlConstants;
@@ -29,25 +29,22 @@ import net.risesoft.y9.sqlddl.DbMetaDataUtil;
  * 数据统计定时任务 每天晚上11点50分执行，统计每个数据库的所有业务表的数据总量
  */
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class DataStatisticsScheduler {
 
-    private static final Logger logger = LoggerFactory.getLogger(DataStatisticsScheduler.class);
+    private final DataSourceRepository dataSourceRepository;
 
-    @Autowired
-    private DataSourceRepository dataSourceRepository;
+    private final DataStatisticsRepository dataStatisticsRepository;
 
-    @Autowired
-    private DataStatisticsRepository dataStatisticsRepository;
-
-    @Autowired
-    private TenantSystemApi tenantSystemApi;
+    private final TenantSystemApi tenantSystemApi;
 
     /**
      * 每天晚上11点50分执行 cron表达式：秒 分 时 日 月 周 年 50 23 * * * ? 表示每天23点50分执行
      */
     @Scheduled(cron = "0 50 23 * * ?")
     public void statisticsDataVolume() {
-        logger.info("开始执行数据量统计定时任务...");
+        LOGGER.info("开始执行数据量统计定时任务...");
 
         try {
             // 获取所有租户
@@ -55,21 +52,21 @@ public class DataStatisticsScheduler {
             if (tenantList != null && !tenantList.isEmpty()) {
                 for (Tenant tenant : tenantList) {
                     Y9LoginUserHolder.setTenantId(tenant.getId());
-                    logger.info("开始处理租户 {} 的数据量统计", tenant.getName());
+                    LOGGER.info("开始处理租户 {} 的数据量统计", tenant.getName());
                     // 获取所有数据库类型的数据源
                     List<DataSourceEntity> dataSources = dataSourceRepository.findByTenantIdAndType(tenant.getId(), 0);
-                    logger.info("共找到 {} 个数据库类型的数据源", dataSources.size());
+                    LOGGER.info("共找到 {} 个数据库类型的数据源", dataSources.size());
                     if (dataSources != null && !dataSources.isEmpty()) {
                         for (DataSourceEntity dataSource : dataSources) {
-                            logger.info("开始统计数据源：{} 的数据量", dataSource.getName());
+                            LOGGER.info("开始统计数据源：{} 的数据量", dataSource.getName());
                             statisticsDataSource(dataSource, true);
                         }
                     }
                 }
             }
-            logger.info("数据量统计定时任务执行完成");
+            LOGGER.info("数据量统计定时任务执行完成");
         } catch (Exception e) {
-            logger.error("数据量统计定时任务执行失败", e);
+            LOGGER.error("数据量统计定时任务执行失败", e);
         }
     }
 
@@ -141,9 +138,9 @@ public class DataStatisticsScheduler {
                 saveStatistics(dataSource.getId(), totalCount);
             }
 
-            logger.info("数据源 {} 的总数据量：{}", dataSource.getName(), totalCount);
+            LOGGER.info("数据源 {} 的总数据量：{}", dataSource.getName(), totalCount);
         } catch (Exception e) {
-            logger.error("统计数据源 {} 失败", dataSource.getName(), e);
+            LOGGER.error("统计数据源 {} 失败", dataSource.getName(), e);
         } finally {
             // 关闭资源
             try {
@@ -157,7 +154,7 @@ public class DataStatisticsScheduler {
                     tables.close();
                 }
             } catch (Exception e) {
-                logger.error("关闭数据库连接失败", e);
+                LOGGER.error("关闭数据库连接失败", e);
             }
         }
         return totalCount;

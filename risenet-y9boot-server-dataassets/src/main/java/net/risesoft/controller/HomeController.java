@@ -158,8 +158,7 @@ public class HomeController {
             map.put("result", downloadLog.getResult());
             downloadLogsMap.add(map);
         }
-        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), downloadLogsMap,
-            "获取数据成功");
+        return Y9Page.success(page, pageList.getTotalPages(), pageList.getTotalElements(), downloadLogsMap, "获取数据成功");
     }
 
     @RiseLog(operationName = "获取数据源数据量", logLevel = LogLevelEnum.RSLOG)
@@ -170,19 +169,21 @@ public class HomeController {
         List<Integer> dataCounts = new ArrayList<>();// 数据库总量
         List<Integer> todayDataCounts = new ArrayList<>();// 今日增量
         // 获取数据库列表
-        List<DataSourceEntity> dataSourceList = dataSourceRepository.findByTenantIdAndType(Y9LoginUserHolder.getTenantId(), 0);
+        List<DataSourceEntity> dataSourceList =
+            dataSourceRepository.findByTenantIdAndType(Y9LoginUserHolder.getTenantId(), 0);
         if (dataSourceList != null && !dataSourceList.isEmpty()) {
             for (DataSourceEntity dataSource : dataSourceList) {
                 sourceNames.add(dataSource.getName());
                 // 获取当前数据库的数据量
                 long dataCount = dataStatisticsScheduler.statisticsData(dataSource);
-                dataCounts.add((int) dataCount);
+                dataCounts.add((int)dataCount);
                 // 查询昨天的数据量
-                DataStatisticsEntity dataStatistics = dataStatisticsRepository.findBySourceIdAndDataTime(dataSource.getId(), DataConstant.getYesterday());
+                DataStatisticsEntity dataStatistics =
+                    dataStatisticsRepository.findBySourceIdAndDataTime(dataSource.getId(), DataConstant.getYesterday());
                 if (dataStatistics != null) {
-                    todayDataCounts.add((int) (dataCount - dataStatistics.getDataCount()));
+                    todayDataCounts.add((int)(dataCount - dataStatistics.getDataCount()));
                 } else {
-                    todayDataCounts.add((int) dataCount);
+                    todayDataCounts.add((int)dataCount);
                 }
             }
         }
@@ -195,12 +196,12 @@ public class HomeController {
     @RiseLog(operationName = "获取数据推送记录", logLevel = LogLevelEnum.RSLOG)
     @GetMapping("/getDataFlowLog")
     public Y9Page<Map<String, Object>> getDataFlowLog(Integer page, Integer size) {
-        String url = Y9Context.getProperty("y9.common.dataflowBaseUrl") + "/services/rest/getDataFlowLog?page=" + page 
-        + "&size=" + size + "&systemName=dataassets&tenantId=" + Y9LoginUserHolder.getTenantId();
+        String url = Y9Context.getProperty("y9.common.dataflowBaseUrl") + "/services/rest/getDataFlowLog?page=" + page
+            + "&size=" + size + "&systemName=dataassets&tenantId=" + Y9LoginUserHolder.getTenantId();
         try {
             // 调用外部接口
             Y9Page<Map<String, Object>> response = restTemplate.getForObject(url, Y9Page.class);
-            
+
             // 处理返回结果
             List<Map<String, Object>> listMap = new ArrayList<>();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -211,11 +212,11 @@ public class HomeController {
                     // 转换时间戳为可读时间格式
                     Object dispatchTime = record.get("DISPATCH_TIME");
                     Object endTime = record.get("END_TIME");
-                    
+
                     if (dispatchTime != null) {
                         try {
                             if (dispatchTime instanceof Number) {
-                                map.put("startTime", sdf.format(new Date(((Number) dispatchTime).longValue())));
+                                map.put("startTime", sdf.format(new Date(((Number)dispatchTime).longValue())));
                             } else if (dispatchTime instanceof String) {
                                 map.put("startTime", dispatchTime.toString());
                             } else {
@@ -227,11 +228,11 @@ public class HomeController {
                     } else {
                         map.put("startTime", "");
                     }
-                    
+
                     if (endTime != null) {
                         try {
                             if (endTime instanceof Number) {
-                                map.put("endTime", sdf.format(new Date(((Number) endTime).longValue())));
+                                map.put("endTime", sdf.format(new Date(((Number)endTime).longValue())));
                             } else if (endTime instanceof String) {
                                 map.put("endTime", endTime.toString());
                             } else {
@@ -243,7 +244,7 @@ public class HomeController {
                     } else {
                         map.put("endTime", "");
                     }
-                    
+
                     map.put("status", record.get("STATUS"));
                     map.put("message", record.get("LOG_CONSOLE"));
                     // 获取订阅id

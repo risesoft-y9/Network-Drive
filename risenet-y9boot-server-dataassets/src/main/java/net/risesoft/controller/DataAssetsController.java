@@ -229,7 +229,7 @@ public class DataAssetsController {
         }
 
         String id = subscribeBaseEntity.getId();
-        if(StringUtils.isNotBlank(subscribeBaseEntity.getRawData())){
+        if (StringUtils.isNotBlank(subscribeBaseEntity.getRawData())) {
             id = subscribeBaseEntity.getRawData();
         }
 
@@ -260,8 +260,13 @@ public class DataAssetsController {
 
             Y9Encrytor y9Encrytor = new Y9Encrytor("risedataflow");
             String encryptPassword = y9Encrytor.Encrytor(subscribeBaseEntity.getPassword());
-            String sql = "INSERT INTO Y9_DATASERVICE_DATASOURCE (ID,CREATE_TIME,UPDATE_TIME,BASENAME,BASESCHEMA,BASETYPE,DIRECTORY,DRIVER,INITIALSIZE,ISLOOK,MAXACTIVE,MINIDLE,PASSWORD,REMARK,RUNTYPE,`TYPE`,URL,USERNAME,TENANTID,USERID,EXTERNALID,SYSTEMNAME) " +
-            "VALUES ('"+id+"',null,null,'"+name+"','','"+databaseProductName+"','','"+driverName+"',1,0,20,1,'"+encryptPassword+"','"+subscribeBaseEntity.getRemark()+"',NULL,0,'"+subscribeBaseEntity.getUrl()+"','"+subscribeBaseEntity.getUsername()+"','"+Y9LoginUserHolder.getTenantId()+"','"+Y9LoginUserHolder.getPersonId()+"','"+subscribeId+"','dataassets')";
+            String sql =
+                "INSERT INTO Y9_DATASERVICE_DATASOURCE (ID,CREATE_TIME,UPDATE_TIME,BASENAME,BASESCHEMA,BASETYPE,DIRECTORY,DRIVER,INITIALSIZE,ISLOOK,MAXACTIVE,MINIDLE,PASSWORD,REMARK,RUNTYPE,`TYPE`,URL,USERNAME,TENANTID,USERID,EXTERNALID,SYSTEMNAME) "
+                    + "VALUES ('" + id + "',null,null,'" + name + "','','" + databaseProductName + "','','" + driverName
+                    + "',1,0,20,1,'" + encryptPassword + "','" + subscribeBaseEntity.getRemark() + "',NULL,0,'"
+                    + subscribeBaseEntity.getUrl() + "','" + subscribeBaseEntity.getUsername() + "','"
+                    + Y9LoginUserHolder.getTenantId() + "','" + Y9LoginUserHolder.getPersonId() + "','" + subscribeId
+                    + "','dataassets')";
             // 执行SQL语句
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 int rowsAffected = preparedStatement.executeUpdate();
@@ -271,7 +276,7 @@ public class DataAssetsController {
             }
             return Y9Result.failure("跳转库表推送信息保存失败");
         } catch (Exception e) {
-            return Y9Result.failure("程序出错："+e.getMessage());
+            return Y9Result.failure("程序出错：" + e.getMessage());
         }
     }
 
@@ -286,7 +291,7 @@ public class DataAssetsController {
     public Y9Result<List<SubscribeBaseEntity>> getDataByUserId() {
         List<SubscribeBaseEntity> list = dataAssetsService.getDataByUserId(Y9LoginUserHolder.getPersonId());
         // 去除密码字段值
-        if(!list.isEmpty()) {
+        if (!list.isEmpty()) {
             list.stream().forEach((item) -> {
                 item.setPassword("");
             });

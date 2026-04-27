@@ -47,10 +47,10 @@ public class SubscribeFileController {
     public Y9Result<String> fileUpload(@RequestParam MultipartFile[] files, @RequestParam String subscribeId) {
         String fileName = "";
         try {
-            if(files.length == 0) {
+            if (files.length == 0) {
                 return Y9Result.failure("请选择文件");
             }
-            for(MultipartFile file : files) {
+            for (MultipartFile file : files) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
                 fileName = file.getOriginalFilename();// 文件名称
                 String fileType = fileName.substring(fileName.lastIndexOf(".") + 1);// 文件类型
