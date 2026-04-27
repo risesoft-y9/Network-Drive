@@ -16,29 +16,29 @@ import net.risesoft.y9.util.base64.Y9Base64Util;
 
 public class Y9Encrytor {
 
-    //SecretKey 负责保存对称密钥
+    // SecretKey 负责保存对称密钥
     private SecretKey deskey;
-    
+
     // GCM模式推荐的IV长度
     private static final int GCM_IV_LENGTH = 12;
     // 标签长度
     private static final int GCM_TAG_LENGTH = 16;
-    
+
     public Y9Encrytor(String key) {
         try {
-            if(StringUtils.isBlank(key)) {
+            if (StringUtils.isBlank(key)) {
                 key = Y9Context.getProperty("y9.common.secret-key");
             }
-        	// 生成安全的AES密钥128位
+            // 生成安全的AES密钥128位
             KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
             // 根据KEY规则初始化密钥生成器生成一个128位的随机源
             SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
             secureRandom.setSeed(key.getBytes());
             keyGenerator.init(128, secureRandom);
             deskey = keyGenerator.generateKey();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -54,7 +54,7 @@ public class Y9Encrytor {
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         GCMParameterSpec parameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv);
         cipher.init(Cipher.ENCRYPT_MODE, deskey, parameterSpec);
-        
+
         // 加密明文，结果包含密文+认证标签，GCM模式自动生成标签
         byte[] ciphertext = cipher.doFinal(content.getBytes(StandardCharsets.UTF_8));
 
@@ -72,7 +72,7 @@ public class Y9Encrytor {
      * 对字符串解密
      */
     public String Decryptor(String content) throws Exception {
-    	// 解码Base64
+        // 解码Base64
         byte[] decodedData = Y9Base64Util.decodeAsBytes(content);
 
         // 分离IV和密文+标签
@@ -92,5 +92,5 @@ public class Y9Encrytor {
         byte[] plaintext = cipher.doFinal(ciphertextWithTag);
         return new String(plaintext, StandardCharsets.UTF_8);
     }
-    
+
 }

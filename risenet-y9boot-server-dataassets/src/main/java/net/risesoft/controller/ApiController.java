@@ -179,24 +179,32 @@ public class ApiController {
     }
 
     @PostMapping(value = "/search/{dataSourceId}/{tableName}")
-    public Y9Result<Map<String, Object>> search(@PathVariable @NotBlank String tableName, @PathVariable @NotBlank String dataSourceId) {
+    public Y9Result<Map<String, Object>> search(@PathVariable @NotBlank String tableName,
+        @PathVariable @NotBlank String dataSourceId) {
         try {
             String owner = Y9ApiThreadHoder.getAppName();
-            DataApiTableEntity dataApiTableEntity = dataApiTableRepository.findByTableNameAndDataSourceIdAndOwner(tableName, dataSourceId, owner);
+            DataApiTableEntity dataApiTableEntity =
+                dataApiTableRepository.findByTableNameAndDataSourceIdAndOwner(tableName, dataSourceId, owner);
             if (dataApiTableEntity != null) {
-                if(dataApiTableEntity.getIsDeleted()) {
+                if (dataApiTableEntity.getIsDeleted()) {
                     return Y9Result.failure("该接口申请已被禁用");
                 }
                 // 判断关联的订阅信息状态,如果不是通过状态不允许调用
-                SubscribeEntity subscribeEntity = subscribeRepository.findById(dataApiTableEntity.getSubscribeId()).orElse(null);
-                if(subscribeEntity == null || !subscribeEntity.getReviewStatus().equals("通过")) {
+                SubscribeEntity subscribeEntity =
+                    subscribeRepository.findById(dataApiTableEntity.getSubscribeId()).orElse(null);
+                if (subscribeEntity == null || !subscribeEntity.getReviewStatus().equals("通过")) {
                     return Y9Result.failure("该接口的订阅信息不存在或者未通过审核，不允许调用");
                 }
 
                 // 返回字段和查询字段都是List<String>的json数据需要转换成逗号分割的字符串
-                String returnFields = Y9JsonUtil.readList(dataApiTableEntity.getReturnFields(), String.class).stream().collect(Collectors.joining(","));
-                String queryFields = Y9JsonUtil.readList(dataApiTableEntity.getQueryFields(), String.class).stream().collect(Collectors.joining(","));
-                String sql = "SELECT " + returnFields.toUpperCase() + " FROM " + dataApiTableEntity.getTableName().toUpperCase();
+                String returnFields = Y9JsonUtil.readList(dataApiTableEntity.getReturnFields(), String.class)
+                    .stream()
+                    .collect(Collectors.joining(","));
+                String queryFields = Y9JsonUtil.readList(dataApiTableEntity.getQueryFields(), String.class)
+                    .stream()
+                    .collect(Collectors.joining(","));
+                String sql =
+                    "SELECT " + returnFields.toUpperCase() + " FROM " + dataApiTableEntity.getTableName().toUpperCase();
 
                 // 接口参数
                 List<Object> args = new ArrayList<Object>();
@@ -218,15 +226,19 @@ public class ApiController {
                     sql = sql.substring(0, sql.length() - 5);
                 }
                 if (StringUtils.isNotBlank(dataApiTableEntity.getQueryParams())) {
-                    sql += (StringUtils.isNotBlank(queryFields) ? " AND " : " WHERE ") + dataApiTableEntity.getQueryParams();
+                    sql += (StringUtils.isNotBlank(queryFields) ? " AND " : " WHERE ")
+                        + dataApiTableEntity.getQueryParams();
                 }
 
                 // 增量字段,使用INSTR函数判断是否包含增量字段值
-                TableForeignKeyEntity tableForeignKeyEntity = tableForeignKeyRepository.findByTableNameAndDataSourceId(tableName, dataSourceId);
-                if (tableForeignKeyEntity != null && StringUtils.isNotBlank(tableForeignKeyEntity.getIncrementField())) {
+                TableForeignKeyEntity tableForeignKeyEntity =
+                    tableForeignKeyRepository.findByTableNameAndDataSourceId(tableName, dataSourceId);
+                if (tableForeignKeyEntity != null
+                    && StringUtils.isNotBlank(tableForeignKeyEntity.getIncrementField())) {
                     // 如果增量字段值为空,则不拼接增量查询条件
                     if (StringUtils.isNotBlank(body.get(tableForeignKeyEntity.getIncrementField()).toString())) {
-                        sql += (sql.contains(" WHERE ") ? " AND " : " WHERE ") + " INSTR(" + tableForeignKeyEntity.getIncrementField().toUpperCase() + ", ?) > 0";
+                        sql += (sql.contains(" WHERE ") ? " AND " : " WHERE ") + " INSTR("
+                            + tableForeignKeyEntity.getIncrementField().toUpperCase() + ", ?) > 0";
                         args.add(body.get(tableForeignKeyEntity.getIncrementField()));
                     }
                 }
@@ -257,7 +269,8 @@ public class ApiController {
                     // 如果有数据，获取最后一条记录的sortField值作为下一页的lastSortValue
                     if (!listMap.isEmpty()) {
                         Map<String, Object> lastRecord = listMap.get(listMap.size() - 1);
-                        String nextLastSortValue = lastRecord.get(sortField.toUpperCase()) != null ? lastRecord.get(sortField.toUpperCase()).toString() : null;
+                        String nextLastSortValue = lastRecord.get(sortField.toUpperCase()) != null
+                            ? lastRecord.get(sortField.toUpperCase()).toString() : null;
                         resultMap.put("lastSortValue", nextLastSortValue);
                     } else {
                         resultMap.put("lastSortValue", null);

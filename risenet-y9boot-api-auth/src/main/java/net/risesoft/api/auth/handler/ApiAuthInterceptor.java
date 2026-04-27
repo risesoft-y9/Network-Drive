@@ -8,10 +8,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+
+import lombok.RequiredArgsConstructor;
 
 import net.risesoft.api.auth.service.RateLimitService;
 import net.risesoft.api.auth.service.SaveApiLogService;
@@ -30,16 +31,14 @@ import net.risesoft.y9public.repository.ApiRoleRepository;
  *
  */
 @Component
+@RequiredArgsConstructor
 public class ApiAuthInterceptor implements HandlerInterceptor {
 
-    @Autowired
-    private ApiRoleRepository apiRoleRepository;
+    private final ApiRoleRepository apiRoleRepository;
 
-    @Autowired
-    private RateLimitService rateLimitService;
+    private final RateLimitService rateLimitService;
 
-    @Autowired
-    private SaveApiLogService saveApiLogService;
+    private final SaveApiLogService saveApiLogService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)

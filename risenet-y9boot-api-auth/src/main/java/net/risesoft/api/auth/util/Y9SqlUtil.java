@@ -8,34 +8,29 @@ import java.util.function.Supplier;
 
 import javax.sql.DataSource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 
-import com.zaxxer.hikari.HikariDataSource;
+import com.alibaba.druid.pool.DruidDataSource;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class Y9SqlUtil {
-
-    /**
-     * 日志记录器
-     */
-    private static final Logger logger = LoggerFactory.getLogger(Y9SqlUtil.class);
 
     /**
      * 连接池缓存，使用数据库连接信息的哈希值作为key
      */
-    private static final Map<String, HikariDataSource> DATA_SOURCE_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, DruidDataSource> DATA_SOURCE_CACHE = new ConcurrentHashMap<>();
 
     /**
-     * 静态初始化块，注册JVM关闭钩子
-     * 确保在应用程序关闭时，所有数据源连接池都被正确关闭
+     * 静态初始化块，注册JVM关闭钩子 确保在应用程序关闭时，所有数据源连接池都被正确关闭
      */
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("JVM shutdown hook triggered, closing all DruidDataSources...");
+            LOGGER.info("JVM shutdown hook triggered, closing all DruidDataSources...");
             closeAllDataSources();
-            logger.info("All DruidDataSources closed successfully");
+            LOGGER.info("All DruidDataSources closed successfully");
         }, "Y9SqlUtil-ShutdownHook"));
     }
 
@@ -51,50 +46,58 @@ public class Y9SqlUtil {
         String key = generateDataSourceKey(url, username, password, driver);
 
         // 尝试从缓存中获取连接池
-        HikariDataSource dataSource = DATA_SOURCE_CACHE.get(key);
+        DruidDataSource dataSource = DATA_SOURCE_CACHE.get(key);
 
         if (dataSource == null) {
             try {
                 // 如果缓存中没有，则创建新的连接池
-                dataSource = new HikariDataSource();
-                dataSource.setJdbcUrl(url);
+                dataSource = new DruidDataSource();
+                dataSource.setUrl(url);
                 dataSource.setUsername(username);
                 dataSource.setPassword(password);
                 dataSource.setDriverClassName(driver);
 
                 // 设置基本连接池参数
-                dataSource.setMinimumIdle(5); // 最小连接数
-                dataSource.setMaximumPoolSize(20); // 最大连接数  请求失败之后中断
+                dataSource.setInitialSize(5); // 初始连接数
+                dataSource.setMinIdle(5); // 最小连接数
+                dataSource.setMaxActive(20); // 最大连接数
+                dataSource.setMaxWait(5000); // 获取连接时的最大等待时间
+                dataSource.setConnectionErrorRetryAttempts(2); // 失败后重连的次数
+                dataSource.setBreakAfterAcquireFailure(true); // 请求失败之后中断
+
+                // 性能配置
+                dataSource.setKeepAlive(true); // 开启连接保活机制
+                dataSource.setTimeBetweenConnectErrorMillis(30000); // 连接错误重试时间间隔
+                dataSource.setTransactionQueryTimeout(60); // 事务查询超时时间
 
                 // 将新创建的连接池放入缓存
-                HikariDataSource existingDataSource = DATA_SOURCE_CACHE.putIfAbsent(key, dataSource);
+                DruidDataSource existingDataSource = DATA_SOURCE_CACHE.putIfAbsent(key, dataSource);
                 if (existingDataSource != null) {
                     // 如果有其他线程已经创建了相同的连接池，则关闭当前创建的并使用已有的
                     try {
                         dataSource.close();
                     } catch (Exception e) {
-                        logger.error("Failed to close redundant DruidDataSource", e);
+                        LOGGER.error("Failed to close redundant DruidDataSource", e);
                     }
                     dataSource = existingDataSource;
-                    logger.debug("Reusing existing DruidDataSource for URL: {}", url);
+                    LOGGER.debug("Reusing existing DruidDataSource for URL: {}", url);
                 } else {
-                    logger.info("Created new DruidDataSource for URL: {}", url);
+                    LOGGER.info("Created new DruidDataSource for URL: {}", url);
                 }
             } catch (Exception e) {
-                logger.error("Failed to create DruidDataSource for URL: {}", url, e);
+                LOGGER.error("Failed to create DruidDataSource for URL: {}", url, e);
                 throw new RuntimeException("Failed to create data source", e);
             }
         } else {
-            logger.debug("Reusing existing DruidDataSource for URL: {}", url);
+            LOGGER.debug("Reusing existing DruidDataSource for URL: {}", url);
         }
 
         return dataSource;
     }
 
     /**
-     * 执行SQL查询（非参数化，存在SQL注入风险）
-     * 请尽量使用带参数的executeQuery方法
-     *
+     * 执行SQL查询（非参数化，存在SQL注入风险） 请尽量使用带参数的executeQuery方法
+     * 
      * @param sql SQL语句
      * @param url 数据库URL
      * @param username 用户名
@@ -114,7 +117,7 @@ public class Y9SqlUtil {
 
     /**
      * 执行参数化SQL查询（推荐使用，防止SQL注入）
-     *
+     * 
      * @param sql SQL语句，使用?作为参数占位符
      * @param url 数据库URL
      * @param username 用户名
@@ -134,9 +137,8 @@ public class Y9SqlUtil {
     }
 
     /**
-     * 执行SQL更新（非参数化，存在SQL注入风险）
-     * 请尽量使用带参数的executeUpdate方法
-     *
+     * 执行SQL更新（非参数化，存在SQL注入风险） 请尽量使用带参数的executeUpdate方法
+     * 
      * @param sql SQL语句
      * @param url 数据库URL
      * @param username 用户名
@@ -155,7 +157,7 @@ public class Y9SqlUtil {
 
     /**
      * 执行参数化SQL更新（推荐使用，防止SQL注入）
-     *
+     * 
      * @param sql SQL语句，使用?作为参数占位符
      * @param url 数据库URL
      * @param username 用户名
@@ -176,7 +178,7 @@ public class Y9SqlUtil {
 
     /**
      * 通用的数据库操作执行方法，处理重复的逻辑
-     *
+     * 
      * @param operationType 操作类型（query/update）
      * @param sql SQL语句
      * @param isParameterized 是否为参数化语句
@@ -190,7 +192,7 @@ public class Y9SqlUtil {
         long startTime = System.currentTimeMillis();
         String operationDesc = (isParameterized ? "parameterized " : "non-parameterized ") + operationType;
 
-        logger.debug("Executing {}: {}", operationDesc, sql);
+        LOGGER.debug("Executing {}: {}", operationDesc, sql);
 
         try {
             // 如果是非参数化语句，进行SQL注入检测
@@ -206,20 +208,19 @@ public class Y9SqlUtil {
             // 根据操作类型记录不同的日志信息
             if ("query".equals(operationType)) {
                 @SuppressWarnings("unchecked")
-                List<Map<String, Object>> queryResult = (List<Map<String, Object>>) result;
-                logger.info("{} executed successfully in {} ms, returned {} rows",
-                    operationDesc, (endTime - startTime), queryResult.size());
+                List<Map<String, Object>> queryResult = (List<Map<String, Object>>)result;
+                LOGGER.info("{} executed successfully in {} ms, returned {} rows", operationDesc, (endTime - startTime),
+                    queryResult.size());
             } else if ("update".equals(operationType)) {
-                int updateResult = (int) result;
-                logger.info("{} executed successfully in {} ms, affected {} rows",
-                    operationDesc, (endTime - startTime), updateResult);
+                int updateResult = (int)result;
+                LOGGER.info("{} executed successfully in {} ms, affected {} rows", operationDesc, (endTime - startTime),
+                    updateResult);
             }
 
             return result;
         } catch (Exception e) {
             long endTime = System.currentTimeMillis();
-            logger.error("Failed to execute {} in {} ms: {}",
-                operationDesc, (endTime - startTime), sql, e);
+            LOGGER.error("Failed to execute {} in {} ms: {}", operationDesc, (endTime - startTime), sql, e);
 
             throw new RuntimeException("Failed to execute " + operationDesc, e);
         }
@@ -227,7 +228,7 @@ public class Y9SqlUtil {
 
     /**
      * SQL注入检测
-     *
+     * 
      * @param sql SQL语句
      * @throws SecurityException 如果检测到潜在的SQL注入风险
      */
@@ -240,28 +241,24 @@ public class Y9SqlUtil {
         String lowerSql = sql.toLowerCase().trim();
 
         // 危险的SQL操作关键词（需要空格分隔，避免误报）
-        String[] dangerousOperations = {
-            " union ", " insert ", " update ", " delete ", " drop ", " create ",
-            " alter ", " truncate ", " exec ", " execute ", " xp_", " sp_"
-        };
+        String[] dangerousOperations = {" union ", " insert ", " update ", " delete ", " drop ", " create ", " alter ",
+            " truncate ", " exec ", " execute ", " xp_", " sp_"};
 
         // 危险的注释和分隔符（不需要空格）
-        String[] dangerousDelimiters = {
-            "--", "/*", "*/", ";"
-        };
+        String[] dangerousDelimiters = {"--", "/*", "*/", ";"};
 
         // 危险的字符串分隔符（需要特殊处理）
-        String[] dangerousQuotes = {
-            "'", "\""
-        };
+        String[] dangerousQuotes = {"'", "\""};
 
         // 检查危险操作
         for (String keyword : dangerousOperations) {
             if (lowerSql.contains(keyword)) {
-                logger.warn("Potential SQL injection detected with dangerous operation '{}' in SQL: {}", keyword.trim(), sql);
+                LOGGER.warn("Potential SQL injection detected with dangerous operation '{}' in SQL: {}", keyword.trim(),
+                    sql);
                 // 对于非参数化查询，我们应该更严格地阻止危险操作
                 if (isNonParameterizedOperation(sql)) {
-                    throw new SecurityException("Potential SQL injection detected: dangerous operation '" + keyword.trim() + "' found");
+                    throw new SecurityException(
+                        "Potential SQL injection detected: dangerous operation '" + keyword.trim() + "' found");
                 }
                 break;
             }
@@ -270,7 +267,8 @@ public class Y9SqlUtil {
         // 检查危险分隔符
         for (String delimiter : dangerousDelimiters) {
             if (lowerSql.contains(delimiter)) {
-                logger.warn("Potential SQL injection detected with dangerous delimiter '{}' in SQL: {}", delimiter, sql);
+                LOGGER.warn("Potential SQL injection detected with dangerous delimiter '{}' in SQL: {}", delimiter,
+                    sql);
                 break;
             }
         }
@@ -280,7 +278,7 @@ public class Y9SqlUtil {
             int quoteCount = lowerSql.length() - lowerSql.replace(quote, "").length();
             // 如果存在奇数个引号，可能存在注入风险
             if (quoteCount % 2 != 0) {
-                logger.warn("Potential SQL injection detected with unbalanced quotes '{}' in SQL: {}", quote, sql);
+                LOGGER.warn("Potential SQL injection detected with unbalanced quotes '{}' in SQL: {}", quote, sql);
                 break;
             }
         }
@@ -288,7 +286,7 @@ public class Y9SqlUtil {
 
     /**
      * 判断是否为非参数化操作
-     *
+     * 
      * @param sql SQL语句
      * @return 是否为非参数化操作
      */
@@ -298,34 +296,33 @@ public class Y9SqlUtil {
     }
 
     /**
-     * 关闭所有缓存的连接池
-     * 在应用程序关闭时调用
+     * 关闭所有缓存的连接池 在应用程序关闭时调用
      */
     public static void closeAllDataSources() {
-        logger.info("Closing all DruidDataSources, total: {}", DATA_SOURCE_CACHE.size());
+        LOGGER.info("Closing all DruidDataSources, total: {}", DATA_SOURCE_CACHE.size());
 
         int closedCount = 0;
         int failedCount = 0;
 
-        for (HikariDataSource dataSource : DATA_SOURCE_CACHE.values()) {
+        for (DruidDataSource dataSource : DATA_SOURCE_CACHE.values()) {
             if (dataSource != null && !dataSource.isClosed()) {
                 try {
                     dataSource.close();
                     closedCount++;
-                    logger.debug("Successfully closed DruidDataSource");
+                    LOGGER.debug("Successfully closed DruidDataSource");
                 } catch (Exception e) {
                     failedCount++;
-                    logger.error("Failed to close DruidDataSource", e);
+                    LOGGER.error("Failed to close DruidDataSource", e);
                 }
             } else if (dataSource != null) {
                 closedCount++;
-                logger.debug("DruidDataSource is already closed");
+                LOGGER.debug("DruidDataSource is already closed");
             }
         }
 
         DATA_SOURCE_CACHE.clear();
-        logger.info("Close operation completed. Closed: {}, Failed: {}, Total: {}",
-            closedCount, failedCount, (closedCount + failedCount));
+        LOGGER.info("Close operation completed. Closed: {}, Failed: {}, Total: {}", closedCount, failedCount,
+            (closedCount + failedCount));
     }
 
     /**
@@ -338,22 +335,25 @@ public class Y9SqlUtil {
      * @param driver 驱动类名
      * @return 包含数据量和最新更新时间的Map
      */
-    public static Map<String, Object> getTableInfo(String tableName, String url, String username, String password, String driver) {
+    public static Map<String, Object> getTableInfo(String tableName, String url, String username, String password,
+        String driver) {
         Map<String, Object> tableInfo = new HashMap<>();
         try {
             DataSource dataSource = createDataSource(url, username, password, driver);
             JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-            
+
             // 获取数据量
             String countSql = "SELECT COUNT(*) FROM " + tableName;
             Long rowCount = jdbcTemplate.queryForObject(countSql, Long.class);
             tableInfo.put("rowCount", rowCount);
 
             // 获取表备注名称
-            String tableNameSql = "SELECT TABLE_COMMENT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '" + tableName + "'";
+            String tableNameSql =
+                "SELECT TABLE_COMMENT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '"
+                    + tableName + "'";
             String tableNameObj = jdbcTemplate.queryForObject(tableNameSql, String.class);
             tableInfo.put("cname", tableNameObj);
-            
+
             // 获取最新更新时间,如果报表中没有UPDATE_TIME字段,则返回查不到表的更新字段
             try {
                 String maxDateSql = "SELECT MAX(UPDATE_TIME) FROM " + tableName;
@@ -367,7 +367,7 @@ public class Y9SqlUtil {
                 tableInfo.put("maxUpdateTime", "查不到表的更新时间字段");
             }
         } catch (Exception e) {
-            logger.error("Failed to get table info for table: {}", tableName, e);
+            LOGGER.error("Failed to get table info for table: {}", tableName, e);
             throw new RuntimeException("Failed to get table info", e);
         }
         return tableInfo;

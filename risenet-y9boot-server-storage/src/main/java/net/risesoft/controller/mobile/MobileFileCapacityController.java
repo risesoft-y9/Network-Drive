@@ -10,8 +10,6 @@ import java.util.Map;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,7 +40,6 @@ import net.risesoft.y9.util.Y9Util;
 public class MobileFileCapacityController {
 
     private final StorageCapacityService storageCapacityService;
-    protected Logger log = LoggerFactory.getLogger(MobileFileCapacityController.class);
 
     /**
      * 获取文件空间管理列表

@@ -23,7 +23,7 @@ public class OnApplicationReady implements ApplicationListener<ApplicationReadyE
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         LOGGER.info("DataAssets service ApplicationReady...");
-        //Y9LoginUserHolder.setTenantId(tenantId);
+        // Y9LoginUserHolder.setTenantId(tenantId);
     }
 
     @PostConstruct

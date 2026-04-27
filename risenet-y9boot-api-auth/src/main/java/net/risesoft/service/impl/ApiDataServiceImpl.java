@@ -395,17 +395,17 @@ public class ApiDataServiceImpl implements ApiDataService {
     @Override
     public ApiRoleEntity findApiRoleById(String id) {
         ApiRoleEntity roleEntity = apiRoleRepository.findById(id).orElse(null);
-        if(roleEntity == null || roleEntity.getStatus() == 1) {
+        if (roleEntity == null || roleEntity.getStatus() == 1) {
             return null;
         }
         return roleEntity;
     }
-    
+
     @Override
     public List<Map<String, Object>> getDailyApiCallCount() {
         List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
         // 获取近7天日期,反着排序
-        for(int i = 6; i >= 0; i--) {
+        for (int i = 6; i >= 0; i--) {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.DAY_OF_MONTH, -i);
             Date date = calendar.getTime();
@@ -416,9 +416,11 @@ public class ApiDataServiceImpl implements ApiDataService {
             Long successCount = 0L;
             try {
                 SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                count = apiServiceLogRepository.countByCreateTimeLike(sdf2.parse(dateStr + " 00:00:00"), sdf2.parse(dateStr + " 23:59:59"));
+                count = apiServiceLogRepository.countByCreateTimeLike(sdf2.parse(dateStr + " 00:00:00"),
+                    sdf2.parse(dateStr + " 23:59:59"));
                 // 根据时间字段模糊查询当天成功的数据量
-                successCount = apiServiceLogRepository.countByCreateTimeAndResult(sdf2.parse(dateStr + " 00:00:00"), sdf2.parse(dateStr + " 23:59:59"), "success");
+                successCount = apiServiceLogRepository.countByCreateTimeAndResult(sdf2.parse(dateStr + " 00:00:00"),
+                    sdf2.parse(dateStr + " 23:59:59"), "success");
             } catch (ParseException e) {
                 e.printStackTrace();
             }

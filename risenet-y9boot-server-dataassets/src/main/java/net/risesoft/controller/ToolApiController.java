@@ -50,8 +50,8 @@ public class ToolApiController {
             result = "加密失败：" + e.getMessage();
             return Y9Result.failure(result);
         } finally {
-            saveApiLogService.asyncSave2("MD5 加密", "/services/tool-api/encrypt/md5", Y9Context.getIpAddr(request),
-                data, result);
+            saveApiLogService.asyncSave2("MD5 加密", "/services/tool-api/encrypt/md5", Y9Context.getIpAddr(request), data,
+                result);
         }
     }
 
@@ -262,8 +262,8 @@ public class ToolApiController {
             result = "加密失败：" + e.getMessage();
             return Y9Result.failure(result);
         } finally {
-            saveApiLogService.asyncSave2("SHA-256 加密", "/services/tool-api/encrypt/sha256", Y9Context.getIpAddr(request),
-                data, result);
+            saveApiLogService.asyncSave2("SHA-256 加密", "/services/tool-api/encrypt/sha256",
+                Y9Context.getIpAddr(request), data, result);
         }
     }
 
@@ -285,7 +285,8 @@ public class ToolApiController {
 
     // 获取所有已上架的资产
     @GetMapping(value = "/assets/all")
-    public Y9Result<List<Map<String, Object>>> getAllAssets(String userId, @RequestHeader("tenant_Id") String tenantId, HttpServletRequest request) {
+    public Y9Result<List<Map<String, Object>>> getAllAssets(String userId, @RequestHeader("tenant_Id") String tenantId,
+        HttpServletRequest request) {
         String result = "success";
         try {
             return Y9Result.success(dataAssetsService.getAllAssets(userId, tenantId));
@@ -300,7 +301,8 @@ public class ToolApiController {
 
     // 获取人员已订阅的资产列表
     @GetMapping(value = "/assets/subscribe")
-    public Y9Result<List<Map<String, Object>>> getSubscribeAssets(String userId, @RequestHeader("tenant_Id") String tenantId, HttpServletRequest request) {
+    public Y9Result<List<Map<String, Object>>> getSubscribeAssets(String userId,
+        @RequestHeader("tenant_Id") String tenantId, HttpServletRequest request) {
         String result = "success";
         try {
             return Y9Result.success(dataAssetsService.getAssetsByUserId(userId, tenantId));
@@ -308,14 +310,15 @@ public class ToolApiController {
             result = "获取失败：" + e.getMessage();
             return Y9Result.failure(result);
         } finally {
-            saveApiLogService.asyncSave2("获取人员已订阅的资产列表", "/services/tool-api/assets/subscribe", Y9Context.getIpAddr(request),
-                "", result);
+            saveApiLogService.asyncSave2("获取人员已订阅的资产列表", "/services/tool-api/assets/subscribe",
+                Y9Context.getIpAddr(request), "", result);
         }
     }
 
     // 获取资产挂接的文件
     @GetMapping(value = "/assets/file")
-    public Y9Result<Map<String, Object>> getMountFileData(Long assetsId, @RequestHeader("tenant_Id") String tenantId, HttpServletRequest request) {
+    public Y9Result<Map<String, Object>> getMountFileData(Long assetsId, @RequestHeader("tenant_Id") String tenantId,
+        HttpServletRequest request) {
         String result = "success";
         try {
             return Y9Result.success(dataAssetsService.getMountFileData(assetsId));

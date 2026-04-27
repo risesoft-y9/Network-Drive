@@ -11,11 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 import net.risesoft.entity.DataApiTableEntity;
 
 @Transactional(value = "rsTenantTransactionManager", readOnly = true)
-public interface DataApiTableRepository extends JpaRepository<DataApiTableEntity, Long>, JpaSpecificationExecutor<DataApiTableEntity> {
+public interface DataApiTableRepository
+    extends JpaRepository<DataApiTableEntity, Long>, JpaSpecificationExecutor<DataApiTableEntity> {
 
-    Page<DataApiTableEntity> findByTenantIdAndCreatorIdAndSubscribeId(String tenantId, String creatorId, String subscribeId, Pageable pageable);
+    Page<DataApiTableEntity> findByTenantIdAndCreatorIdAndSubscribeId(String tenantId, String creatorId,
+        String subscribeId, Pageable pageable);
 
-    Page<DataApiTableEntity> findByTableNameContainingAndTenantIdAndCreatorIdAndSubscribeId(String tableName, String tenantId, String creatorId, String subscribeId, Pageable pageable);
+    Page<DataApiTableEntity> findByTableNameContainingAndTenantIdAndCreatorIdAndSubscribeId(String tableName,
+        String tenantId, String creatorId, String subscribeId, Pageable pageable);
 
     Page<DataApiTableEntity> findByTenantId(String tenantId, Pageable pageable);
 
@@ -23,7 +26,8 @@ public interface DataApiTableRepository extends JpaRepository<DataApiTableEntity
 
     DataApiTableEntity findByTableNameAndDataSourceIdAndOwner(String tableName, String dataSourceId, String owner);
 
-    DataApiTableEntity findByTableNameAndDataSourceIdAndCreatorIdAndIsDeleted(String tableName, String dataSourceId, String creatorId, Boolean isDeleted);
+    DataApiTableEntity findByTableNameAndDataSourceIdAndCreatorIdAndIsDeleted(String tableName, String dataSourceId,
+        String creatorId, Boolean isDeleted);
 
     List<DataApiTableEntity> findBySubscribeId(String subscribeId);
 }

@@ -114,10 +114,12 @@ public class Y9FormDbMetaDataUtil extends DbMetaDataUtil {
                     sql = "SELECT table_name, comments AS REMARKS FROM all_tab_comments";
                     break;
                 case SqlConstants.DBTYPE_MYSQL:
-                    sql = "SELECT table_name, table_comment AS REMARKS FROM information_schema.TABLES WHERE table_schema = DATABASE()";
+                    sql =
+                        "SELECT table_name, table_comment AS REMARKS FROM information_schema.TABLES WHERE table_schema = DATABASE()";
                     break;
                 default:
-                    sql = "SELECT table_name, table_comment AS REMARKS FROM information_schema.TABLES WHERE table_schema = DATABASE()";
+                    sql =
+                        "SELECT table_name, table_comment AS REMARKS FROM information_schema.TABLES WHERE table_schema = DATABASE()";
                     break;
             }
             rs = stmt.executeQuery(sql);

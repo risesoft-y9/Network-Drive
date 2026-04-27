@@ -2,10 +2,8 @@ package y9.autoconfiguration.api;
 
 import java.util.concurrent.Executor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.task.ThreadPoolTaskExecutorBuilder;
+import org.springframework.boot.task.TaskExecutorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -13,18 +11,18 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.alibaba.ttl.threadpool.TtlExecutors;
 
+import lombok.extern.slf4j.Slf4j;
 import net.risesoft.y9.Y9Context;
 
 @Configuration
 @EnableAsync
+@Slf4j
 public class ApiAdminConfiguration {
-
-    private static final Logger log = LoggerFactory.getLogger(ApiAdminConfiguration.class);
 
     @Bean(name = {"taskExecutor"})
     @ConditionalOnMissingBean(name = "taskExecutor")
-    public Executor taskExecutor(ThreadPoolTaskExecutorBuilder builder) {
-        log.debug("Api threadPoolExecutor init ......");
+    public Executor taskExecutor(TaskExecutorBuilder builder) {
+        LOGGER.debug("Api threadPoolExecutor init ......");
         ThreadPoolTaskExecutor taskExecutor = builder.build();
         taskExecutor.setMaxPoolSize(4);
         taskExecutor.setCorePoolSize(4);// 核心线程数
