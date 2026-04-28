@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,6 +44,7 @@ public class FileNodeCollectServiceImpl implements FileNodeCollectService {
     }
 
     @Override
+    @Transactional
     public void save(String fileId, String collectRoute) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         FileNode node = fileNodeRepository.findById(fileId).orElse(null);
@@ -63,6 +65,7 @@ public class FileNodeCollectServiceImpl implements FileNodeCollectService {
     }
 
     @Override
+    @Transactional
     public void cancelCollect(String fileId) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         FileNode node = fileNodeRepository.findById(fileId).orElse(null);

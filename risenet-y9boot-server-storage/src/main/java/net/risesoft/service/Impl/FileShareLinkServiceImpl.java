@@ -1,6 +1,7 @@
 package net.risesoft.service.Impl;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +21,7 @@ public class FileShareLinkServiceImpl implements FileShareLinkService {
     }
 
     @Override
+    @Transactional
     public FileShareLink save(FileShareLink fileShareLink) {
         return fileShareLinkRepository.save(fileShareLink);
     }

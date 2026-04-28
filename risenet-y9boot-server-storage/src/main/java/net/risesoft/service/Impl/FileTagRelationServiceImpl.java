@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +24,7 @@ public class FileTagRelationServiceImpl implements FileTagRelationService {
     private final FileTagRelationRepository fileTagRelationRepository;
 
     @Override
+    @Transactional
     public void addFileTagToFile(List<String> fileIdList, List<String> tagIdList) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         for (String fileId : fileIdList) {
@@ -53,6 +55,7 @@ public class FileTagRelationServiceImpl implements FileTagRelationService {
     }
 
     @Override
+    @Transactional
     public Y9Result<Object> simpleFileToTag(String tagId, String fileId) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         try {
@@ -70,11 +73,13 @@ public class FileTagRelationServiceImpl implements FileTagRelationService {
     }
 
     @Override
+    @Transactional
     public void deleteFileTagRelation(List<String> fileIdList) {
         fileTagRelationRepository.deleteByFileIdIn(fileIdList);
     }
 
     @Override
+    @Transactional
     public void delete(FileTagRelation fileTagRelation) {
         fileTagRelationRepository.delete(fileTagRelation);
     }

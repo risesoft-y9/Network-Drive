@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -62,6 +63,7 @@ public class FileTagServiceImpl implements FileTagService {
     }
 
     @Override
+    @Transactional
     public Y9Result<Object> save(FileTag fileTag) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         // 检查标签名称是否已存在
@@ -95,6 +97,7 @@ public class FileTagServiceImpl implements FileTagService {
     }
 
     @Override
+    @Transactional
     public void deleteFileTag(List<String> idList) {
         for (String id : idList) {
             fileTagRepository.deleteById(id);
@@ -120,6 +123,7 @@ public class FileTagServiceImpl implements FileTagService {
     }
 
     @Override
+    @Transactional
     public Y9Result<Object> updateFileTag(FileTag fileTag, String fileId) {
         FileTag existingTag = this.findById(fileTag.getId());
         if (existingTag != null) {
@@ -133,6 +137,7 @@ public class FileTagServiceImpl implements FileTagService {
     }
 
     @Override
+    @Transactional
     public void removeTagFromFile(String fileId, String tagId, String operatorId) {
         FileTagRelation fileTagRelation =
             fileTagRelationRepository.findByFileIdAndTagIdAndOperatorId(fileId, tagId, operatorId);
@@ -142,6 +147,7 @@ public class FileTagServiceImpl implements FileTagService {
     }
 
     @Override
+    @Transactional
     public Y9Result<Object> saveCustomTag(FileTag fileTag, String fileId) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         String operatorId = userInfo.getPersonId(), operatorName = userInfo.getName();
