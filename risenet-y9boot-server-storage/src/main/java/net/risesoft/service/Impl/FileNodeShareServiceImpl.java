@@ -142,8 +142,6 @@ public class FileNodeShareServiceImpl implements FileNodeShareService {
     @Override
     @Transactional
     public void publicTo(List<String> fileNodeIdList, List<String> orgUnitIdList) {
-        // orgUnitIdList.add(Y9LoginUserHolder.getUserInfo().getPersonId());
-
         for (String fileNodeId : fileNodeIdList) {
             for (String orgUnitId : orgUnitIdList) {
                 publicTo(fileNodeId, orgUnitId);

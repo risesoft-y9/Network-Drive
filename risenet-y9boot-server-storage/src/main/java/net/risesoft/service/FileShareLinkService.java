@@ -1,6 +1,7 @@
 package net.risesoft.service;
 
 import net.risesoft.entity.FileShareLink;
+import net.risesoft.pojo.Y9Result;
 
 public interface FileShareLinkService {
 
@@ -18,4 +19,13 @@ public interface FileShareLinkService {
      * @param fileShareLink
      */
     FileShareLink save(FileShareLink fileShareLink);
+
+    /**
+     * 创建分享链接
+     *
+     * @param fileId
+     * @param linkPassword
+     * @return
+     */
+    Y9Result<FileShareLink> createLink(String fileId, String linkPassword);
 }
