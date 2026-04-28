@@ -8,8 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -17,8 +15,6 @@ import java.util.stream.Stream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,24 +28,18 @@ import net.risesoft.api.platform.org.OrgUnitApi;
 import net.risesoft.api.platform.org.PositionApi;
 import net.risesoft.entity.Chunk;
 import net.risesoft.entity.FileInfo;
-import net.risesoft.entity.FileNode;
 import net.risesoft.entity.StorageCapacity;
-import net.risesoft.enums.StorageAuditLogEnum;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.user.UserInfo;
-import net.risesoft.pojo.AuditLogEvent;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.ChunkService;
 import net.risesoft.service.FileInfoService;
 import net.risesoft.service.FileNodeService;
 import net.risesoft.service.StorageCapacityService;
-import net.risesoft.support.FileListType;
-import net.risesoft.util.FileNodeUtil;
 import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
-import net.risesoft.y9.util.Y9StringUtil;
 import net.risesoft.y9public.entity.Y9FileStore;
 import net.risesoft.y9public.service.Y9FileStoreService;
 
@@ -66,10 +56,10 @@ public class UploaderController {
     private final FileNodeService fileNodeService;
     private final OrgUnitApi orgUnitApi;
     private final PositionApi positionApi;
-    @Value("${y9.app.storage.defaultStorageCapacity}")
-    private String defaultStorageCapacity;
-    @Value("${y9.app.storage.singleUploadLimit}")
-    private String singleUploadLimit;
+    // @Value("${y9.app.storage.defaultStorageCapacity}")
+    // private String defaultStorageCapacity;
+    // @Value("${y9.app.storage.singleUploadLimit}")
+    // private String singleUploadLimit;
 
     public Map<String, Object> mergeMethod(String targetFile, String folder, String fileName, String parentId,
         String listType) {
@@ -109,8 +99,8 @@ public class UploaderController {
             Y9FileStore y9FileStore = y9FileStoreService.uploadFile(file, fullPath, fileName);
             if (y9FileStore != null) {
                 LOGGER.debug("文件 {} 上传成功, uuid:{}", y9FileStore.getFileName(), y9FileStore.getId());
-                map =
-                    saveFileNodeAndCapacity(parentId, fileName, fileExtension, fileSize, y9FileStore.getId(), listType);
+                map = fileNodeService.saveFileNodeAndCapacity(parentId, fileName, fileExtension, fileSize,
+                    y9FileStore.getId(), listType);
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
@@ -188,71 +178,71 @@ public class UploaderController {
         return Y9Result.failure(500, "合并失败:" + message);
     }
 
-    private Map<String, Object> saveFileNodeAndCapacity(String parentId, String fileName, String fileExtension,
-        long fileSize, String y9FileStoreId, String listType) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("msg", "文件上传失败");
-        map.put("success", false);
-        map.put("fileId", null);
-        UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
-        String userId = userInfo.getPersonId(), userName = userInfo.getName();
-        try {
-            if (parentId.equals(FileListType.MY.getValue())) {
-                StorageCapacity capacity = storageCapacityService.findByCapacityOwnerId(userId);
-                if (null == capacity) {
-                    StorageCapacity sc = new StorageCapacity();
-                    sc.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
-                    sc.setCapacityOwnerId(userId);
-                    sc.setCapacityOwnerName(userName);
-                    sc.setCapacitySize(Long.valueOf(defaultStorageCapacity));
-                    sc.setRemainingLength(Long.valueOf(defaultStorageCapacity));
-                    sc.setCreateTime(new Date());
-                    storageCapacityService.save(sc);
-                } else {
-                    if (capacity.getRemainingLength() > fileSize) {
-                        capacity.setRemainingLength(capacity.getRemainingLength() - fileSize);
-                        storageCapacityService.save(capacity);
-                    }
-                }
-            }
-            Integer type = FileNodeUtil.fileTypeConvert(fileExtension);
-            boolean fileNodeExists = fileNodeService.isFileNodeExists(parentId, fileName);
-
-            FileNode fileNode = new FileNode();
-            fileNode.setFileSuffix(fileExtension);
-            fileNode.setFileSize(fileSize);
-            fileNode.setCreateTime(new Date());
-            fileNode.setUpdateTime(new Date());
-            fileNode.setFileStoreId(y9FileStoreId);
-            fileNode.setListType(listType);
-            fileNode.setUserId(userInfo.getPersonId());
-            fileNode.setUserName(userInfo.getName());
-            fileNode.setFileType(type);
-            fileNode.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
-            if (StringUtils.isNotBlank(parentId)) {
-                fileNode.setParentId(parentId);
-            }
-            if (fileNodeExists) {
-                SimpleDateFormat sdf = new SimpleDateFormat("_yyyyMMdd_HHmmss");
-                fileName = FilenameUtils.getBaseName(fileName) + sdf.format(new Date()) + "." + fileExtension;
-            }
-            fileNode.setName(fileName);
-            fileNode = fileNodeService.saveNode(fileNode);
-            AuditLogEvent auditLogEvent = AuditLogEvent.builder()
-                .action(StorageAuditLogEnum.FILE_UPLOAD.getAction())
-                .description(Y9StringUtil.format(StorageAuditLogEnum.FILE_UPLOAD.getDescription(), fileNode.getName()))
-                .objectId(fileNode.getId())
-                .oldObject(fileNode)
-                .currentObject(null)
-                .build();
-            Y9Context.publishEvent(auditLogEvent);
-            map.put("fileId", fileNode.getId());
-            map.put("msg", "文件上传成功");
-            map.put("success", true);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-
-        }
-        return map;
-    }
+    // private Map<String, Object> saveFileNodeAndCapacity(String parentId, String fileName, String fileExtension,
+    // long fileSize, String y9FileStoreId, String listType) {
+    // Map<String, Object> map = new HashMap<>();
+    // map.put("msg", "文件上传失败");
+    // map.put("success", false);
+    // map.put("fileId", null);
+    // UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
+    // String userId = userInfo.getPersonId(), userName = userInfo.getName();
+    // try {
+    // if (parentId.equals(FileListType.MY.getValue())) {
+    // StorageCapacity capacity = storageCapacityService.findByCapacityOwnerId(userId);
+    // if (null == capacity) {
+    // StorageCapacity sc = new StorageCapacity();
+    // sc.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
+    // sc.setCapacityOwnerId(userId);
+    // sc.setCapacityOwnerName(userName);
+    // sc.setCapacitySize(Long.valueOf(defaultStorageCapacity));
+    // sc.setRemainingLength(Long.valueOf(defaultStorageCapacity));
+    // sc.setCreateTime(new Date());
+    // storageCapacityService.save(sc);
+    // } else {
+    // if (capacity.getRemainingLength() > fileSize) {
+    // capacity.setRemainingLength(capacity.getRemainingLength() - fileSize);
+    // storageCapacityService.save(capacity);
+    // }
+    // }
+    // }
+    // Integer type = FileNodeUtil.fileTypeConvert(fileExtension);
+    // boolean fileNodeExists = fileNodeService.isFileNodeExists(parentId, fileName);
+    //
+    // FileNode fileNode = new FileNode();
+    // fileNode.setFileSuffix(fileExtension);
+    // fileNode.setFileSize(fileSize);
+    // fileNode.setCreateTime(new Date());
+    // fileNode.setUpdateTime(new Date());
+    // fileNode.setFileStoreId(y9FileStoreId);
+    // fileNode.setListType(listType);
+    // fileNode.setUserId(userInfo.getPersonId());
+    // fileNode.setUserName(userInfo.getName());
+    // fileNode.setFileType(type);
+    // fileNode.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
+    // if (StringUtils.isNotBlank(parentId)) {
+    // fileNode.setParentId(parentId);
+    // }
+    // if (fileNodeExists) {
+    // SimpleDateFormat sdf = new SimpleDateFormat("_yyyyMMdd_HHmmss");
+    // fileName = FilenameUtils.getBaseName(fileName) + sdf.format(new Date()) + "." + fileExtension;
+    // }
+    // fileNode.setName(fileName);
+    // fileNode = fileNodeService.saveNode(fileNode);
+    // AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+    // .action(StorageAuditLogEnum.FILE_UPLOAD.getAction())
+    // .description(Y9StringUtil.format(StorageAuditLogEnum.FILE_UPLOAD.getDescription(), fileNode.getName()))
+    // .objectId(fileNode.getId())
+    // .oldObject(fileNode)
+    // .currentObject(null)
+    // .build();
+    // Y9Context.publishEvent(auditLogEvent);
+    // map.put("fileId", fileNode.getId());
+    // map.put("msg", "文件上传成功");
+    // map.put("success", true);
+    // } catch (Exception e) {
+    // LOGGER.error(e.getMessage(), e);
+    //
+    // }
+    // return map;
+    // }
 }

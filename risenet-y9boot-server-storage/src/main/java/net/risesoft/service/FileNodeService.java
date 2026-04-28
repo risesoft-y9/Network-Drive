@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.web.multipart.MultipartFile;
 
 import net.risesoft.entity.FileNode;
+import net.risesoft.pojo.Y9Result;
 import net.risesoft.support.FileNodeType;
 import net.risesoft.support.OrderRequest;
 
@@ -56,7 +57,8 @@ public interface FileNodeService {
     /**
      * 当前节点是否存在同名文件
      *
-     * @param fileNode
+     * @param parentId
+     * @param fileName
      */
     boolean isFileNodeExists(String parentId, String fileName);
 
@@ -99,21 +101,6 @@ public interface FileNodeService {
     List<FileNode> subCollectList(List<String> id, String search, OrderRequest orderRequest);
 
     /**
-     * 根据多个标签ID和搜索条件查询文件列表
-     * 
-     * @param positionId 位置ID
-     * @param id 文件ID
-     * @param fileNodeType 文件类型
-     * @param searchName 搜索名称
-     * @param tagIds 标签ID列表
-     * @param listType 列表类型
-     * @param orderRequest 排序请求
-     * @return 文件节点列表
-     */
-    List<FileNode> listFilesByTagIds(String positionId, String id, FileNodeType fileNodeType, String searchName,
-        List<String> tagIds, String listType, OrderRequest orderRequest);
-
-    /**
      * 根据条件查询公共文件列表
      *
      * @param id
@@ -145,8 +132,43 @@ public interface FileNodeService {
     List<FileNode> subManageList(String id, List<String> tagIds, FileNodeType fileType, String searchName,
         String startTime, String endTime, String listType, OrderRequest orderRequest);
 
-    // 添加标签相关方法
-    List<FileNode> subListByTag(String positionId, String parentId, String tagId, String listType,
-        OrderRequest orderRequest);
+    /**
+     * 重置文件夹密码
+     * 
+     * @param folder
+     * @return
+     */
+    Y9Result<Object> resetFolderPassword(FileNode folder);
 
+    /**
+     * 设置文件夹密码
+     *
+     * @param folder
+     * @return
+     */
+    Y9Result<Object> setFolderPassword(FileNode folder);
+
+    /**
+     * 设置文件链接密码
+     *
+     * @param id
+     * @param encryption
+     * @param linkPassword
+     * @return
+     */
+    Y9Result<Object> setLinkPwd(String id, boolean encryption, String linkPassword);
+
+    /**
+     * 保存大文件上传信息
+     * 
+     * @param parentId
+     * @param fileName
+     * @param fileExtension
+     * @param fileSize
+     * @param y9FileStoreId
+     * @param listType
+     * @return
+     */
+    Map<String, Object> saveFileNodeAndCapacity(String parentId, String fileName, String fileExtension, long fileSize,
+        String y9FileStoreId, String listType);
 }

@@ -3,13 +3,14 @@ package net.risesoft.service;
 import org.springframework.data.domain.Page;
 
 import net.risesoft.entity.StorageCapacity;
+import net.risesoft.pojo.Y9Result;
 
 public interface StorageCapacityService {
 
     /**
      * 保存存储记录
      * 
-     * @param StorageCapacity
+     * @param storageCapacity
      */
     public void save(StorageCapacity storageCapacity);
 
@@ -38,4 +39,12 @@ public interface StorageCapacityService {
      * @return
      */
     public Page<StorageCapacity> findByUserName(String userName, int page, int rows);
+
+    /**
+     * 更新存储容量信息
+     * 
+     * @param storageCapacity
+     * @return
+     */
+    Y9Result<Object> updateCapacity(StorageCapacity storageCapacity);
 }

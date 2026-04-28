@@ -616,7 +616,7 @@ public class FileNodeController {
                 y9FileStoreService.downloadFileToOutputStream(y9FileStoreId, os);
             }
         } catch (Exception e) {
-            LOGGER.error("下载文件失败！", e);
+            LOGGER.error("打开文件失败！", e);
         } finally {
             try {
                 if (os != null) {
@@ -662,17 +662,13 @@ public class FileNodeController {
             endTime, listType, orderRequest);
         List<FileNodeDTO> fileNodeDTOList = FileNodeDTO.from(subFileList);
 
-        // if (StringUtils.isNotBlank(searchName)) {
         for (FileNodeDTO fileNodeDTO : fileNodeDTOList) {
-            // FileNode parentFileNode = fileNodeService.getParent(fileNodeDTO.getParentId());
-            // fileNodeDTO.setParentFileNode(FileNodeDTO.from(parentFileNode));
             List<FileTag> tags = fileTagService.getTagsByFileId(fileNodeDTO.getId());
             fileNodeDTO.setFileTags(tags);
             boolean isCollect = fileNodeCollectService.findByCollectUserIdAndFileIdAndListName(userInfo.getPersonId(),
                 fileNodeDTO.getId(), fileNodeDTO.getListType());
             fileNodeDTO.setCollect(isCollect);
         }
-        // }
 
         List<FileNode> recursiveToRootFileNodeList = fileNodeService.recursiveToRoot(id);
 
@@ -691,35 +687,7 @@ public class FileNodeController {
     @RiseLog(operationName = "重置文件夹密码")
     @RequestMapping(value = "/resetFolderPassword")
     public Y9Result<Object> resetFolderPassword(FileNode folder) {
-        try {
-            FileNode node = fileNodeService.findById(folder.getId());
-            if (null != node) {
-                String newPassword = Y9MessageDigestUtil.md5(folder.getFilePassword());
-                // if(newPassword.equals(node.getFilePassword())){
-                // y9Result.setMsg("新密码与原始密码一致，请重新设置密码！");
-                // y9Result.setSuccess(false);
-                // } else {
-                node.setFilePassword(newPassword);
-                node.setUpdateTime(new Date());
-                fileNodeService.saveNode(node);
-                AuditLogEvent auditLogEvent = AuditLogEvent.builder()
-                    .action(StorageAuditLogEnum.FOLDER_RESET_PASSWORD.getAction())
-                    .description(
-                        Y9StringUtil.format(StorageAuditLogEnum.FOLDER_RESET_PASSWORD.getDescription(), node.getName()))
-                    .objectId(node.getId())
-                    .oldObject(node)
-                    .currentObject(null)
-                    .build();
-                Y9Context.publishEvent(auditLogEvent);
-                // }
-                return Y9Result.success("文件夹密码重置成功！");
-            }
-            return Y9Result.failure("文件夹密码重置失败！未找到文件!");
-        } catch (Exception e) {
-            LOGGER.error("文件夹密码重置失败！", e);
-            return Y9Result.failure("文件夹密码重置失败！");
-        }
-
+        return fileNodeService.resetFolderPassword(folder);
     }
 
     /**
@@ -775,25 +743,7 @@ public class FileNodeController {
     @RiseLog(operationName = "保存设置文件夹密码")
     @RequestMapping(value = "/setFolderPassword")
     public Y9Result<Object> setFolderPassword(FileNode folder) {
-        try {
-            FileNode node = fileNodeService.findById(folder.getId());
-            node.setFilePassword(Y9MessageDigestUtil.md5(folder.getFilePassword()));
-            node.setUpdateTime(new Date());
-            fileNodeService.saveNode(node);
-            AuditLogEvent auditLogEvent = AuditLogEvent.builder()
-                .action(StorageAuditLogEnum.FOLDER_SET_PASSWORD.getAction())
-                .description(
-                    Y9StringUtil.format(StorageAuditLogEnum.FOLDER_SET_PASSWORD.getDescription(), node.getName()))
-                .objectId(node.getId())
-                .oldObject(node)
-                .currentObject(null)
-                .build();
-            Y9Context.publishEvent(auditLogEvent);
-            return Y9Result.success("文件夹密码设置成功！");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Y9Result.failure("文件夹密码设置失败！");
-        }
+        return fileNodeService.setFolderPassword(folder);
     }
 
     /**
@@ -805,26 +755,7 @@ public class FileNodeController {
     @RiseLog(operationName = "设置直链文件密码")
     @RequestMapping(value = "/setLinkPwd")
     public Y9Result<Object> setLinkPwd(String id, boolean encryption, String linkPassword) {
-        try {
-            FileNode fileNode = fileNodeService.findById(id);
-            if (null != fileNode) {
-                fileNode.setEncryption(encryption);
-                fileNode.setLinkPassword(encryption ? linkPassword : "");
-                fileNodeService.saveNode(fileNode);
-                AuditLogEvent auditLogEvent = AuditLogEvent.builder()
-                    .action(StorageAuditLogEnum.SHARE_LINK_SET_PASSWORD.getAction())
-                    .description(Y9StringUtil.format(StorageAuditLogEnum.SHARE_LINK_SET_PASSWORD.getDescription(),
-                        fileNode.getName()))
-                    .objectId(fileNode.getId())
-                    .oldObject(fileNode)
-                    .currentObject(null)
-                    .build();
-                Y9Context.publishEvent(auditLogEvent);
-            }
-        } catch (Exception e) {
-            LOGGER.error("设置文件直链密码失败！", e);
-        }
-        return Y9Result.success(null, "设置文件直链密码成功");
+        return fileNodeService.setLinkPwd(id, encryption, linkPassword);
     }
 
     /**

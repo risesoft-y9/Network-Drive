@@ -16,12 +16,12 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.api.platform.org.OrgUnitApi;
 import net.risesoft.api.platform.org.PersonApi;
@@ -36,6 +36,7 @@ import net.risesoft.model.platform.org.OrgUnit;
 import net.risesoft.model.platform.org.Position;
 import net.risesoft.model.user.UserInfo;
 import net.risesoft.pojo.AuditLogEvent;
+import net.risesoft.pojo.Y9Result;
 import net.risesoft.repository.FileNodeRepository;
 import net.risesoft.repository.FileNodeShareRepository;
 import net.risesoft.repository.FileTagRelationRepository;
@@ -56,9 +57,11 @@ import net.risesoft.util.FileUtils;
 import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.util.Y9StringUtil;
+import net.risesoft.y9.util.signing.Y9MessageDigestUtil;
 import net.risesoft.y9public.entity.Y9FileStore;
 import net.risesoft.y9public.service.Y9FileStoreService;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileNodeServiceImpl implements FileNodeService {
@@ -667,62 +670,6 @@ public class FileNodeServiceImpl implements FileNodeService {
     }
 
     @Override
-    public List<FileNode> listFilesByTagIds(String positionId, String id, FileNodeType fileNodeType, String searchName,
-        List<String> tagIds, String listType, OrderRequest orderRequest) {
-        // 通过FileTagRelation表查询同时具有所有指定标签的文件ID列表
-        List<String> fileIds = fileTagRelationRepository.findFileIdsByTagIds(tagIds);
-
-        if (fileIds.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        // 构建查询条件
-        Specification<FileNode> spec = (root, query, criteriaBuilder) -> {
-            List<javax.persistence.criteria.Predicate> predicates = new ArrayList<>();
-
-            // 添加文件ID条件
-            predicates.add(root.get("id").in(fileIds));
-
-            // 添加父节点ID条件
-            if (StringUtils.isNotBlank(id)) {
-                predicates.add(criteriaBuilder.equal(root.get("parentId"), id));
-            } else {
-                predicates.add(criteriaBuilder.equal(root.get("parentId"), ""));
-            }
-
-            // 添加文件类型条件
-            if (fileNodeType != null) {
-                predicates.add(criteriaBuilder.equal(root.get("fileType"), fileNodeType.getValue()));
-            }
-
-            // 添加列表类型条件
-            if (StringUtils.isNotBlank(listType)) {
-                predicates.add(criteriaBuilder.equal(root.get("listType"), listType));
-            }
-
-            // 添加搜索名称条件
-            if (StringUtils.isNotBlank(searchName)) {
-                predicates.add(criteriaBuilder.like(root.get("name"), "%" + searchName + "%"));
-            }
-
-            return criteriaBuilder.and(predicates.toArray(new javax.persistence.criteria.Predicate[0]));
-        };
-
-        // 执行查询并排序
-        // Sort sort = buildSort(orderRequest);
-        return fileNodeRepository.findAll(spec);
-    }
-
-    // private Sort buildSort(OrderRequest orderRequest) {
-    // if (orderRequest != null && StringUtils.isNotBlank(orderRequest.getOrderProp())) {
-    // Sort.Direction direction =
-    // "desc".equalsIgnoreCase(orderRequest.getOrderDirection()) ? Sort.Direction.DESC : Sort.Direction.ASC;
-    // return Sort.by(direction, orderRequest.getOrderProp());
-    // }
-    // return Sort.by(Sort.Direction.DESC, "createTime");
-    // }
-
-    @Override
     public List<FileNode> subPublicList(String id, List<String> tagIds, FileNodeType fileType, String searchName,
         String startTime, String endTime, String listType, OrderRequest orderRequest) {
         List<FileNode> newFileNodeList = new ArrayList<FileNode>();
@@ -802,9 +749,150 @@ public class FileNodeServiceImpl implements FileNodeService {
     }
 
     @Override
-    public List<FileNode> subListByTag(String positionId, String parentId, String tagId, String listType,
-        OrderRequest orderRequest) {
-        return List.of();
+    @Transactional
+    public Y9Result<Object> resetFolderPassword(FileNode folder) {
+        try {
+            FileNode node = this.findById(folder.getId());
+            if (null != node) {
+                String newPassword = Y9MessageDigestUtil.md5(folder.getFilePassword());
+                node.setFilePassword(newPassword);
+                node.setUpdateTime(new Date());
+                this.saveNode(node);
+                AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                    .action(StorageAuditLogEnum.FOLDER_RESET_PASSWORD.getAction())
+                    .description(
+                        Y9StringUtil.format(StorageAuditLogEnum.FOLDER_RESET_PASSWORD.getDescription(), node.getName()))
+                    .objectId(node.getId())
+                    .oldObject(node)
+                    .currentObject(null)
+                    .build();
+                Y9Context.publishEvent(auditLogEvent);
+                return Y9Result.success("文件夹密码重置成功！");
+            }
+            return Y9Result.failure("文件夹密码重置失败！未找到文件!");
+        } catch (Exception e) {
+            LOGGER.error("文件夹密码重置失败！", e);
+            return Y9Result.failure("文件夹密码重置失败！");
+        }
+    }
+
+    @Override
+    @Transactional
+    public Y9Result<Object> setFolderPassword(FileNode folder) {
+        try {
+            FileNode node = this.findById(folder.getId());
+            node.setFilePassword(Y9MessageDigestUtil.md5(folder.getFilePassword()));
+            node.setUpdateTime(new Date());
+            this.saveNode(node);
+            AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                .action(StorageAuditLogEnum.FOLDER_SET_PASSWORD.getAction())
+                .description(
+                    Y9StringUtil.format(StorageAuditLogEnum.FOLDER_SET_PASSWORD.getDescription(), node.getName()))
+                .objectId(node.getId())
+                .oldObject(node)
+                .currentObject(null)
+                .build();
+            Y9Context.publishEvent(auditLogEvent);
+            return Y9Result.success("文件夹密码设置成功！");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Y9Result.failure("文件夹密码设置失败！");
+        }
+    }
+
+    @Override
+    @Transactional
+    public Y9Result<Object> setLinkPwd(String id, boolean encryption, String linkPassword) {
+        try {
+            FileNode fileNode = this.findById(id);
+            if (null != fileNode) {
+                fileNode.setEncryption(encryption);
+                fileNode.setLinkPassword(encryption ? linkPassword : "");
+                this.saveNode(fileNode);
+                AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                    .action(StorageAuditLogEnum.SHARE_LINK_SET_PASSWORD.getAction())
+                    .description(Y9StringUtil.format(StorageAuditLogEnum.SHARE_LINK_SET_PASSWORD.getDescription(),
+                        fileNode.getName()))
+                    .objectId(fileNode.getId())
+                    .oldObject(fileNode)
+                    .currentObject(null)
+                    .build();
+                Y9Context.publishEvent(auditLogEvent);
+            }
+        } catch (Exception e) {
+            LOGGER.error("设置文件直链密码失败！", e);
+        }
+        return Y9Result.success(null, "设置文件直链密码成功");
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> saveFileNodeAndCapacity(String parentId, String fileName, String fileExtension,
+        long fileSize, String y9FileStoreId, String listType) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("msg", "文件上传失败");
+        map.put("success", false);
+        map.put("fileId", null);
+        UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
+        String userId = userInfo.getPersonId(), userName = userInfo.getName();
+        try {
+            if (parentId.equals(FileListType.MY.getValue())) {
+                StorageCapacity capacity = storageCapacityService.findByCapacityOwnerId(userId);
+                if (null == capacity) {
+                    StorageCapacity sc = new StorageCapacity();
+                    sc.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
+                    sc.setCapacityOwnerId(userId);
+                    sc.setCapacityOwnerName(userName);
+                    sc.setCapacitySize(Long.valueOf(defaultStorageCapacity));
+                    sc.setRemainingLength(Long.valueOf(defaultStorageCapacity));
+                    sc.setCreateTime(new Date());
+                    storageCapacityService.save(sc);
+                } else {
+                    if (capacity.getRemainingLength() > fileSize) {
+                        capacity.setRemainingLength(capacity.getRemainingLength() - fileSize);
+                        storageCapacityService.save(capacity);
+                    }
+                }
+            }
+            Integer type = FileNodeUtil.fileTypeConvert(fileExtension);
+            boolean fileNodeExists = this.isFileNodeExists(parentId, fileName);
+
+            FileNode fileNode = new FileNode();
+            fileNode.setFileSuffix(fileExtension);
+            fileNode.setFileSize(fileSize);
+            fileNode.setCreateTime(new Date());
+            fileNode.setUpdateTime(new Date());
+            fileNode.setFileStoreId(y9FileStoreId);
+            fileNode.setListType(listType);
+            fileNode.setUserId(userInfo.getPersonId());
+            fileNode.setUserName(userInfo.getName());
+            fileNode.setFileType(type);
+            fileNode.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
+            if (StringUtils.isNotBlank(parentId)) {
+                fileNode.setParentId(parentId);
+            }
+            if (fileNodeExists) {
+                SimpleDateFormat sdf = new SimpleDateFormat("_yyyyMMdd_HHmmss");
+                fileName = FilenameUtils.getBaseName(fileName) + sdf.format(new Date()) + "." + fileExtension;
+            }
+            fileNode.setName(fileName);
+            fileNode = this.saveNode(fileNode);
+            AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                .action(StorageAuditLogEnum.FILE_UPLOAD.getAction())
+                .description(Y9StringUtil.format(StorageAuditLogEnum.FILE_UPLOAD.getDescription(), fileNode.getName()))
+                .objectId(fileNode.getId())
+                .oldObject(fileNode)
+                .currentObject(null)
+                .build();
+            Y9Context.publishEvent(auditLogEvent);
+            map.put("fileId", fileNode.getId());
+            map.put("msg", "文件上传成功");
+            map.put("success", true);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+
+        }
+        return map;
     }
 
     @Override

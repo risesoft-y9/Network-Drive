@@ -2,12 +2,10 @@ package net.risesoft.controller;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,17 +15,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.entity.StorageCapacity;
-import net.risesoft.enums.StorageAuditLogEnum;
 import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.user.UserInfo;
-import net.risesoft.pojo.AuditLogEvent;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.StorageCapacityService;
 import net.risesoft.util.FileUtils;
-import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
-import net.risesoft.y9.util.Y9StringUtil;
 
 /**
  * 文件存储空间接口
@@ -42,8 +36,6 @@ import net.risesoft.y9.util.Y9StringUtil;
 public class StorageCapacityController {
 
     private final StorageCapacityService storageCapacityService;
-    @Value("${y9.app.storage.defaultStorageCapacity}")
-    private String defaultStorageCapacity;
 
     /**
      * 获取存储信息
@@ -126,41 +118,7 @@ public class StorageCapacityController {
     @RiseLog(operationName = "更新存储空间值")
     @RequestMapping(value = "/updateCapacity")
     public Y9Result<Object> updateCapacity(StorageCapacity storageCapacity) {
-        try {
-            StorageCapacity sc = storageCapacityService.findById(storageCapacity.getId());
-            if (null != sc) {
-                long defaultSize = Long.parseLong(defaultStorageCapacity);
-                if (storageCapacity.getCapacitySize() == defaultSize
-                    || storageCapacity.getCapacitySize() > defaultSize) {
-                    if (storageCapacity.getCapacitySize() > sc.getCapacitySize()) {
-                        Long size = storageCapacity.getCapacitySize() - sc.getCapacitySize();
-                        sc.setRemainingLength(size + sc.getRemainingLength());
-                    }
-                    if (storageCapacity.getCapacitySize() < sc.getCapacitySize()) {// 5-8
-                        Long size = sc.getCapacitySize() - storageCapacity.getCapacitySize();// 3
-                        sc.setRemainingLength(sc.getRemainingLength() - size);
-                    }
-                    sc.setCapacitySize(storageCapacity.getCapacitySize());
-                    sc.setUpdateTime(new Date());
-                    storageCapacityService.save(sc);
-                    AuditLogEvent auditLogEvent = AuditLogEvent.builder()
-                        .action(StorageAuditLogEnum.STORAGE_CAPACITY_UPDATE.getAction())
-                        .description(Y9StringUtil.format(StorageAuditLogEnum.STORAGE_CAPACITY_UPDATE.getDescription(),
-                            sc.getOperatorName(), sc.getCapacityOwnerName(), sc.getCapacitySize()))
-                        .objectId(sc.getId())
-                        .oldObject(sc)
-                        .currentObject(null)
-                        .build();
-                    Y9Context.publishEvent(auditLogEvent);
-                } else {
-                    return Y9Result.failure("存储空间只能扩容，扩容值不能小于默认存储容量：" + defaultStorageCapacity + "字节("
-                        + FileUtils.convertFileSize(sc.getCapacitySize()) + ")");
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error("存储空间扩容失败", e);
-        }
-        return Y9Result.success(null, "存储空间扩容成功");
+        return storageCapacityService.updateCapacity(storageCapacity);
     }
 
 }
