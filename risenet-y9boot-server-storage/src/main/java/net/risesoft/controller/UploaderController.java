@@ -34,10 +34,12 @@ import net.risesoft.entity.Chunk;
 import net.risesoft.entity.FileInfo;
 import net.risesoft.entity.FileNode;
 import net.risesoft.entity.StorageCapacity;
+import net.risesoft.enums.StorageAuditLogEnum;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.user.UserInfo;
+import net.risesoft.pojo.AuditLogEvent;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.ChunkService;
 import net.risesoft.service.FileInfoService;
@@ -47,6 +49,7 @@ import net.risesoft.support.FileListType;
 import net.risesoft.util.FileNodeUtil;
 import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
+import net.risesoft.y9.util.Y9StringUtil;
 import net.risesoft.y9public.entity.Y9FileStore;
 import net.risesoft.y9public.service.Y9FileStoreService;
 
@@ -235,6 +238,14 @@ public class UploaderController {
             }
             fileNode.setName(fileName);
             fileNode = fileNodeService.saveNode(fileNode);
+            AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                .action(StorageAuditLogEnum.FILE_UPLOAD.getAction())
+                .description(Y9StringUtil.format(StorageAuditLogEnum.FILE_UPLOAD.getDescription(), fileNode.getName()))
+                .objectId(fileNode.getId())
+                .oldObject(fileNode)
+                .currentObject(null)
+                .build();
+            Y9Context.publishEvent(auditLogEvent);
             map.put("fileId", fileNode.getId());
             map.put("msg", "文件上传成功");
             map.put("success", true);

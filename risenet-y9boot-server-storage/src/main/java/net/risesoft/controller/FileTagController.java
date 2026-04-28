@@ -62,6 +62,12 @@ public class FileTagController {
         return Y9Result.success(fileTagService.listAll(), "获取标签列表成功");
     }
 
+    /**
+     * 检查标签是否被使用
+     * 
+     * @param tagIdList
+     * @return
+     */
     @PostMapping("/checkIsUsed")
     public Y9Result<Object> checkIsUsed(@RequestParam(name = "tagIds") List<String> tagIdList) {
         List<FileTagRelation> fileTagRelationList = fileTagRelationService.findByTagIds(tagIdList);
@@ -189,8 +195,8 @@ public class FileTagController {
      */
     @RiseLog(operationName = "编辑自定义文件标签", operationType = OperationTypeEnum.MODIFY, saveParams = true)
     @PostMapping("/updateCustomTag")
-    public Y9Result<Object> updateFileTag(FileTag fileTag, @RequestParam String fileId) {
-        return fileTagService.saveCustomTag(fileTag, fileId);
+    public Y9Result<Object> updateCustomTag(FileTag fileTag, @RequestParam String fileId) {
+        return fileTagService.updateCustomTag(fileTag, fileId);
     }
 
 }

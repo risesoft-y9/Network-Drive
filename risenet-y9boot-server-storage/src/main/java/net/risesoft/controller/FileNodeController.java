@@ -40,10 +40,12 @@ import net.risesoft.controller.dto.FileNodeListDTO;
 import net.risesoft.entity.FileDownLoadRecord;
 import net.risesoft.entity.FileNode;
 import net.risesoft.entity.FileTag;
+import net.risesoft.enums.StorageAuditLogEnum;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.user.UserInfo;
+import net.risesoft.pojo.AuditLogEvent;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.FileDownLoadRecordService;
@@ -55,7 +57,9 @@ import net.risesoft.service.FileTagService;
 import net.risesoft.support.FileListType;
 import net.risesoft.support.FileNodeType;
 import net.risesoft.support.OrderRequest;
+import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
+import net.risesoft.y9.util.Y9StringUtil;
 import net.risesoft.y9.util.Y9Util;
 import net.risesoft.y9.util.mime.ContentDispositionUtil;
 import net.risesoft.y9.util.signing.Y9MessageDigestUtil;
@@ -94,6 +98,15 @@ public class FileNodeController {
                         node.setFilePassword("");
                         node.setUpdateTime(new Date());
                         fileNodeService.saveNode(node);
+                        AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                            .action(StorageAuditLogEnum.FOLDER_CANCEL_PASSWORD.getAction())
+                            .description(Y9StringUtil
+                                .format(StorageAuditLogEnum.FOLDER_CANCEL_PASSWORD.getDescription(), node.getName()))
+                            .objectId(folder.getId())
+                            .oldObject(folder)
+                            .currentObject(null)
+                            .build();
+                        Y9Context.publishEvent(auditLogEvent);
                         return Y9Result.success("文件夹密码取消成功！");
                     } else {
                         return Y9Result.failure("文件夹原始密码错误！");
@@ -190,6 +203,15 @@ public class FileNodeController {
                 if (StringUtils.isNotBlank(node.getFilePassword())) {
                     String inputPwd = Y9MessageDigestUtil.md5(folder.getFilePassword());
                     if (inputPwd.equals(node.getFilePassword())) {
+                        AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                            .action(StorageAuditLogEnum.FOLDER_DECRYPT_PASSWORD.getAction())
+                            .description(Y9StringUtil
+                                .format(StorageAuditLogEnum.FOLDER_DECRYPT_PASSWORD.getDescription(), node.getName()))
+                            .objectId(folder.getId())
+                            .oldObject(folder)
+                            .currentObject(null)
+                            .build();
+                        Y9Context.publishEvent(auditLogEvent);
                         return Y9Result.success("文件夹解密成功！");
                     } else {
                         return Y9Result.failure("密码输入错误，请重新输入！");
@@ -223,7 +245,6 @@ public class FileNodeController {
 
     public void downloadMultiFile(String positionId, List<String> idList, HttpServletResponse response) {
         ZipOutputStream zipos = null;
-        long fileSize = 0;
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         try {
             String fileName = "【批量下载】.zip";
@@ -304,7 +325,17 @@ public class FileNodeController {
     @RiseLog(operationName = "清空回收站")
     @DeleteMapping(value = "/emptyRecycleBin")
     public Y9Result<Object> emptyRecycleBin() {
+        UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         fileNodeService.emptyRecycleBin();
+        AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+            .action(StorageAuditLogEnum.RECYCLE_BIN_EMPTY.getAction())
+            .description(
+                Y9StringUtil.format(StorageAuditLogEnum.RECYCLE_BIN_EMPTY.getDescription(), userInfo.getName()))
+            .objectId(userInfo.getId())
+            .oldObject(userInfo)
+            .currentObject(null)
+            .build();
+        Y9Context.publishEvent(auditLogEvent);
         return Y9Result.success(null, "成功清空回收站");
     }
 
@@ -671,6 +702,15 @@ public class FileNodeController {
                 node.setFilePassword(newPassword);
                 node.setUpdateTime(new Date());
                 fileNodeService.saveNode(node);
+                AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                    .action(StorageAuditLogEnum.FOLDER_RESET_PASSWORD.getAction())
+                    .description(
+                        Y9StringUtil.format(StorageAuditLogEnum.FOLDER_RESET_PASSWORD.getDescription(), node.getName()))
+                    .objectId(node.getId())
+                    .oldObject(node)
+                    .currentObject(null)
+                    .build();
+                Y9Context.publishEvent(auditLogEvent);
                 // }
                 return Y9Result.success("文件夹密码重置成功！");
             }
@@ -707,7 +747,6 @@ public class FileNodeController {
     public Y9Result<Object> saveFolder(@RequestHeader("positionId") String positionId, FileNode folder) {
         Y9LoginUserHolder.setPositionId(positionId);
         fileNodeService.saveFolder(folder);
-
         return Y9Result.success(null, "文件夹创建成功");
     }
 
@@ -741,6 +780,15 @@ public class FileNodeController {
             node.setFilePassword(Y9MessageDigestUtil.md5(folder.getFilePassword()));
             node.setUpdateTime(new Date());
             fileNodeService.saveNode(node);
+            AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                .action(StorageAuditLogEnum.FOLDER_SET_PASSWORD.getAction())
+                .description(
+                    Y9StringUtil.format(StorageAuditLogEnum.FOLDER_SET_PASSWORD.getDescription(), node.getName()))
+                .objectId(node.getId())
+                .oldObject(node)
+                .currentObject(null)
+                .build();
+            Y9Context.publishEvent(auditLogEvent);
             return Y9Result.success("文件夹密码设置成功！");
         } catch (Exception e) {
             e.printStackTrace();
@@ -763,6 +811,15 @@ public class FileNodeController {
                 fileNode.setEncryption(encryption);
                 fileNode.setLinkPassword(encryption ? linkPassword : "");
                 fileNodeService.saveNode(fileNode);
+                AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                    .action(StorageAuditLogEnum.SHARE_LINK_SET_PASSWORD.getAction())
+                    .description(Y9StringUtil.format(StorageAuditLogEnum.SHARE_LINK_SET_PASSWORD.getDescription(),
+                        fileNode.getName()))
+                    .objectId(fileNode.getId())
+                    .oldObject(fileNode)
+                    .currentObject(null)
+                    .build();
+                Y9Context.publishEvent(auditLogEvent);
             }
         } catch (Exception e) {
             LOGGER.error("设置文件直链密码失败！", e);
