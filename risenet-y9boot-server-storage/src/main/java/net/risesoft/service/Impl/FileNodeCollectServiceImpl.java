@@ -11,14 +11,18 @@ import lombok.RequiredArgsConstructor;
 
 import net.risesoft.entity.FileNode;
 import net.risesoft.entity.FileNodeCollect;
+import net.risesoft.enums.StorageAuditLogEnum;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.model.user.UserInfo;
+import net.risesoft.pojo.AuditLogEvent;
 import net.risesoft.repository.FileNodeCollectRepository;
 import net.risesoft.repository.FileNodeRepository;
 import net.risesoft.service.FileNodeCollectService;
 import net.risesoft.support.FileNodeType;
+import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
+import net.risesoft.y9.util.Y9StringUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -61,6 +65,15 @@ public class FileNodeCollectServiceImpl implements FileNodeCollectService {
             collect.setCollectUserId(userInfo.getPersonId());
             collect.setCollectTime(new Date());
             fileNodeCollectRepository.save(collect);
+
+            AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                .action(StorageAuditLogEnum.FILE_COLLECT.getAction())
+                .description(Y9StringUtil.format(StorageAuditLogEnum.FILE_COLLECT.getDescription(), node.getName()))
+                .objectId(fileId)
+                .oldObject(collect)
+                .currentObject(null)
+                .build();
+            Y9Context.publishEvent(auditLogEvent);
         }
     }
 
@@ -75,6 +88,15 @@ public class FileNodeCollectServiceImpl implements FileNodeCollectService {
                 fileNodeCollectRepository.findByFileIdAndCollectUserId(node.getId(), userInfo.getPersonId());
             if (null != collect && StringUtils.isNotBlank(collect.getId())) {
                 fileNodeCollectRepository.delete(collect);
+                AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                    .action(StorageAuditLogEnum.FILE_CANCEL_COLLECT.getAction())
+                    .description(
+                        Y9StringUtil.format(StorageAuditLogEnum.FILE_CANCEL_COLLECT.getDescription(), node.getName()))
+                    .objectId(fileId)
+                    .oldObject(collect)
+                    .currentObject(null)
+                    .build();
+                Y9Context.publishEvent(auditLogEvent);
             }
         }
     }

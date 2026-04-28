@@ -22,7 +22,7 @@ public interface FileTagService {
 
     FileTag findById(String id);
 
-    Y9Result<Object> updateFileTag(FileTag fileTag, String fileId);
+    Y9Result<Object> updateCustomTag(FileTag fileTag, String fileId);
 
     Y9Result<Object> saveCustomTag(FileTag fileTag, String fileId);
 

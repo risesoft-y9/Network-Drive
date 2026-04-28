@@ -29,16 +29,18 @@ import net.risesoft.api.platform.org.PositionApi;
 import net.risesoft.entity.FileNode;
 import net.risesoft.entity.FileNodeShare;
 import net.risesoft.entity.StorageCapacity;
+import net.risesoft.enums.StorageAuditLogEnum;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.model.platform.org.OrgUnit;
 import net.risesoft.model.platform.org.Position;
 import net.risesoft.model.user.UserInfo;
+import net.risesoft.pojo.AuditLogEvent;
 import net.risesoft.repository.FileNodeRepository;
 import net.risesoft.repository.FileNodeShareRepository;
+import net.risesoft.repository.FileTagRelationRepository;
 import net.risesoft.repository.spec.FileNodeSpecification;
 import net.risesoft.service.FileNodeService;
-import net.risesoft.service.FileTagRelationService;
 import net.risesoft.service.StorageCapacityService;
 import net.risesoft.support.FileListType;
 import net.risesoft.support.FileNodeType;
@@ -53,6 +55,7 @@ import net.risesoft.util.FileNodeUtil;
 import net.risesoft.util.FileUtils;
 import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
+import net.risesoft.y9.util.Y9StringUtil;
 import net.risesoft.y9public.entity.Y9FileStore;
 import net.risesoft.y9public.service.Y9FileStoreService;
 
@@ -86,7 +89,7 @@ public class FileNodeServiceImpl implements FileNodeService {
     private final PositionApi positionApi;
     private final Y9FileStoreService y9FileStoreService;
     private final StorageCapacityService storageCapacityService;
-    private final FileTagRelationService fileTagRelationService;
+    private final FileTagRelationRepository fileTagRelationRepository;
     @Value("${y9.app.storage.defaultStorageCapacity}")
     private String defaultStorageCapacity;
     @Value("${y9.app.storage.singleUploadLimit}")
@@ -105,6 +108,15 @@ public class FileNodeServiceImpl implements FileNodeService {
         fileNode.setParentId(RootFolder.MY.getEnName());
         fileNode.setListType(RootFolder.MY.getEnName());
         this.save(fileNode);
+        AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+            .action(StorageAuditLogEnum.FILE_CANCEL_SHARE.getAction())
+            .description(
+                Y9StringUtil.format(StorageAuditLogEnum.FILE_CANCEL_SHARE.getDescription(), fileNode.getName()))
+            .objectId(fileNode.getId())
+            .oldObject(fileNode)
+            .currentObject(null)
+            .build();
+        Y9Context.publishEvent(auditLogEvent);
     }
 
     @Override
@@ -191,6 +203,14 @@ public class FileNodeServiceImpl implements FileNodeService {
         fileNode.setDeleted(true);
         fileNode.setUpdateTime(new Date());
         this.save(fileNode);
+        AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+            .action(StorageAuditLogEnum.FILE_DELETE.getAction())
+            .description(Y9StringUtil.format(StorageAuditLogEnum.FILE_DELETE.getDescription(), fileNode.getName()))
+            .objectId(fileNode.getId())
+            .oldObject(fileNode)
+            .currentObject(null)
+            .build();
+        Y9Context.publishEvent(auditLogEvent);
     }
 
     @Override
@@ -199,6 +219,7 @@ public class FileNodeServiceImpl implements FileNodeService {
         for (String id : idList) {
             FileNode fileNode = this.findById(id);
             logicDelete(fileNode);
+
         }
     }
 
@@ -213,6 +234,14 @@ public class FileNodeServiceImpl implements FileNodeService {
                 fileNode.setParentId(null);
             }
             this.save(fileNode);
+            AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                .action(StorageAuditLogEnum.FILE_MOVE.getAction())
+                .description(Y9StringUtil.format(StorageAuditLogEnum.FILE_MOVE.getDescription(), fileNode.getName()))
+                .objectId(fileNode.getId())
+                .oldObject(fileNode)
+                .currentObject(null)
+                .build();
+            Y9Context.publishEvent(auditLogEvent);
         }
     }
 
@@ -236,6 +265,14 @@ public class FileNodeServiceImpl implements FileNodeService {
             }
         }
         fileNodeRepository.delete(fileNode);
+        AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+            .action(StorageAuditLogEnum.FILE_DELETE.getAction())
+            .description(Y9StringUtil.format(StorageAuditLogEnum.FILE_DELETE.getDescription(), fileNode.getName()))
+            .objectId(fileNode.getId())
+            .oldObject(fileNode)
+            .currentObject(null)
+            .build();
+        Y9Context.publishEvent(auditLogEvent);
     }
 
     @Override
@@ -281,6 +318,14 @@ public class FileNodeServiceImpl implements FileNodeService {
         fileNode.setDeleted(false);
         fileNode.setUpdateTime(new Date());
         this.save(fileNode);
+        AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+            .action(StorageAuditLogEnum.FILE_RESTORE.getAction())
+            .description(Y9StringUtil.format(StorageAuditLogEnum.FILE_RESTORE.getDescription(), fileNode.getName()))
+            .objectId(fileNode.getId())
+            .oldObject(fileNode)
+            .currentObject(null)
+            .build();
+        Y9Context.publishEvent(auditLogEvent);
     }
 
     public void restoreChildren(String id) {
@@ -317,12 +362,32 @@ public class FileNodeServiceImpl implements FileNodeService {
                 fileNode.setUserName(userInfo.getName());
             }
             fileNode.setParentId(StringUtils.isNotBlank(fileNode.getParentId()) ? fileNode.getParentId() : null);
-            return fileNodeRepository.save(fileNode);
+            fileNode = fileNodeRepository.save(fileNode);
+            AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                .action(StorageAuditLogEnum.FOLDER_CREATE.getAction())
+                .description(
+                    Y9StringUtil.format(StorageAuditLogEnum.FOLDER_CREATE.getDescription(), fileNode.getName()))
+                .objectId(fileNode.getId())
+                .oldObject(fileNode)
+                .currentObject(null)
+                .build();
+            Y9Context.publishEvent(auditLogEvent);
+            return fileNode;
         } else {
             FileNode oldFileNode = fileNodeRepository.findById(fileNode.getId()).orElse(null);
             oldFileNode.setName(fileNode.getName());
             oldFileNode.setUpdateTime(new Date());
-            return fileNodeRepository.save(oldFileNode);
+            oldFileNode = fileNodeRepository.save(oldFileNode);
+            AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                .action(StorageAuditLogEnum.FOLDER_RENAME.getAction())
+                .description(
+                    Y9StringUtil.format(StorageAuditLogEnum.FOLDER_RENAME.getDescription(), fileNode.getName()))
+                .objectId(fileNode.getId())
+                .oldObject(fileNode)
+                .currentObject(null)
+                .build();
+            Y9Context.publishEvent(auditLogEvent);
+            return oldFileNode;
         }
     }
 
@@ -421,6 +486,15 @@ public class FileNodeServiceImpl implements FileNodeService {
                 }
                 fileNode.setName(fileName);
                 this.save(fileNode);
+                AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                    .action(StorageAuditLogEnum.FILE_UPLOAD.getAction())
+                    .description(
+                        Y9StringUtil.format(StorageAuditLogEnum.FILE_UPLOAD.getDescription(), fileNode.getName()))
+                    .objectId(fileNode.getId())
+                    .oldObject(fileNode)
+                    .currentObject(null)
+                    .build();
+                Y9Context.publishEvent(auditLogEvent);
                 map.put("msg", "文件上传成功");
                 map.put("success", true);
             }
@@ -537,7 +611,7 @@ public class FileNodeServiceImpl implements FileNodeService {
             if (listType.equals(FileListType.DEPT.getValue())) {
                 OrgUnit orgUnit = orgUnitApi.getOrgUnitParent(tenantId, positionId).getData();
                 // 通过FileTagRelation表查询同时具有所有指定标签的文件ID列表
-                List<String> fileIds = fileTagRelationService.findFileIdsByTagIds(tagIds);
+                List<String> fileIds = fileTagRelationRepository.findFileIdsByTagIds(tagIds);
                 FileNodeSpecification spec =
                     new FileNodeSpecification(id, fileIds, fileType, listType, searchName, orgUnit.getId(), false);
                 fileNodeList = fileNodeRepository.findAll(spec);
@@ -561,7 +635,7 @@ public class FileNodeServiceImpl implements FileNodeService {
                 fileNodeList = fileNodeRepository.findAll(spec);
             } else {
                 // 通过FileTagRelation表查询同时具有所有指定标签的文件ID列表
-                List<String> fileIds = fileTagRelationService.findFileIdsByTagIds(tagIds);
+                List<String> fileIds = fileTagRelationRepository.findFileIdsByTagIds(tagIds);
 
                 FileNodeSpecification spec =
                     new FileNodeSpecification(personId, id, fileIds, fileType, listType, searchName, false);
@@ -596,7 +670,7 @@ public class FileNodeServiceImpl implements FileNodeService {
     public List<FileNode> listFilesByTagIds(String positionId, String id, FileNodeType fileNodeType, String searchName,
         List<String> tagIds, String listType, OrderRequest orderRequest) {
         // 通过FileTagRelation表查询同时具有所有指定标签的文件ID列表
-        List<String> fileIds = fileTagRelationService.findFileIdsByTagIds(tagIds);
+        List<String> fileIds = fileTagRelationRepository.findFileIdsByTagIds(tagIds);
 
         if (fileIds.isEmpty()) {
             return new ArrayList<>();
@@ -668,7 +742,7 @@ public class FileNodeServiceImpl implements FileNodeService {
                 endTime = endTime + " 23:59:59";
                 endDate = sdf.parse(endTime);
             }
-            List<String> fileIds = fileTagRelationService.findFileIdsByTagIds(tagIds);
+            List<String> fileIds = fileTagRelationRepository.findFileIdsByTagIds(tagIds);
             FileNodeSpecification spec =
                 new FileNodeSpecification(id, fileIds, fileType, listType, searchName, startDate, endDate, false);
             List<FileNode> fileNodeList = fileNodeRepository.findAll(spec);
@@ -714,7 +788,7 @@ public class FileNodeServiceImpl implements FileNodeService {
                 endTime = endTime + " 23:59:59";
                 endDate = sdf.parse(endTime);
             }
-            List<String> fileIds = fileTagRelationService.findFileIdsByTagIds(tagIds);
+            List<String> fileIds = fileTagRelationRepository.findFileIdsByTagIds(tagIds);
             FileNodeSpecification spec =
                 new FileNodeSpecification(id, fileIds, fileType, listType, searchName, startDate, endDate, false);
             fileNodeList = fileNodeRepository.findAll(spec);

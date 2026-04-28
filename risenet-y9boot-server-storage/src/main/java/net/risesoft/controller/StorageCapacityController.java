@@ -17,13 +17,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.entity.StorageCapacity;
+import net.risesoft.enums.StorageAuditLogEnum;
 import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.user.UserInfo;
+import net.risesoft.pojo.AuditLogEvent;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.StorageCapacityService;
 import net.risesoft.util.FileUtils;
+import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
+import net.risesoft.y9.util.Y9StringUtil;
 
 /**
  * 文件存储空间接口
@@ -139,6 +143,15 @@ public class StorageCapacityController {
                     sc.setCapacitySize(storageCapacity.getCapacitySize());
                     sc.setUpdateTime(new Date());
                     storageCapacityService.save(sc);
+                    AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                        .action(StorageAuditLogEnum.STORAGE_CAPACITY_UPDATE.getAction())
+                        .description(Y9StringUtil.format(StorageAuditLogEnum.STORAGE_CAPACITY_UPDATE.getDescription(),
+                            sc.getOperatorName(), sc.getCapacityOwnerName(), sc.getCapacitySize()))
+                        .objectId(sc.getId())
+                        .oldObject(sc)
+                        .currentObject(null)
+                        .build();
+                    Y9Context.publishEvent(auditLogEvent);
                 } else {
                     return Y9Result.failure("存储空间只能扩容，扩容值不能小于默认存储容量：" + defaultStorageCapacity + "字节("
                         + FileUtils.convertFileSize(sc.getCapacitySize()) + ")");

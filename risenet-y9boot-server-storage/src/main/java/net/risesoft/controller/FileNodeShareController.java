@@ -64,16 +64,16 @@ public class FileNodeShareController {
     }
 
     /**
-     * 删除公开人员
+     * 删除公开记录
      *
      * @param publicIdsList
      * @return
      */
-    @RiseLog(operationName = "删除公开人员")
+    @RiseLog(operationName = "删除公开记录")
     @DeleteMapping(value = "/deletePublic")
     public Y9Result<Object> deletePublic(@RequestParam(name = "publicIds") List<String> publicIdsList) {
         fileNodeShareService.deleteByFileNodeIdList(publicIdsList);
-        return Y9Result.success(null, "删除公开人员成功");
+        return Y9Result.success(null, "删除公开记录成功");
     }
 
     /**

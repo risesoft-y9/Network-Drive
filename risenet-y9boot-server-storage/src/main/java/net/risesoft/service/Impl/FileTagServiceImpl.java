@@ -14,17 +14,23 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import net.risesoft.entity.FileNode;
 import net.risesoft.entity.FileTag;
 import net.risesoft.entity.FileTagRelation;
+import net.risesoft.enums.StorageAuditLogEnum;
 import net.risesoft.id.IdType;
 import net.risesoft.id.Y9IdGenerator;
 import net.risesoft.model.user.UserInfo;
+import net.risesoft.pojo.AuditLogEvent;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.repository.FileTagRelationRepository;
 import net.risesoft.repository.FileTagRepository;
+import net.risesoft.service.FileNodeService;
 import net.risesoft.service.FileTagService;
+import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
+import net.risesoft.y9.util.Y9StringUtil;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +38,7 @@ public class FileTagServiceImpl implements FileTagService {
 
     private final FileTagRepository fileTagRepository;
     private final FileTagRelationRepository fileTagRelationRepository;
+    private final FileNodeService fileNodeService;
 
     @Override
     public Y9Page<FileTag> list(Integer page, Integer rows, String tagName) {
@@ -93,6 +100,14 @@ public class FileTagServiceImpl implements FileTagService {
             }
         }
         fileTagRepository.save(fileTag);
+        AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+            .action(StorageAuditLogEnum.TAG_CREATE.getAction())
+            .description(Y9StringUtil.format(StorageAuditLogEnum.TAG_CREATE.getDescription(), fileTag.getTagName()))
+            .objectId(fileTag.getId())
+            .oldObject(fileTag)
+            .currentObject(null)
+            .build();
+        Y9Context.publishEvent(auditLogEvent);
         return Y9Result.success("保存标签成功");
     }
 
@@ -101,6 +116,15 @@ public class FileTagServiceImpl implements FileTagService {
     public void deleteFileTag(List<String> idList) {
         for (String id : idList) {
             fileTagRepository.deleteById(id);
+            FileTag fileTag = this.findById(id);
+            AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                .action(StorageAuditLogEnum.TAG_DELETE.getAction())
+                .description(Y9StringUtil.format(StorageAuditLogEnum.TAG_DELETE.getDescription(), fileTag.getTagName()))
+                .objectId(fileTag.getId())
+                .oldObject(fileTag)
+                .currentObject(null)
+                .build();
+            Y9Context.publishEvent(auditLogEvent);
         }
     }
 
@@ -124,13 +148,23 @@ public class FileTagServiceImpl implements FileTagService {
 
     @Override
     @Transactional
-    public Y9Result<Object> updateFileTag(FileTag fileTag, String fileId) {
+    public Y9Result<Object> updateCustomTag(FileTag fileTag, String fileId) {
         FileTag existingTag = this.findById(fileTag.getId());
         if (existingTag != null) {
             existingTag.setTagName(fileTag.getTagName());
             existingTag.setTagColor(fileTag.getTagColor());
             existingTag.setUpdateTime(new Date());
             fileTagRepository.save(existingTag);
+            FileNode fileNode = fileNodeService.findById(fileId);
+            AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                .action(StorageAuditLogEnum.FILE_UPDATE_CUSTOM_TAG.getAction())
+                .description(Y9StringUtil.format(StorageAuditLogEnum.FILE_UPDATE_CUSTOM_TAG.getDescription(),
+                    fileNode.getName(), fileTag.getTagName()))
+                .objectId(fileTag.getId())
+                .oldObject(fileTag)
+                .currentObject(null)
+                .build();
+            Y9Context.publishEvent(auditLogEvent);
             return Y9Result.success("更新标签成功");
         }
         return Y9Result.failure("标签不存在");
@@ -142,7 +176,18 @@ public class FileTagServiceImpl implements FileTagService {
         FileTagRelation fileTagRelation =
             fileTagRelationRepository.findByFileIdAndTagIdAndOperatorId(fileId, tagId, operatorId);
         if (fileTagRelation != null) {
+            FileNode fileNode = fileNodeService.findById(fileId);
+            FileTag fileTag = this.findById(tagId);
             fileTagRelationRepository.delete(fileTagRelation);
+            AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+                .action(StorageAuditLogEnum.FILE_REMOVE_TAG.getAction())
+                .description(Y9StringUtil.format(StorageAuditLogEnum.FILE_REMOVE_TAG.getDescription(),
+                    fileNode.getName(), fileTag.getTagName()))
+                .objectId(fileTag.getId())
+                .oldObject(fileTag)
+                .currentObject(null)
+                .build();
+            Y9Context.publishEvent(auditLogEvent);
         }
     }
 
@@ -175,6 +220,16 @@ public class FileTagServiceImpl implements FileTagService {
         fileTagRelation.setOperatorId(operatorId);
         fileTagRelation.setOperateTime(new Date());
         fileTagRelationRepository.save(fileTagRelation);
+        FileNode fileNode = fileNodeService.findById(fileId);
+        AuditLogEvent auditLogEvent = AuditLogEvent.builder()
+            .action(StorageAuditLogEnum.FILE_ADD_CUSTOM_TAG.getAction())
+            .description(Y9StringUtil.format(StorageAuditLogEnum.FILE_ADD_CUSTOM_TAG.getDescription(),
+                fileNode.getName(), fileTag.getTagName()))
+            .objectId(fileTag.getId())
+            .oldObject(fileTag)
+            .currentObject(null)
+            .build();
+        Y9Context.publishEvent(auditLogEvent);
         return Y9Result.success("保存标签成功");
     }
 
