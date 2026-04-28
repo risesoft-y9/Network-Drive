@@ -1,6 +1,7 @@
 package net.risesoft.service.Impl;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,6 +16,7 @@ public class FileInfoServiceImpl implements FileInfoService {
     private final FileInfoRepository fileInfoRepository;
 
     @Override
+    @Transactional
     public FileInfo addFileInfo(FileInfo fileInfo) {
         return fileInfoRepository.save(fileInfo);
     }

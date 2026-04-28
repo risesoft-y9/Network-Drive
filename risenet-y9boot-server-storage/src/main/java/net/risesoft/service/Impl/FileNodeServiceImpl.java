@@ -93,6 +93,7 @@ public class FileNodeServiceImpl implements FileNodeService {
     private String singleUploadLimit;
 
     @Override
+    @Transactional
     public void cancelShare(List<String> fileNodeIdList) {
         for (String fileNodeId : fileNodeIdList) {
             cancelShare(fileNodeId);
@@ -121,6 +122,7 @@ public class FileNodeServiceImpl implements FileNodeService {
     }
 
     @Override
+    @Transactional
     public void emptyRecycleBin() {
         List<FileNode> fileNodeList = fileNodeRepository.findByUserIdAndDeletedTrue(Y9LoginUserHolder.getPersonId());
         for (FileNode fileNode : fileNodeList) {
@@ -192,6 +194,7 @@ public class FileNodeServiceImpl implements FileNodeService {
     }
 
     @Override
+    @Transactional
     public void logicDelete(List<String> idList) {
         for (String id : idList) {
             FileNode fileNode = this.findById(id);
@@ -200,6 +203,7 @@ public class FileNodeServiceImpl implements FileNodeService {
     }
 
     @Override
+    @Transactional
     public void move(List<String> idList, String targetId) {
         for (String id : idList) {
             FileNode fileNode = this.findById(id);
@@ -235,6 +239,7 @@ public class FileNodeServiceImpl implements FileNodeService {
     }
 
     @Override
+    @Transactional
     public void permanentlyDelete(List<String> idList) {
         for (String id : idList) {
             FileNode fileNode = this.findById(id);
@@ -261,6 +266,7 @@ public class FileNodeServiceImpl implements FileNodeService {
     }
 
     @Override
+    @Transactional
     public void restore(List<String> idList) {
         for (String id : idList) {
             restore(id);
@@ -293,6 +299,7 @@ public class FileNodeServiceImpl implements FileNodeService {
     }
 
     @Override
+    @Transactional
     public FileNode saveFolder(FileNode fileNode) {
         if (StringUtils.isBlank(fileNode.getId())) {
             UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
@@ -427,6 +434,7 @@ public class FileNodeServiceImpl implements FileNodeService {
     }
 
     @Override
+    @Transactional
     public void share(List<String> fileNodeIdList) {
         for (String fileNodeId : fileNodeIdList) {
             share(fileNodeId);
@@ -726,6 +734,7 @@ public class FileNodeServiceImpl implements FileNodeService {
     }
 
     @Override
+    @Transactional
     public FileNode saveNode(FileNode fileNode) {
         return this.save(fileNode);
     }

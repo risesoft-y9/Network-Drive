@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +31,7 @@ public class FileNodeShareServiceImpl implements FileNodeShareService {
     private final OrgUnitApi orgUnitApi;
 
     @Override
+    @Transactional
     public void cancelShare(String personId, List<String> fileNodeIdList) {
         for (String fileNodeId : fileNodeIdList) {
             cancelShare(personId, fileNodeId);
@@ -53,6 +55,7 @@ public class FileNodeShareServiceImpl implements FileNodeShareService {
     }
 
     @Override
+    @Transactional
     public void deleteByFileNodeIdList(String personId, List<String> idList) {
         for (String fileNodeId : idList) {
             List<FileNodeShare> fileNodeShareList =
@@ -62,6 +65,7 @@ public class FileNodeShareServiceImpl implements FileNodeShareService {
     }
 
     @Override
+    @Transactional
     public void deleteByFileNodeIdList(List<String> idList) {
         for (String fileNodeId : idList) {
             fileNodeShareRepository.deleteById(fileNodeId);
@@ -78,6 +82,7 @@ public class FileNodeShareServiceImpl implements FileNodeShareService {
     }
 
     @Override
+    @Transactional
     public void share(List<String> fileNodeIdList, List<String> orgUnitIdList) {
         orgUnitIdList.add(Y9LoginUserHolder.getUserInfo().getPersonId());
 
@@ -108,6 +113,7 @@ public class FileNodeShareServiceImpl implements FileNodeShareService {
     }
 
     @Override
+    @Transactional
     public void publicTo(List<String> fileNodeIdList, List<String> orgUnitIdList) {
         // orgUnitIdList.add(Y9LoginUserHolder.getUserInfo().getPersonId());
 
