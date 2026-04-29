@@ -1,4 +1,4 @@
-plugins {
+﻿plugins {
     alias(libs.plugins.y9.docker)
     alias(libs.plugins.y9.conventions.war)
     alias(libs.plugins.y9.lombok)
@@ -15,16 +15,20 @@ dependencies {
     api("net.risesoft:risenet-y9boot-starter-jpa-tenant")
     api("net.risesoft:risenet-y9boot-starter-log")
     api("net.risesoft:risenet-y9boot-starter-multi-tenant")
-    api("net.risesoft:risenet-y9boot-api-feignclient-platform")
     api("net.risesoft:risenet-y9boot-support-file-service-ftp")
     api("net.risesoft:risenet-y9boot-support-file-service-local")
     api("net.risesoft:risenet-y9boot-starter-security")
     api("net.risesoft:risenet-y9boot-starter-web")
     api("net.risesoft:risenet-y9boot-common-nacos")
+    api("net.risesoft:risenet-y9boot-starter-liquibase")
+    api("net.risesoft:risenet-y9boot-support-audit")
+    api("net.risesoft:risenet-y9boot-api-feignclient-log")
+    api("net.risesoft:risenet-y9boot-api-feignclient-platform")
     api("org.springframework.boot:spring-boot-starter-validation")
 
     compileOnly("jakarta.servlet:jakarta.servlet-api")
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+
 }
 
 description = "risenet-y9boot-server-storage"

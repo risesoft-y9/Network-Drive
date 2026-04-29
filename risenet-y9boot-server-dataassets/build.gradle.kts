@@ -1,4 +1,4 @@
-plugins {
+﻿plugins {
     alias(libs.plugins.y9.docker)
     alias(libs.plugins.y9.conventions.war)
     alias(libs.plugins.y9.lombok)
@@ -30,6 +30,9 @@ dependencies {
 
     compileOnly("jakarta.servlet:jakarta.servlet-api")
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+
+    api("com.oracle.database.nls:orai18n")
+    api("com.microsoft.sqlserver:mssql-jdbc")
 }
 
 description = "risenet-y9boot-server-dataassets"
