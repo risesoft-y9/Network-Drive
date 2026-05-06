@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 
-import com.alibaba.druid.pool.DruidDataSource;
+import com.zaxxer.hikari.HikariDataSource;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,7 +21,7 @@ public class Y9SqlUtil {
     /**
      * 连接池缓存，使用数据库连接信息的哈希值作为key
      */
-    private static final Map<String, DruidDataSource> DATA_SOURCE_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, HikariDataSource> DATA_SOURCE_CACHE = new ConcurrentHashMap<>();
 
     /**
      * 静态初始化块，注册JVM关闭钩子 确保在应用程序关闭时，所有数据源连接池都被正确关闭
@@ -46,32 +46,23 @@ public class Y9SqlUtil {
         String key = generateDataSourceKey(url, username, password, driver);
 
         // 尝试从缓存中获取连接池
-        DruidDataSource dataSource = DATA_SOURCE_CACHE.get(key);
+        HikariDataSource dataSource = DATA_SOURCE_CACHE.get(key);
 
         if (dataSource == null) {
             try {
                 // 如果缓存中没有，则创建新的连接池
-                dataSource = new DruidDataSource();
-                dataSource.setUrl(url);
+                dataSource = new HikariDataSource();
+                dataSource.setJdbcUrl(url);
                 dataSource.setUsername(username);
                 dataSource.setPassword(password);
                 dataSource.setDriverClassName(driver);
 
                 // 设置基本连接池参数
-                dataSource.setInitialSize(5); // 初始连接数
-                dataSource.setMinIdle(5); // 最小连接数
-                dataSource.setMaxActive(20); // 最大连接数
-                dataSource.setMaxWait(5000); // 获取连接时的最大等待时间
-                dataSource.setConnectionErrorRetryAttempts(2); // 失败后重连的次数
-                dataSource.setBreakAfterAcquireFailure(true); // 请求失败之后中断
-
-                // 性能配置
-                dataSource.setKeepAlive(true); // 开启连接保活机制
-                dataSource.setTimeBetweenConnectErrorMillis(30000); // 连接错误重试时间间隔
-                dataSource.setTransactionQueryTimeout(60); // 事务查询超时时间
+                dataSource.setMinimumIdle(5); // 最小连接数
+                dataSource.setMaximumPoolSize(20); // 最大连接数 请求失败之后中断
 
                 // 将新创建的连接池放入缓存
-                DruidDataSource existingDataSource = DATA_SOURCE_CACHE.putIfAbsent(key, dataSource);
+                HikariDataSource existingDataSource = DATA_SOURCE_CACHE.putIfAbsent(key, dataSource);
                 if (existingDataSource != null) {
                     // 如果有其他线程已经创建了相同的连接池，则关闭当前创建的并使用已有的
                     try {
@@ -304,7 +295,7 @@ public class Y9SqlUtil {
         int closedCount = 0;
         int failedCount = 0;
 
-        for (DruidDataSource dataSource : DATA_SOURCE_CACHE.values()) {
+        for (HikariDataSource dataSource : DATA_SOURCE_CACHE.values()) {
             if (dataSource != null && !dataSource.isClosed()) {
                 try {
                     dataSource.close();

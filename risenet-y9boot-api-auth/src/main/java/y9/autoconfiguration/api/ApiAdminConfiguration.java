@@ -3,7 +3,7 @@ package y9.autoconfiguration.api;
 import java.util.concurrent.Executor;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.task.TaskExecutorBuilder;
+import org.springframework.boot.task.ThreadPoolTaskExecutorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -12,6 +12,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import com.alibaba.ttl.threadpool.TtlExecutors;
 
 import lombok.extern.slf4j.Slf4j;
+
 import net.risesoft.y9.Y9Context;
 
 @Configuration
@@ -21,7 +22,7 @@ public class ApiAdminConfiguration {
 
     @Bean(name = {"taskExecutor"})
     @ConditionalOnMissingBean(name = "taskExecutor")
-    public Executor taskExecutor(TaskExecutorBuilder builder) {
+    public Executor taskExecutor(ThreadPoolTaskExecutorBuilder builder) {
         LOGGER.debug("Api threadPoolExecutor init ......");
         ThreadPoolTaskExecutor taskExecutor = builder.build();
         taskExecutor.setMaxPoolSize(4);
