@@ -7,12 +7,12 @@
  * @FilePath: \y9-vue\y9vue-storage\src\main.ts
  */
 import router from '@/router/index';
-import { setupStore } from '@/store';
+import {setupStore} from '@/store';
 import 'animate.css';
 import 'normalize.css'; // 样式初始化
 import 'remixicon/fonts/remixicon.css';
-import { createApp, ref, watch } from 'vue';
-import sso from 'y9plugin-sso';
+import {createApp, ref, watch} from 'vue';
+import sso from 'y9plugin-sso-l';
 import App from './App.vue';
 import './theme/global.scss';
 import 'viewerjs/dist/viewer.css';
@@ -26,7 +26,7 @@ import y9pluginComponents from 'y9plugin-components-auto';
 import 'y9plugin-components-auto/dist/style.css';
 import y9_zhCn from 'y9plugin-components-auto/dist/locale/zh-cn.mjs'; //默认的y9组件插件中文包
 import y9_en from 'y9plugin-components-auto/dist/locale/en.mjs'; //默认的y9组件插件英文包
-import { useSettingStore } from '@/store/modules/settingStore';
+import {useSettingStore} from '@/store/modules/settingStore';
 import customDirective from '@/utils/directive'; //自定义指令
 
 // 传入sso所需的环境变量
@@ -49,7 +49,7 @@ const env = {
 };
 
 const app: any = createApp(App);
-app.use(sso, { env });
+app.use(sso, {env});
 
 setupStore(app);
 let opts = ref({} as any); //y9组件选项配置
