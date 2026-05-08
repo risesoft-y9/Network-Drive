@@ -42,13 +42,18 @@
             <template #capacitySlot="{ row, column, index }">
                 <el-form ref="capacityForm" :model="formData" class="formClass">
                     <el-form-item v-if="editIndex === index" prop="name">
-                        <el-input
+                        <!-- <el-input
                             ref="nameSign"
                             v-model="formData.capacitySize"
                             clearable
                             style="width: 200px; margin-left: 15px"
                             type="number"
-                        />
+                        /> -->
+                        <el-input-number ref="nameSign" v-model="formData.capacitySize" :min="1" :step="1" @change="handleChange" >
+                            <template #suffix>
+                                <span style="margin-right: 10px; color: #909399;">GB</span>
+                            </template>
+                        </el-input-number>
                     </el-form-item>
                     <span v-else>{{ row.capacitySize }}</span>
                 </el-form>
@@ -163,11 +168,25 @@
         loadList();
     }
 
+    // 字节转 GB (保留2位小数，或者根据需求取整)
+    const bytesToGB = (bytes: number | string) => {
+        if (!bytes) return 0;
+        const num = Number(bytes);
+        return parseFloat((num / (1024 * 1024 * 1024)).toFixed(2));
+    };
+
+    // GB 转 字节
+    const gbToBytes = (gb: number | string) => {
+        if (!gb) return 0;
+        const num = Number(gb);
+        return Math.round(num * 1024 * 1024 * 1024);
+    };
+
     async function edit(row, index) {
         editIndex.value = index;
         formData.value.id = row.id;
         let res = await CapacityApi.getCapacityInfo(row.id);
-        formData.value.capacitySize = res.data.capacitySize;
+        formData.value.capacitySize = bytesToGB(res.data.capacitySize);
     }
 
     function cancalData(fileForm) {
@@ -181,8 +200,12 @@
         if (!form) return;
         form.validate((valid) => {
             if (valid) {
-                console.log(formData.value);
-                CapacityApi.updateCapacity(formData.value).then((res) => {
+                const submitData = {
+                    ...formData.value,
+                    capacitySize: gbToBytes(formData.value.capacitySize) // 转换为字节发送
+                };
+                console.log(submitData);
+                CapacityApi.updateCapacity(submitData).then((res) => {
                     ElMessage({ type: res.success ? 'success' : 'error', message: res.msg, offset: 65 });
                     editIndex.value = -1;
                     loadList();
