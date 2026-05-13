@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.risesoft</groupId>
-        <artifactId>y9-storage</artifactId>
+        <artifactId>y9-module-storage</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -70,6 +70,12 @@
         <dependency>
             <groupId>net.risesoft</groupId>
             <artifactId>risenet-y9boot-api-feignclient-platform</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.risesoft</groupId>
+            <artifactId>risenet-y9boot-api-feignclient-storage</artifactId>
             <version>${project.version}</version>
         </dependency>
 

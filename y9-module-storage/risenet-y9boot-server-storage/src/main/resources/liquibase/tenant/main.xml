@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <include file="/risenet-y9boot-server-storage/src/main/resources/liquibase/tenant/init.xml"/>
+    <includeAll path="liquibase/tenant/release/" resourceComparator="net.risesoft.liquibase.VersionComparator"
+                errorIfMissingOrEmpty="false"/>
+
+</databaseChangeLog>
