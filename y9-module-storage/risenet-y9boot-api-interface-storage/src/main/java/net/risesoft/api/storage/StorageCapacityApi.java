@@ -1,12 +1,15 @@
 package net.risesoft.api.storage;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import net.risesoft.model.storage.StorageUsageRatioModel;
 import net.risesoft.pojo.Y9Result;
 
 /**
  * 消息提醒接口
  *
- * @author 10858
+ * @author yihong
  *
  */
 public interface StorageCapacityApi {
@@ -18,6 +21,8 @@ public interface StorageCapacityApi {
      * @param userId 用户唯一标识
      * @return String
      */
-    Y9Result<StorageUsageRatioModel> getStorageUsageRatio(String tenantId, String userId);
+    @GetMapping("/getStorageUsageRatio")
+    Y9Result<StorageUsageRatioModel> getStorageUsageRatio(@RequestParam("tenantId") String tenantId,
+        @RequestParam("userId") String userId);
 
 }
