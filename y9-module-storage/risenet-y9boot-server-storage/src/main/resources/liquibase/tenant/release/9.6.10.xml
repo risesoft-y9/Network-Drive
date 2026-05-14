@@ -56,4 +56,15 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="170200140583810-1-3" author="yihong" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="Y9_STORAGE_TAG" columnName="DESCRIPTION"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="Y9_STORAGE_TAG">
+            <column name="DESCRIPTION" remarks="标签描述" type="VARCHAR(200)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
