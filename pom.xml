@@ -56,7 +56,6 @@
 
     <modules>
         <module>y9-module-storage</module>
-        <module>y9-module-dataassets</module>
     </modules>
 
     <repositories>
