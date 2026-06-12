@@ -1,6 +1,7 @@
 package net.risesoft.controller;
 
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,9 +52,9 @@ public class FileNodeShareController {
 
     /**
      * 取消分享
-     * 
-     * @param fileNodeIdList
-     * @return
+     *
+     * @param fileNodeIdList 文件节点ID列表
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "取消分享")
     @DeleteMapping
@@ -66,8 +67,8 @@ public class FileNodeShareController {
     /**
      * 删除公开记录
      *
-     * @param publicIdsList
-     * @return
+     * @param publicIdsList 公开记录ID列表
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "删除公开记录")
     @DeleteMapping(value = "/deletePublic")
@@ -78,18 +79,18 @@ public class FileNodeShareController {
 
     /**
      * 获取文件公开记录列表
-     * 
-     * @param fileId
-     * @param page
-     * @param rows
-     * @return
+     *
+     * @param fileId 文件ID
+     * @param page   页码
+     * @param rows   每页条数
+     * @return {@link Y9Page}
      */
     @RiseLog(operationName = "获取文件公开记录列表")
     @GetMapping(value = "/getFilePublicRecord")
     public Y9Page<Map<String, Object>> getFilePublicRecord(String fileId, int page, int rows) {
         String tenantId = Y9LoginUserHolder.getTenantId();
         List<Map<String, Object>> items = new ArrayList<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         if (page < 1) {
             page = 1;
         }
@@ -102,8 +103,9 @@ public class FileNodeShareController {
             OrgUnit org = orgUnitApi.getOrgUnit(tenantId, share.getToOrgUnitId()).getData();
             map.put("toOrgUnitId", share.getToOrgUnitId());
             map.put("toOrgUnitName", share.getToOrgUnitName());
-            map.put("orgType", org.getOrgType().equals(OrgTypeEnum.PERSON) ? "人员" : "部门");
-            map.put("createTime", sdf.format(share.getCreateTime()));
+            map.put("orgType", org != null && OrgTypeEnum.PERSON == org.getOrgType() ? "人员" : "部门");
+            map.put("createTime",
+                dtf.format(share.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()));
             items.add(map);
         }
         return Y9Page.success(page, dlList.getTotalPages(), dlList.getTotalElements(), items);
@@ -111,8 +113,8 @@ public class FileNodeShareController {
 
     /**
      * 获取我的分享列表
-     * 
-     * @return
+     *
+     * @return {@link Y9Result}&lt;{@link List}&lt;{@link FileNodeShareDTO}&gt;&gt;
      */
     @RiseLog(operationName = "获取我的分享列表")
     @GetMapping("/myList")
@@ -122,15 +124,14 @@ public class FileNodeShareController {
             fileNodeShareService.list(Y9LoginUserHolder.getUserInfo().getPersonId(), FileOptType.SHARE.getValue());
         Map<String, List<FileNodeShare>> fileNodeIdAndListMap =
             myFileNodeShareList.stream().collect(Collectors.groupingBy(FileNodeShare::getFileNodeId));
-        for (String fileNodeId : fileNodeIdAndListMap.keySet()) {
-            FileNode fileNode = fileNodeService.findById(fileNodeId);
-            if (!fileNode.isDeleted()) {
+        for (Map.Entry<String, List<FileNodeShare>> entry : fileNodeIdAndListMap.entrySet()) {
+            FileNode fileNode = fileNodeService.findById(entry.getKey());
+            if (fileNode != null && !fileNode.isDeleted()) {
                 FileNodeShareDTO fileNodeShareDTO = new FileNodeShareDTO();
                 fileNodeShareDTO.setFileNode(FileNodeDTO.from(fileNode));
 
-                List<FileNodeShare> fileNodeShareList = fileNodeIdAndListMap.get(fileNodeId);
-                String toOrgUnitNames =
-                    fileNodeShareList.stream().map(FileNodeShare::getToOrgUnitName).collect(Collectors.joining("，"));
+                String toOrgUnitNames = entry.getValue().stream()
+                    .map(FileNodeShare::getToOrgUnitName).collect(Collectors.joining("，"));
                 fileNodeShareDTO.setToOrgUnitNames(toOrgUnitNames);
 
                 fileNodeShareDTOList.add(fileNodeShareDTO);
@@ -141,10 +142,10 @@ public class FileNodeShareController {
 
     /**
      * 公开文件
-     * 
-     * @param fileNodeIdList
-     * @param orgUnitIdList
-     * @return
+     *
+     * @param fileNodeIdList 文件节点ID列表
+     * @param orgUnitIdList  组织单元ID列表
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "公开文件")
     @PostMapping("/publicTo")
@@ -156,10 +157,10 @@ public class FileNodeShareController {
 
     /**
      * 分享文件
-     * 
-     * @param fileNodeIdList
-     * @param orgUnitIdList
-     * @return
+     *
+     * @param fileNodeIdList 文件节点ID列表
+     * @param orgUnitIdList  组织单元ID列表
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "分享文件")
     @PostMapping("/share")

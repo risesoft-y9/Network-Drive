@@ -2,13 +2,14 @@ package net.risesoft.controller;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,8 +37,11 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import net.risesoft.controller.dto.CollectListQueryDTO;
+import net.risesoft.controller.dto.FileListQueryDTO;
 import net.risesoft.controller.dto.FileNodeDTO;
 import net.risesoft.controller.dto.FileNodeListDTO;
+import net.risesoft.controller.dto.UploadFileDTO;
 import net.risesoft.entity.FileDownLoadRecord;
 import net.risesoft.entity.FileNode;
 import net.risesoft.entity.FileTag;
@@ -84,10 +89,10 @@ public class FileNodeController {
      * 取消文件夹密码
      * 
      * @param folder
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "取消文件夹密码")
-    @RequestMapping(value = "/cancelFolderPassword")
+    @PostMapping(value = "/cancelFolderPassword")
     public Y9Result<String> cancelFolderPassword(FileNode folder) {
         try {
             FileNode node = fileNodeService.findById(folder.getId());
@@ -126,10 +131,10 @@ public class FileNodeController {
      * 验证文件夹密码
      *
      * @param folder
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "验证文件夹密码")
-    @RequestMapping(value = "/checkFolderPassword")
+    @PostMapping(value = "/checkFolderPassword")
     public Y9Result<String> checkFolderPassword(FileNode folder) {
         try {
             FileNode node = fileNodeService.findById(folder.getId());
@@ -152,7 +157,7 @@ public class FileNodeController {
         }
     }
 
-    public void compress(ZipOutputStream out, FileNode fileNode, String base, String listType, String positionId)
+    private void compress(ZipOutputStream out, FileNode fileNode, String base, String listType, String positionId)
         throws Exception {
         // 如果路径为目录（文件夹）
         if (FileNodeType.FOLDER.getValue().equals(fileNode.getFileType())) {
@@ -161,11 +166,10 @@ public class FileNodeController {
                 fileNodeService.subList(positionId, fileNode.getId(), null, null, listType, new OrderRequest());
 
             if (fileNodeList.size() == 0) {// 如果文件夹为空，则只需在目的地zip文件中写入一个目录进入点
-                out.putNextEntry(new ZipEntry(base + File.separator));
+                out.putNextEntry(new ZipEntry(base + "/"));
             } else {// 如果文件夹不为空，则递归调用compress,文件夹中的每一个文件（或文件夹）进行压缩
                 for (FileNode fileNode1 : fileNodeList) {
-                    compress(out, fileNode1, base + File.separator + fileNode1.getName(), fileNode1.getListType(),
-                        positionId);
+                    compress(out, fileNode1, base + "/" + fileNode1.getName(), fileNode1.getListType(), positionId);
                 }
             }
         } else {
@@ -174,13 +178,13 @@ public class FileNodeController {
                 // 添加ZipEntry，并ZipEntry中写入文件流
                 // 这里，加上i是防止要下载的文件有重名的导致下载失败
                 out.putNextEntry(new ZipEntry(base));
-                InputStream is = new ByteArrayInputStream(be);
-                byte[] b = new byte[100];
-                int length = 0;
-                while ((length = is.read(b)) != -1) {
-                    out.write(b, 0, length);
+                try (InputStream is = new ByteArrayInputStream(be)) {
+                    byte[] b = new byte[100];
+                    int length = 0;
+                    while ((length = is.read(b)) != -1) {
+                        out.write(b, 0, length);
+                    }
                 }
-                is.close();
                 out.closeEntry();
             } catch (Exception e) {
                 LOGGER.error("压缩文件失败！", e);
@@ -192,10 +196,10 @@ public class FileNodeController {
      * 文件夹解密
      *
      * @param folder
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "解密文件夹")
-    @RequestMapping(value = "/decryptPassword")
+    @PostMapping(value = "/decryptPassword")
     public Y9Result<String> decryptPassword(FileNode folder) {
         try {
             FileNode node = fileNodeService.findById(folder.getId());
@@ -231,9 +235,10 @@ public class FileNodeController {
      * @param positionId
      * @param idList
      * @param response
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "下载文件")
-    @RequestMapping(value = "/downloadFile")
+    @RequestMapping(value = "/downloadFile", method = {RequestMethod.GET, RequestMethod.POST})
     public void downloadFile(@RequestParam(required = false) String positionId,
         @RequestParam(name = "ids") List<String> idList, HttpServletResponse response) {
         if (idList.size() > 1) {
@@ -243,12 +248,11 @@ public class FileNodeController {
         }
     }
 
-    public void downloadMultiFile(String positionId, List<String> idList, HttpServletResponse response) {
+    private void downloadMultiFile(String positionId, List<String> idList, HttpServletResponse response) {
         ZipOutputStream zipos = null;
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         try {
             String fileName = "【批量下载】.zip";
-            response.setContentType("text/html;charset=UTF-8");
             response.setContentType("application/octet-stream");
             response.setHeader("Content-disposition", ContentDispositionUtil.standardizeAttachment(fileName));
 
@@ -259,27 +263,22 @@ public class FileNodeController {
             for (String str : idList) {
                 FileNode folder = fileNodeService.findById(str);
                 compress(zipos, folder, folder.getName(), folder.getListType(), positionId);
-                FileDownLoadRecord fdr = new FileDownLoadRecord();
-                fdr.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
-                fdr.setFileId(idList.get(0));
-                fdr.setDownLoadTime(new Date());
-                fdr.setDownLoadUserId(userInfo.getPersonId());
-                fdr.setDownLoadUserName(userInfo.getName());
-                fdr.setDownLoadMode("网盘");
-                fileDownLoadRecordService.save(fdr);
+                saveDownloadRecord(str, userInfo);
             }
         } catch (Exception e) {
             LOGGER.error("批量下载文件失败！", e);
         } finally {
             try {
-                zipos.close();
+                if (null != zipos) {
+                    zipos.close();
+                }
             } catch (IOException e) {
                 LOGGER.error("关闭压缩流失败！", e);
             }
         }
     }
 
-    public void downloadSingleFile(String positionId, List<String> idList, HttpServletResponse response) {
+    private void downloadSingleFile(String positionId, List<String> idList, HttpServletResponse response) {
         ServletOutputStream os = null;
         try {
             FileNode fileNode = fileNodeService.findById(idList.get(0));
@@ -289,20 +288,11 @@ public class FileNodeController {
                 UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
                 String fileName = fileNode.getName();
                 String y9FileStoreId = fileNode.getFileStoreId();
-                response.setContentType("text/html;charset=UTF-8");
                 response.setContentType("application/octet-stream");
                 response.setHeader("Content-disposition", ContentDispositionUtil.standardizeAttachment(fileName));
-                // response.setHeader("Content-length", fileNode.getFileSize().toString());
                 os = response.getOutputStream();
                 y9FileStoreService.downloadFileToOutputStream(y9FileStoreId, os);
-                FileDownLoadRecord fdr = new FileDownLoadRecord();
-                fdr.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
-                fdr.setFileId(idList.get(0));
-                fdr.setDownLoadTime(new Date());
-                fdr.setDownLoadUserId(userInfo.getPersonId());
-                fdr.setDownLoadUserName(userInfo.getName());
-                fdr.setDownLoadMode("网盘");
-                fileDownLoadRecordService.save(fdr);
+                saveDownloadRecord(idList.get(0), userInfo);
             }
         } catch (Exception e) {
             LOGGER.error("下载文件失败！", e);
@@ -317,10 +307,21 @@ public class FileNodeController {
         }
     }
 
+    private void saveDownloadRecord(String fileId, UserInfo userInfo) {
+        FileDownLoadRecord fdr = new FileDownLoadRecord();
+        fdr.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
+        fdr.setFileId(fileId);
+        fdr.setDownLoadTime(new Date());
+        fdr.setDownLoadUserId(userInfo.getPersonId());
+        fdr.setDownLoadUserName(userInfo.getName());
+        fdr.setDownLoadMode("网盘");
+        fileDownLoadRecordService.save(fdr);
+    }
+
     /**
      * 清空回收站
      *
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "清空回收站")
     @DeleteMapping(value = "/emptyRecycleBin")
@@ -342,31 +343,24 @@ public class FileNodeController {
     /**
      * 获取收藏列表
      * 
-     * @param positionId
-     * @param id
-     * @param searchName
-     * @param listType
-     * @param orderRequest
-     * @return
+     * @param queryDTO
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "获取收藏列表")
     @GetMapping(value = "/getCollectList")
-    public Y9Result<FileNodeListDTO> getCollectList(@RequestHeader("positionId") String positionId,
-        @RequestParam(required = false) String id, @RequestParam(required = false) String searchName,
-        @RequestParam(required = false) String listType, OrderRequest orderRequest) {
+    public Y9Result<FileNodeListDTO> getCollectList(CollectListQueryDTO queryDTO) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
-        List<String> listNames = new ArrayList<String>();
-        listNames.add(FileListType.MY.getValue());
-        listNames.add(FileListType.DEPT.getValue());
-        listNames.add(FileListType.PUBLIC.getValue());
-        listNames.add(FileListType.SHARED.getValue());
-        List<String> collectList = new ArrayList<String>();
-        List<FileNode> subFileList = new ArrayList<FileNode>();
-        if (StringUtils.isNotBlank(id) && !listNames.contains(id)) {
-            subFileList = fileNodeService.subCollectList(id, searchName, listType, orderRequest);
+        List<String> listNames = Arrays.asList(FileListType.MY.getValue(), FileListType.DEPT.getValue(),
+            FileListType.PUBLIC.getValue(), FileListType.SHARED.getValue());
+        List<String> collectList = new ArrayList<>();
+        List<FileNode> subFileList = new ArrayList<>();
+        if (StringUtils.isNotBlank(queryDTO.getId()) && !listNames.contains(queryDTO.getId())) {
+            subFileList = fileNodeService.subCollectList(queryDTO.getId(), queryDTO.getSearchName(),
+                queryDTO.getListType(), queryDTO.getOrderRequest());
         } else {
             collectList = fileNodeCollectService.getCollectList(userInfo.getPersonId(), listNames);
-            subFileList = fileNodeService.subCollectList(collectList, searchName, orderRequest);
+            subFileList =
+                fileNodeService.subCollectList(collectList, queryDTO.getSearchName(), queryDTO.getOrderRequest());
         }
 
         List<FileNodeDTO> fileNodeDTOList = FileNodeDTO.from(subFileList);
@@ -378,7 +372,7 @@ public class FileNodeController {
             List<String> list = rootList.stream().map(FileNode::getName).collect(Collectors.toList());
             fileNodeDTO.setCollectRoute(Y9Util.join(list, "/"));
         }
-        List<FileNode> recursiveToRootFileNodeList = fileNodeService.recursiveToRoot(id);
+        List<FileNode> recursiveToRootFileNodeList = fileNodeService.recursiveToRoot(queryDTO.getId());
         FileNodeListDTO fileNodeListDTO = new FileNodeListDTO();
         fileNodeListDTO.setSubFileNodeList(fileNodeDTOList);
         fileNodeListDTO.setRecursiveToRootFileNodeList(FileNodeDTO.from(recursiveToRootFileNodeList));
@@ -391,14 +385,13 @@ public class FileNodeController {
      * @param fileId
      * @param page
      * @param rows
-     * @return
+     * @return {@link Y9Result}
      */
-    @SuppressWarnings("deprecation")
     @RiseLog(operationName = "获取公共文件下载记录")
     @GetMapping(value = "/getDownloadRecord")
     public Y9Page<Map<String, Object>> getDownloadRecord(String fileId, int page, int rows) {
         List<Map<String, Object>> items = new ArrayList<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         if (page < 1) {
             page = 1;
         }
@@ -408,7 +401,8 @@ public class FileNodeController {
             map.put("id", ddr.getId());
             map.put("fileId", ddr.getFileId());
             map.put("downLoadUserName", ddr.getDownLoadUserName());
-            map.put("downLoadTime", sdf.format(ddr.getDownLoadTime()));
+            map.put("downLoadTime",
+                dtf.format(ddr.getDownLoadTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()));
             items.add(map);
         }
         return Y9Page.success(page, dlList.getTotalPages(), dlList.getTotalElements(), items);
@@ -418,27 +412,27 @@ public class FileNodeController {
      * 获取txt文件的内容
      * 
      * @param fileStoreId
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "获取txt文件的内容")
-    @RequestMapping(value = "/getFileText")
+    @GetMapping(value = "/getFileText")
     public Y9Result<Object> getFileText(String fileStoreId) {
         try {
             String info = y9FileStoreService.downloadFileToString(fileStoreId);
-            return Y9Result.success(info, "获取文件内容失败");
+            return Y9Result.success(info, "获取文件内容成功");
         } catch (Exception e) {
             LOGGER.error("获取文件内容失败！", e);
         }
-        return Y9Result.success(null, "获取文件内容失败");
+        return Y9Result.failure("获取文件内容失败");
     }
 
     /**
      * 获取我的回收站的文件列表
      *
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "获取我的回收站的文件列表")
-    @RequestMapping(value = "/deletedList")
+    @GetMapping(value = "/deletedList")
     public Y9Result<List<FileNodeDTO>> deletedList() {
         List<FileNode> fileNodeList = fileNodeService.deletedList(Y9LoginUserHolder.getUserInfo().getPersonId());
         return Y9Result.success(FileNodeDTO.from(fileNodeList));
@@ -448,7 +442,7 @@ public class FileNodeController {
      * 获取当前节点的父节点
      *
      * @param id
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "获取当前节点的父节点")
     @GetMapping(value = "/getNetParentId")
@@ -460,19 +454,16 @@ public class FileNodeController {
     /**
      * 根据文件类型和列表类型获取文件列表
      *
-     * @param id
-     * @param orderRequest
-     * @return
+     * @param positionId
+     * @param queryDTO
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "根据文件类型和列表类型获取文件列表")
     @GetMapping(value = "/list")
-    public Y9Result<FileNodeListDTO> list(@RequestHeader("positionId") String positionId,
-        @RequestParam(required = false) String id, @RequestParam(required = false) FileNodeType fileNodeType,
-        @RequestParam(required = false) String searchName, @RequestParam(required = false) List<String> tagIds,
-        @RequestParam(required = false) String listType, OrderRequest orderRequest) {
+    public Y9Result<FileNodeListDTO> list(@RequestHeader("positionId") String positionId, FileListQueryDTO queryDTO) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
-        List<FileNode> subFileList =
-            fileNodeService.subList(positionId, id, fileNodeType, searchName, tagIds, listType, orderRequest);
+        List<FileNode> subFileList = fileNodeService.subList(positionId, queryDTO.getId(), queryDTO.getFileNodeType(),
+            queryDTO.getSearchName(), queryDTO.getTagIds(), queryDTO.getListType(), queryDTO.getOrderRequest());
         List<FileNodeDTO> fileNodeDTOList = FileNodeDTO.from(subFileList);
 
         for (FileNodeDTO fileNodeDTO : fileNodeDTOList) {
@@ -482,13 +473,13 @@ public class FileNodeController {
             boolean isCollect = fileNodeCollectService.findByCollectUserIdAndFileIdAndListName(userInfo.getPersonId(),
                 fileNodeDTO.getId(), fileNodeDTO.getListType());
             fileNodeDTO.setCollect(isCollect);
-            if (StringUtils.isNotBlank(searchName)) {
+            if (StringUtils.isNotBlank(queryDTO.getSearchName())) {
                 FileNode parentFileNode = fileNodeService.getParent(fileNodeDTO.getParentId());
                 fileNodeDTO.setParentFileNode(FileNodeDTO.from(parentFileNode));
             }
         }
 
-        List<FileNode> recursiveToRootFileNodeList = fileNodeService.recursiveToRoot(id);
+        List<FileNode> recursiveToRootFileNodeList = fileNodeService.recursiveToRoot(queryDTO.getId());
         FileNodeListDTO fileNodeListDTO = new FileNodeListDTO();
         fileNodeListDTO.setSubFileNodeList(fileNodeDTOList);
         fileNodeListDTO.setRecursiveToRootFileNodeList(FileNodeDTO.from(recursiveToRootFileNodeList));
@@ -499,7 +490,7 @@ public class FileNodeController {
      * 加载所有文件夹
      *
      * @param id
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "加载所有文件夹")
     @GetMapping(value = "/listFolder")
@@ -512,7 +503,7 @@ public class FileNodeController {
      * 加载公共文件下所有文件夹
      *
      * @param id
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "加载公共文件下所有文件夹")
     @GetMapping(value = "/listPublicFolder")
@@ -525,7 +516,7 @@ public class FileNodeController {
      * 删除文件（标记删除）
      *
      * @param idList
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "删除文件")
     @DeleteMapping
@@ -537,31 +528,27 @@ public class FileNodeController {
     /**
      * 加载所有公共管理文件
      *
-     * @param id
-     * @param orderRequest
-     * @return
+     * @param queryDTO
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "加载所有公共管理文件")
     @GetMapping(value = "/manageList")
-    public Y9Result<FileNodeListDTO> manageList(@RequestParam(required = false) String id,
-        @RequestParam(required = false) FileNodeType fileNodeType, @RequestParam(required = false) String searchName,
-        @RequestParam(required = false) List<String> tagIds, @RequestParam(required = false) String startTime,
-        @RequestParam(required = false) String endTime, @RequestParam(required = false) String listType,
-        OrderRequest orderRequest) {
+    public Y9Result<FileNodeListDTO> manageList(FileListQueryDTO queryDTO) {
 
-        List<FileNode> subFileList = fileNodeService.subManageList(id, tagIds, fileNodeType, searchName, startTime,
-            endTime, listType, orderRequest);
+        List<FileNode> subFileList = fileNodeService.subManageList(queryDTO.getId(), queryDTO.getTagIds(),
+            queryDTO.getFileNodeType(), queryDTO.getSearchName(), queryDTO.getStartTime(), queryDTO.getEndTime(),
+            queryDTO.getListType(), queryDTO.getOrderRequest());
         List<FileNodeDTO> fileNodeDTOList = FileNodeDTO.from(subFileList);
         for (FileNodeDTO fileNodeDTO : fileNodeDTOList) {
             List<FileTag> tags = fileTagService.getTagsByFileId(fileNodeDTO.getId());
             fileNodeDTO.setFileTags(tags);
-            if (StringUtils.isNotBlank(searchName)) {
+            if (StringUtils.isNotBlank(queryDTO.getSearchName())) {
                 FileNode parentFileNode = fileNodeService.getParent(fileNodeDTO.getParentId());
                 fileNodeDTO.setParentFileNode(FileNodeDTO.from(parentFileNode));
             }
         }
 
-        List<FileNode> recursiveToRootFileNodeList = fileNodeService.recursiveToRoot(id);
+        List<FileNode> recursiveToRootFileNodeList = fileNodeService.recursiveToRoot(queryDTO.getId());
 
         FileNodeListDTO fileNodeListDTO = new FileNodeListDTO();
         fileNodeListDTO.setSubFileNodeList(fileNodeDTOList);
@@ -574,7 +561,7 @@ public class FileNodeController {
      * 
      * @param idList
      * @param targetId
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "移动文件")
     @PostMapping(value = "/move")
@@ -591,7 +578,7 @@ public class FileNodeController {
      * @param response
      */
     @RiseLog(operationName = "打开文件")
-    @RequestMapping(value = "/openFile")
+    @GetMapping(value = "/openFile")
     public void openFile(String fileStoreId, HttpServletRequest request, HttpServletResponse response) {
         ServletOutputStream os = null;
         try {
@@ -604,11 +591,10 @@ public class FileNodeController {
                     fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8);
                     fileName = fileName.replaceAll("\\+", "%20");
                 } else {
-                    fileName = new String(fileName.getBytes(StandardCharsets.UTF_8), "ISO8859-1");
+                    fileName = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
                 }
 
                 response.reset();
-                response.setContentType("text/html;charset=UTF-8");
                 response.setContentType("application/octet-stream");
                 response.setHeader("Content-disposition", ContentDispositionUtil.standardizeAttachment(fileName));
 
@@ -632,10 +618,10 @@ public class FileNodeController {
      * 彻底删除文件
      *
      * @param idList
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "彻底删除文件")
-    @RequestMapping(value = "/permanently")
+    @DeleteMapping(value = "/permanently")
     public Y9Result<Object> permanentlyDelete(@RequestParam(name = "ids") List<String> idList) {
         fileNodeShareService.deleteByFileNodeIdList(Y9LoginUserHolder.getUserInfo().getPersonId(), idList);
         fileNodeService.permanentlyDelete(idList);
@@ -646,20 +632,16 @@ public class FileNodeController {
     /**
      * 加载所有公共文件
      *
-     * @param id
-     * @param orderRequest
-     * @return
+     * @param queryDTO
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "加载所有公共文件")
     @GetMapping(value = "/publicList")
-    public Y9Result<FileNodeListDTO> publicList(@RequestParam(required = false) String id,
-        @RequestParam(required = false) FileNodeType fileNodeType, @RequestParam(required = false) String searchName,
-        @RequestParam(required = false) List<String> tagIds, @RequestParam(required = false) String startTime,
-        @RequestParam(required = false) String endTime, @RequestParam(required = false) String listType,
-        OrderRequest orderRequest) {
+    public Y9Result<FileNodeListDTO> publicList(FileListQueryDTO queryDTO) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
-        List<FileNode> subFileList = fileNodeService.subPublicList(id, tagIds, fileNodeType, searchName, startTime,
-            endTime, listType, orderRequest);
+        List<FileNode> subFileList = fileNodeService.subPublicList(queryDTO.getId(), queryDTO.getTagIds(),
+            queryDTO.getFileNodeType(), queryDTO.getSearchName(), queryDTO.getStartTime(), queryDTO.getEndTime(),
+            queryDTO.getListType(), queryDTO.getOrderRequest());
         List<FileNodeDTO> fileNodeDTOList = FileNodeDTO.from(subFileList);
 
         for (FileNodeDTO fileNodeDTO : fileNodeDTOList) {
@@ -670,7 +652,7 @@ public class FileNodeController {
             fileNodeDTO.setCollect(isCollect);
         }
 
-        List<FileNode> recursiveToRootFileNodeList = fileNodeService.recursiveToRoot(id);
+        List<FileNode> recursiveToRootFileNodeList = fileNodeService.recursiveToRoot(queryDTO.getId());
 
         FileNodeListDTO fileNodeListDTO = new FileNodeListDTO();
         fileNodeListDTO.setSubFileNodeList(fileNodeDTOList);
@@ -682,10 +664,10 @@ public class FileNodeController {
      * 保存重置的密码
      *
      * @param folder
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "重置文件夹密码")
-    @RequestMapping(value = "/resetFolderPassword")
+    @PostMapping(value = "/resetFolderPassword")
     public Y9Result<Object> resetFolderPassword(FileNode folder) {
         return fileNodeService.resetFolderPassword(folder);
     }
@@ -694,10 +676,10 @@ public class FileNodeController {
      * 还原文件
      *
      * @param idList
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "还原文件")
-    @RequestMapping(value = "/restore")
+    @PostMapping(value = "/restore")
     public Y9Result<Object> restore(@RequestParam(name = "ids") List<String> idList) {
         fileNodeService.restore(idList);
         return Y9Result.success(null, "还原成功！");
@@ -708,10 +690,10 @@ public class FileNodeController {
      *
      * @param positionId
      * @param folder
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "保存文件夹")
-    @RequestMapping(value = "/saveFolder")
+    @PostMapping(value = "/saveFolder")
     public Y9Result<Object> saveFolder(@RequestHeader("positionId") String positionId, FileNode folder) {
         Y9LoginUserHolder.setPositionId(positionId);
         fileNodeService.saveFolder(folder);
@@ -721,16 +703,18 @@ public class FileNodeController {
     /**
      * 上传文件
      *
+     * @param positionId
      * @param file
-     * @param parentId
-     * @return
+     * @param uploadDTO
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "上传文件")
-    @RequestMapping(value = "/uploadFile")
+    @PostMapping(value = "/uploadFile")
     public Y9Result<Map<String, Object>> saveOrUpdate(@RequestHeader("positionId") String positionId,
-        MultipartFile file, String parentId, String listType) {
+        @RequestParam MultipartFile file, UploadFileDTO uploadDTO) {
         Y9LoginUserHolder.setPositionId(positionId);
-        Map<String, Object> map = fileNodeService.saveUploadFile(file, parentId, listType);
+        Map<String, Object> map =
+            fileNodeService.saveUploadFile(file, uploadDTO.getParentId(), uploadDTO.getListType());
         return Y9Result.success(map);
     }
 
@@ -738,10 +722,10 @@ public class FileNodeController {
      * 保存设置的文件夹密码
      *
      * @param folder
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "保存设置文件夹密码")
-    @RequestMapping(value = "/setFolderPassword")
+    @PostMapping(value = "/setFolderPassword")
     public Y9Result<Object> setFolderPassword(FileNode folder) {
         return fileNodeService.setFolderPassword(folder);
     }
@@ -750,10 +734,10 @@ public class FileNodeController {
      * 设置直链文件密码
      *
      * @param id
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "设置直链文件密码")
-    @RequestMapping(value = "/setLinkPwd")
+    @PostMapping(value = "/setLinkPwd")
     public Y9Result<Object> setLinkPwd(String id, boolean encryption, String linkPassword) {
         return fileNodeService.setLinkPwd(id, encryption, linkPassword);
     }
@@ -761,7 +745,7 @@ public class FileNodeController {
     /**
      * 获取默认顶节点
      *
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "获取默认顶节点")
     @GetMapping(value = "/topFolder")
