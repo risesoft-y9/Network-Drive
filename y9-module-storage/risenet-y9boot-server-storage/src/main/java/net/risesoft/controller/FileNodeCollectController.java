@@ -1,5 +1,6 @@
 package net.risesoft.controller;
 
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,11 +28,11 @@ public class FileNodeCollectController {
     /**
      * 取消收藏文件或者文件夹
      *
-     * @param fileId
-     * @return
+     * @param fileId 文件ID
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "取消收藏文件或者文件夹")
-    @RequestMapping(value = "/cancelCollect")
+    @PostMapping(value = "/cancelCollect")
     public Y9Result<String> cancelCollect(String fileId) {
         try {
             fileNodeCollectService.cancelCollect(fileId);
@@ -45,13 +46,18 @@ public class FileNodeCollectController {
     /**
      * 收藏文件或者文件夹
      *
-     * @param fileId
-     * @return
+     * @param fileId 文件ID
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "收藏文件或者文件夹")
-    @RequestMapping(value = "/setCollect")
+    @PostMapping(value = "/setCollect")
     public Y9Result<String> setCollect(String fileId) {
-        fileNodeCollectService.save(fileId, "");
-        return Y9Result.success("收藏成功！");
+        try {
+            fileNodeCollectService.save(fileId, "");
+            return Y9Result.success("收藏成功！");
+        } catch (Exception e) {
+            LOGGER.error("收藏失败！", e);
+            return Y9Result.failure("收藏失败！");
+        }
     }
 }

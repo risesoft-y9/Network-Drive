@@ -30,7 +30,7 @@ public class FileShareLinkController {
      * 直链创建
      *
      * @param fileId
-     * @return
+     * @return {@link Y9Result}
      */
     @RiseLog(operationName = "创建文件分享链接")
     @PostMapping(value = "/createLink")

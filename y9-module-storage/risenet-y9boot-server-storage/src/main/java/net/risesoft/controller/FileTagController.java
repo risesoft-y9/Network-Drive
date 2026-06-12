@@ -105,8 +105,8 @@ public class FileTagController {
      * @return
      */
     @RiseLog(operationName = "删除文件标签", operationType = OperationTypeEnum.DELETE, saveParams = true)
-    @RequestMapping(value = "/deleteFileTag")
-    public Y9Result<Object> deleteFileTag(@RequestParam(name = "ids") List<String> idList, String listType) {
+    @DeleteMapping("/deleteFileTag")
+    public Y9Result<Object> deleteFileTag(@RequestParam(name = "ids") List<String> idList) {
         fileTagService.deleteFileTag(idList);
         return Y9Result.success(null, "删除成功");
     }
@@ -118,7 +118,7 @@ public class FileTagController {
      * @return
      */
     @RiseLog(operationName = "删除标签和文件关联", operationType = OperationTypeEnum.DELETE, saveParams = true)
-    @RequestMapping(value = "/deleteTagAndRelation")
+    @DeleteMapping("/deleteTagAndRelation")
     public Y9Result<Object> deleteTagAndRelation(@RequestParam(name = "ids") List<String> idList, String listType) {
         fileTagService.deleteFileTag(idList);
         List<FileTagRelation> fileTagRelationList = fileTagRelationService.findByTagIds(idList);
