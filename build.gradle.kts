@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.y9.lombok) apply false
     alias(libs.plugins.y9.repository) apply false
     alias(libs.plugins.y9.smart.doc) apply false
+    alias(libs.plugins.y9.aspectj) apply false
 }
 
 repositories {

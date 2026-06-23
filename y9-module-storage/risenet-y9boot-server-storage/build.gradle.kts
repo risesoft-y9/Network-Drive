@@ -2,6 +2,7 @@
     alias(libs.plugins.y9.docker)
     alias(libs.plugins.y9.conventions.war)
     alias(libs.plugins.y9.lombok)
+    alias(libs.plugins.y9.aspectj)
     alias(libs.plugins.y9.smart.doc)
 }
 
@@ -9,6 +10,8 @@ dependencies {
     api(platform(libs.y9.digitalbase.bom))
     api(platform(libs.y9.digitalbase.dependencies))
     providedRuntime(platform(libs.y9.digitalbase.dependencies))
+
+    api(project(":y9-module-storage:risenet-y9boot-api-feignclient-storage"))
 
     api("net.risesoft:risenet-y9boot-starter-sso-oauth2-resource")
     api("net.risesoft:risenet-y9boot-starter-jpa-public")

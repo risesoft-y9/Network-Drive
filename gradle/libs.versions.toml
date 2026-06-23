@@ -7,6 +7,7 @@ y9-digitalbase-bom = { module = "net.risesoft:y9-digitalbase-bom", version.ref =
 y9-digitalbase-dependencies = { module = "net.risesoft:y9-digitalbase-dependencies", version.ref = "y9-digitalbase" }
 
 [plugins]
+y9-aspectj = { id = "net.risesoft.y9.aspectj", version.ref = "y9-plugin" }
 y9-docker = { id = "net.risesoft.y9.docker", version.ref = "y9-plugin" }
 y9-conventions-java = { id = "net.risesoft.y9.conventions-java", version.ref = "y9-plugin" }
 y9-conventions-war = { id = "net.risesoft.y9.conventions-war", version.ref = "y9-plugin" }
