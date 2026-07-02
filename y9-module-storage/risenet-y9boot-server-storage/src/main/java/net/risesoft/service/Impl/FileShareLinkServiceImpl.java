@@ -2,6 +2,7 @@ package net.risesoft.service.Impl;
 
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,8 @@ public class FileShareLinkServiceImpl implements FileShareLinkService {
 
     private final FileShareLinkRepository fileShareLinkRepository;
     private final FileNodeService fileNodeService;
+    @Value("${y9.common.storageBaseUrl}")
+    private String linkUrl;
 
     @Override
     public FileShareLink findByLinkKey(String linkKey) {
@@ -59,6 +62,7 @@ public class FileShareLinkServiceImpl implements FileShareLinkService {
             fileShareLink.setCreateTime(new Date());
             fileShareLink.setCreateUserId(userInfo.getPersonId());
             fileShareLink = this.save(fileShareLink);
+            fileShareLink.setLinkUrl(linkUrl);
             FileNode fileNode = fileNodeService.findById(fileId);
             AuditLogEvent auditLogEvent = AuditLogEvent.builder()
                 .action(StorageAuditLogEnum.SHARE_LINK_CREATE.getAction())

@@ -11,6 +11,7 @@ import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.GenericGenerator;
@@ -60,5 +61,11 @@ public class FileShareLink implements Serializable {
     @Column(name = "CREATETIME")
     @Comment("创建时间")
     private Date createTime;
+
+    /**
+     * 链接地址: 前端访问链接
+     */
+    @Transient
+    private String linkUrl;
 
 }
