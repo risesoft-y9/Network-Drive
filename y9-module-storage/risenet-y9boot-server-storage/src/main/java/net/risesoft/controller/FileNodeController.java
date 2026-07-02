@@ -688,14 +688,12 @@ public class FileNodeController {
     /**
      * 保存文件夹信息
      *
-     * @param positionId
      * @param folder
      * @return {@link Y9Result}
      */
     @RiseLog(operationName = "保存文件夹")
     @PostMapping(value = "/saveFolder")
-    public Y9Result<Object> saveFolder(@RequestHeader("positionId") String positionId, FileNode folder) {
-        Y9LoginUserHolder.setPositionId(positionId);
+    public Y9Result<Object> saveFolder(FileNode folder) {
         fileNodeService.saveFolder(folder);
         return Y9Result.success(null, "文件夹创建成功");
     }
@@ -703,16 +701,13 @@ public class FileNodeController {
     /**
      * 上传文件
      *
-     * @param positionId
      * @param file
      * @param uploadDTO
      * @return {@link Y9Result}
      */
     @RiseLog(operationName = "上传文件")
     @PostMapping(value = "/uploadFile")
-    public Y9Result<Map<String, Object>> saveOrUpdate(@RequestHeader("positionId") String positionId,
-        @RequestParam MultipartFile file, UploadFileDTO uploadDTO) {
-        Y9LoginUserHolder.setPositionId(positionId);
+    public Y9Result<Map<String, Object>> saveOrUpdate(@RequestParam MultipartFile file, UploadFileDTO uploadDTO) {
         Map<String, Object> map =
             fileNodeService.saveUploadFile(file, uploadDTO.getParentId(), uploadDTO.getListType());
         return Y9Result.success(map);
