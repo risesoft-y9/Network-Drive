@@ -15,7 +15,7 @@ const managerRouter = [
         meta: {
             title: '公共文件管理',
             icon: 'ri-folder-settings-line',
-            roles: ['publicManager']
+            roles: ['publicManager', 'systemManager']
         },
         children: [
             {

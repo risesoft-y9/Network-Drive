@@ -15,7 +15,6 @@ const storageRouter = {
             name: 'all',
             props: (route) => ({
                 parentId: route.query.parentId == undefined ? 'my' : route.query.parentId,
-                listType: 'my'
             }),
             meta: {
                 title: '全部文件',
@@ -26,7 +25,7 @@ const storageRouter = {
             path: '/my/fileList/PICTURE',
             component: () => import('@/views/FileList/index.vue'),
             name: 'picture',
-            props: (route) => ({ fileNodeType: 'PICTURE', listType: 'my' }),
+            props: (route) => ({ fileNodeType: 'PICTURE' }),
             meta: {
                 title: '图片',
                 icon: 'ri-image-2-line'
@@ -36,7 +35,7 @@ const storageRouter = {
             path: '/my/fileList/DOCUMENT',
             component: () => import('@/views/FileList/index.vue'),
             name: 'document',
-            props: (route) => ({ fileNodeType: 'DOCUMENT', listType: 'my' }),
+            props: (route) => ({ fileNodeType: 'DOCUMENT' }),
             meta: {
                 title: '文档',
                 icon: 'ri-file-word-2-line'
@@ -46,7 +45,7 @@ const storageRouter = {
             path: '/my/fileList/VIDEO',
             component: () => import('@/views/FileList/index.vue'),
             name: 'video',
-            props: (route) => ({ fileNodeType: 'VIDEO', listType: 'my' }),
+            props: (route) => ({ fileNodeType: 'VIDEO' }),
             meta: {
                 title: '视频',
                 icon: 'ri-vidicon-2-line'
@@ -56,7 +55,7 @@ const storageRouter = {
             path: '/my/fileList/AUDIO',
             component: () => import('@/views/FileList/index.vue'),
             name: 'audio',
-            props: (route) => ({ fileNodeType: 'AUDIO', listType: 'my' }),
+            props: (route) => ({ fileNodeType: 'AUDIO' }),
             meta: {
                 title: '音频',
                 icon: 'ri-headphone-line'
@@ -66,7 +65,7 @@ const storageRouter = {
             path: '/my/fileList/PAKEAGE',
             component: () => import('@/views/FileList/index.vue'),
             name: 'pakeage',
-            props: (route) => ({ fileNodeType: 'PAKEAGE', listType: 'my' }),
+            props: (route) => ({ fileNodeType: 'PAKEAGE' }),
             meta: {
                 title: '压缩包',
                 icon: 'ri-file-zip-line'
@@ -76,7 +75,7 @@ const storageRouter = {
             path: '/my/fileList/OTHERS',
             component: () => import('@/views/FileList/index.vue'),
             name: 'others',
-            props: (route) => ({ fileNodeType: 'OTHERS', listType: 'my' }),
+            props: (route) => ({ fileNodeType: 'OTHERS' }),
             meta: {
                 title: '其他',
                 icon: 'ri-more-line'

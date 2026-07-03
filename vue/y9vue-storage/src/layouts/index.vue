@@ -92,13 +92,17 @@
             // 收缩左侧
             const menuCollapsed = computed<Boolean>(() => settingStore.getMenuCollapsed);
 
-            // 所有菜单路由
+            // 所有菜单路由（computed 响应式，确保 PermissionRoutes 更新后菜单同步刷新）
             const routerStore = useRouterStore();
-            const menuData: RoutesDataItem[] = routerStore.getPermissionRoutes;
+            const menuData = computed<RoutesDataItem[]>(() => {
+                const routes = routerStore.getPermissionRoutes;
+                console.log('[layout] menuData computed, count:', routes.length, routes.map(r => ({path: r.path, name: r.name, title: r.meta?.title, roles: r.meta?.roles})));
+                return routes;
+            });
 
             let route = useRoute();
             // 当前路由 item
-            const routeItem = computed<RoutesDataItem>(() => getRouteItem(route.path, menuData));
+            const routeItem = computed<RoutesDataItem>(() => getRouteItem(route.path, menuData.value));
 
             // 当前路由的父路由path[]
             const routeParentPaths = computed<string[]>(() => formatRoutePathTheParents(routeItem.value.path));
@@ -117,7 +121,7 @@
 
             // 面包屑导航
             const breadCrumbs = computed<BreadcrumbType[]>(() =>
-                getBreadcrumbRoutes(routeItem.value, routeParentPaths.value, menuData)
+                getBreadcrumbRoutes(routeItem.value, routeParentPaths.value, menuData.value)
             );
 
             onBeforeMount(() => {

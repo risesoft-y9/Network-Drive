@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-12-22 14:38:02
- * @LastEditTime: 2026-03-23 15:59:12
+ * @LastEditTime: 2026-07-01 16:20:25
  * @LastEditors: yihong yihong@risesoft.net
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /sz-team-frontend-9.5.x/y9vue-storage/src/router/checkRouter.js
@@ -76,7 +76,7 @@ async function check() {
         userRole = ['user'];
     }
     if (y9UserInfo.managerLevel === 1) {
-        userRole = ['systemAdmin'];
+        userRole = ['systemManager'];
     }
     if (result.data.capacityManager) {
          userRole.push('capacityManager');
@@ -173,8 +173,16 @@ export const routerBeforeEach = async (to, from) => {
     }
 
     let CHECK = await check();
-    // console.log(`CHECK = ${CHECK}`);
+    console.log('[checkRouter] CHECK:', CHECK, 'to.path:', to.path, 'to.name:', to.name, 'userRole:', userRole);
     if (CHECK) {
+        // systemManager 角色：只允许访问权限范围内的路由，其他路径统一重定向到公共文件管理
+        if (userRole.includes('systemManager')) {
+            if (!to.name || !router.hasRoute(to.name)) {
+                console.log('[checkRouter] systemManager redirect: to.name不存在或不在权限路由中, 重定向到 /manage/index');
+                return { path: '/manage/index' };
+            }
+        }
+
         //console.log(await router.getRoutes(),router,from,to, router.hasRoute(to.name));
         if (!to.name) {
             let array = await router.getRoutes();

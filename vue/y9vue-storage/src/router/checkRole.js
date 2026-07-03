@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-12-22 15:41:55
- * @LastEditTime: 2022-01-20 17:08:18
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2026-07-01 16:42:40
+ * @LastEditors: yihong yihong@risesoft.net
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: /sz-team-frontend-9.5.x/y9vue-storage/src/router/checkRole.js
  */
@@ -18,6 +18,10 @@ import OrgApi from '@/api/storage/org';
  */
 function hasPermission(roles, route) {
     if (route.meta && route.meta.roles) {
+        // systemManager 角色只能看到 meta.roles 中明确包含 systemManager 的路由
+        if (roles.includes('systemManager')) {
+            return route.meta.roles.includes('systemManager');
+        }
         return roles.some((role) => route.meta.roles.includes(role));
     } else {
         return true;
@@ -53,6 +57,9 @@ export function getPermissionRoutes(rolesArr = ['systemAdmin']) {
     const routerStore = useRouterStore();
     const roles = rolesArr;
     const permissionRoutes = filterAsyncRoutes(asyncRoutes, roles);
+    console.log('[checkRole] rolesArr:', rolesArr);
+    console.log('[checkRole] permissionRoutes count:', permissionRoutes.length);
+    console.log('[checkRole] permissionRoutes:', permissionRoutes.map(r => ({path: r.path, name: r.name, title: r.meta?.title, roles: r.meta?.roles})));
     // 项目存储中心 pinia - routerStore模块 存储有权限的所有路由源数据，permissionRoutes即包含项目所有可跳转的路由
     routerStore.$patch({
         PermissionRoutes: permissionRoutes

@@ -5,7 +5,7 @@ const homeRouter = {
     name: 'home',
     meta: {
         title: '首页',
-        roles: ['systemAdmin']
+        roles: ['systemAdmin', 'systemManager']
     },
     children: [
         {
@@ -15,7 +15,7 @@ const homeRouter = {
             meta: {
                 title: '首页',
                 icon: 'ri-home-3-line',
-                roles: ['systemAdmin']
+                roles: ['systemAdmin', 'systemManager']
             }
         }
     ]
