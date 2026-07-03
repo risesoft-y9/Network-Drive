@@ -33,7 +33,7 @@ public class FileShareLinkServiceImpl implements FileShareLinkService {
 
     private final FileShareLinkRepository fileShareLinkRepository;
     private final FileNodeService fileNodeService;
-    @Value("${y9.common.storageBaseUrl}")
+    @Value("${y9.common.vueStorageBaseUrl}")
     private String linkUrl;
 
     @Override
