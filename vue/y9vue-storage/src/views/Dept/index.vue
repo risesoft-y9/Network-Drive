@@ -3,22 +3,15 @@
         <template #header>
             <div class="toolbar">
             <div class="toolbar-left">
-                <el-upload
+                 <el-button
                     v-if="parentId !== 'shared'"
-                    :show-file-list="false"
-                    action=""
-                    class="upload-div"
-                    multiple
-                    v-bind:http-request="uploadFile"
-                >
-                    <el-button
-                        :size="fontSizeObj.buttonSize"
-                        :style="{ fontSize: fontSizeObj.baseFontSize }"
-                        class="global-btn-main"
-                        type="primary"
-                        ><i class="ri-upload-cloud-2-line"></i>{{ $t('上传') }}
-                    </el-button>
-                </el-upload>
+                    :size="fontSizeObj.buttonSize"
+                    :style="{ fontSize: fontSizeObj.baseFontSize }"
+                    class="global-btn-main"
+                    type="primary"
+                    v-on:click="addFile"
+                    ><i class="ri-upload-cloud-2-line"></i>{{ $t('上传') }}</el-button
+                    >
                 <el-button-group>
                     <!-- 常规显示的按钮 -->
                         <template v-for="(button, index) in visibleButtons" :key="index">
@@ -343,6 +336,8 @@
                 :tagData="currentViewTag"
                 @success="handleCustomTagSuccess"
             />
+            <!-- 上传文件组件 -->
+            <AddFile v-if="dialogConfig.type == 'AddFile'" ref="addFileRef" :dialogConfig="dialogConfig" :reloadTable="loadList" :parentId="parentId" :listType="listType" />
         </y9Dialog>
     </y9Card>
 </template>
@@ -360,6 +355,7 @@
     import CustomTag from '@/components/storage/Tag/addTag.vue';
     import TextViewer from '@/components/file/TextViewer.vue';
     import AudioPlayer from '@/components/file/AudioPlayer.vue';
+    import AddFile from '@/components/file/AddFile.vue';
     import FileNodeShareApi from '@/api/storage/fileNodeShare';
     import y9_storage from '@/utils/storage';
     import settings from '@/settings';
@@ -418,7 +414,7 @@
         uploadLoading: false,
         percentage: 0,
         backSign: '',
-        listType: '',
+        listType: 'dept',
         optButtonShow: '',
         // 点击更多
         buttonMore: false,
@@ -744,7 +740,6 @@
             }
 
             if (pId) {
-                listType.value = props.parentId;
                 if (props.parentId == 'shared') {
                     orderProp.value = 'CREATE_TIME';
                 }
@@ -952,6 +947,16 @@
         }
     }
 
+    function addFile() {
+         Object.assign(dialogConfig.value, {
+            show: true,
+            width: '30%',
+            title: computed(() => t('文件上传')),
+            type: 'AddFile',
+            showFooter: false
+        });
+    }
+
     function openDecrypt(row) {
         fileObject.value = row;
         Object.assign(dialogConfig.value, {
@@ -1120,45 +1125,6 @@
             });
     }
 
-    function uploadFile(params) {
-        percentage.value = 0;
-        let config = {
-            onUploadProgress: (progressEvent) => {
-                //progressEvent.loaded:已上传文件大小,progressEvent.total:被上传文件的总大小
-                let percent = ((progressEvent.loaded / progressEvent.total) * 100) | 0;
-                percentage.value = percent;
-            },
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                Authorization: 'Bearer ' + y9_storage.getObjectItem(settings.siteTokenKey, 'access_token'),
-                positionId: storageStore.currentPositionId
-            }
-        };
-        uploadLoading.value = true;
-        const loading = ElLoading.service({ lock: true, text: t('正在处理中'), background: 'rgba(0, 0, 0, 0.3)' });
-        var formData = new FormData();
-        formData.append('file', params.file);
-        formData.append('parentId', props.parentId == undefined ? 'dept' : props.parentId);
-        formData.append('listType', 'dept');
-        axios
-            .post(import.meta.env.VUE_APP_CONTEXT + 'vue/fileNode/uploadFile', formData, config)
-            .then((res) => {
-                loading.close();
-                uploadLoading.value = false;
-                if (res.data.data.success) {
-                    loadList();
-                }
-                //upload.value.clearFiles();
-                ElMessage({
-                    type: res.data.data.success ? 'success' : 'error',
-                    message: res.data.data.msg,
-                    offset: 65
-                });
-            })
-            .catch((err) => {
-                ElMessage({ type: 'error', message: t('发生异常'), offset: 65 });
-            });
-    }
 
     function changeOrder(e, order) {
         if (e.target.tagName === 'INPUT') return;

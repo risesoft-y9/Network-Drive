@@ -3,22 +3,15 @@
         <template #header>
         <div class="toolbar">
             <div class="toolbar-left">
-                <el-upload
+                <el-button
                     v-if="parentId !== 'shared'"
-                    action=""
-                    class="upload-div"
-                    :show-file-list="false"
-                    multiple
-                    v-bind:http-request="uploadFile"
-                >
-                    <el-button
-                        :size="fontSizeObj.buttonSize"
-                        :style="{ fontSize: fontSizeObj.baseFontSize }"
-                        class="global-btn-main"
-                        type="primary"
-                        ><i class="ri-upload-cloud-2-line"></i>{{ $t('上传') }}</el-button
+                    :size="fontSizeObj.buttonSize"
+                    :style="{ fontSize: fontSizeObj.baseFontSize }"
+                    class="global-btn-main"
+                    type="primary"
+                    v-on:click="addFile"
+                    ><i class="ri-upload-cloud-2-line"></i>{{ $t('上传') }}</el-button
                     >
-                </el-upload>
                 <el-button
                     :size="fontSizeObj.buttonSize"
                     :style="{ fontSize: fontSizeObj.baseFontSize }"
@@ -370,6 +363,7 @@
                 :parentId="parentId"
                 :listType="listType"
                 :reloadTable="loadList"
+                :dialogConfig="dialogConfig"
             />
             <Tag v-if="dialogConfig.type == 'Tag'" ref="fileTagRef"/>
             <TagView v-if="dialogConfig.type == 'TagView'" ref="tagViewRef" :currentViewFile="currentViewFile" :currentViewTag="currentViewTag"/>
@@ -380,6 +374,8 @@
                 :tagData="currentViewTag"
                 @success="handleCustomTagSuccess"
             />
+            <!-- 上传文件组件 -->
+            <AddFile v-if="dialogConfig.type == 'AddFile'" ref="addFileRef" :dialogConfig="dialogConfig" :reloadTable="loadList" :parentId="parentId" :listType="listType" />
         </y9Dialog>
     </y9Card>
 </template>
@@ -397,6 +393,7 @@
     import FolderPwd from '@/components/storage/Folder/index.vue';
     import DecryptPwd from '@/components/storage/Folder/decrypt.vue';
     import TagView from '@/components/storage/Tag/tagDetail.vue';
+    import AddFile from '@/components/file/AddFile.vue';
     import CustomTag from '@/components/storage/Tag/addTag.vue';
     import y9_storage from '@/utils/storage';
     import settings from '@/settings';
@@ -453,7 +450,6 @@
         loadingTitle: '正在加载中......',
         fileObject: {},
         audioArray: [],
-        parentId: '',
         fileId: '',
         fileName: '',
         fileUrl: '',
@@ -461,7 +457,7 @@
         uploadLoading: false,
         percentage: 0,
         backSign: '',
-        listType: '',
+        listType: 'my',
         optButtonShow: '',
         buttonMore: false,
         sharePersons: [],
@@ -693,7 +689,6 @@
         fileObject,
         audioArray,
         poster,
-        parentId,
         fileId,
         fileName,
         fileUrl,
@@ -756,7 +751,6 @@
             }
 
             if (pId) {
-                listType.value = props.parentId;
                 if (props.parentId == 'shared') {
                     orderProp.value = 'CREATE_TIME';
                 }
@@ -786,7 +780,7 @@
         const buttons = [];
         
         // 文件夹按钮
-        if (!props.fileNodeType && parentId.value !== 'shared') {
+        if (!props.fileNodeType && props.parentId !== 'shared') {
             buttons.push({
                 condition: true,
                 class: "global-btn-second",
@@ -896,7 +890,7 @@
     async function getCapacityLength() {
         let res = await CapacityApi.getCapacitySize();
         if (res.data != null) {
-            if (props.listType == 'my') {
+            if (listType.value == 'my') {
                 capacityShow.value = true;
             }
             capacitySize.value = res.data.capacitySize;
@@ -981,7 +975,7 @@
             searchKey.value,
             fileTagKey.value.join(),
             props.fileNodeType,
-            props.listType,
+            listType.value,
             orderProp.value,
             orderAsc.value
         ).then((res) => {
@@ -996,12 +990,12 @@
         if (row.filePassword != '' && row.filePassword != null) {
             openDecrypt(row);
         } else {
-            if (props.listType == 'my') {
-                router.push({ path: '/my/fileList/all', query: { parentId: row.id, listType: props.listType } });
+            if (listType.value == 'my') {
+                router.push({ path: '/my/fileList/all', query: { parentId: row.id } });
             } else {
                 router.push({
                     path: '/share/fileList/all/shared',
-                    query: { parentId: row.id, listType: props.listType }
+                    query: { parentId: row.id, listType: listType.value }
                 });
             }
         }
@@ -1010,6 +1004,16 @@
         if (row.id == 'my') {
             backSign.value = '';
         }
+    }
+
+    function addFile() {
+         Object.assign(dialogConfig.value, {
+            show: true,
+            width: '30%',
+            title: computed(() => t('文件上传')),
+            type: 'AddFile',
+            showFooter: false
+        });
     }
 
     function openDecrypt(row) {
@@ -1024,7 +1028,6 @@
     }
 
     function bigUploaderFile() {
-        parentId.value = props.parentId;
         Object.assign(dialogConfig.value, {
             show: true,
             width: '50%',
@@ -1051,10 +1054,10 @@
     }
 
     function openFolder(row) {
-        if (props.listType == 'my') {
-            router.push({ path: '/my/fileList/all', query: { parentId: row.id, listType: props.listType } });
+        if (listType.value == 'my') {
+            router.push({ path: '/my/fileList/all', query: { parentId: row.id } });
         } else {
-            router.push({ path: '/share/fileList/all/shared', query: { parentId: row.id, listType: props.listType } });
+            router.push({ path: '/share/fileList/all/shared', query: { parentId: row.id, listType: listType.value } });
         }
         backSign.value = t('返回上一级');
         if (row.id == 'my') {
@@ -1070,15 +1073,15 @@
             } else {
                 backSign.value = t('返回上一级');
             }
-            if (props.listType == 'my') {
+            if (listType.value == 'my') {
                 router.push({
                     path: '/my/fileList/all',
-                    query: { parentId: res.data.parentId, listType: props.listType }
+                    query: { parentId: res.data.parentId }
                 });
             } else {
                 router.push({
                     path: '/share/fileList/all/shared',
-                    query: { parentId: res.data.parentId, listType: props.listType }
+                    query: { parentId: res.data.parentId, listType: listType.value }
                 });
             }
         }
@@ -1211,45 +1214,6 @@
             })
             .catch(() => {
                 ElMessage({ type: 'info', message: t('已取消操作'), offset: 65 });
-            });
-    }
-
-    function uploadFile(params) {
-        percentage.value = 0;
-        let config = {
-            onUploadProgress: (progressEvent) => {
-                //progressEvent.loaded:已上传文件大小,progressEvent.total:被上传文件的总大小
-                let percent = ((progressEvent.loaded / progressEvent.total) * 100) | 0;
-                percentage.value = percent;
-            },
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                Authorization: 'Bearer ' + y9_storage.getObjectItem(settings.siteTokenKey, 'access_token'),
-                positionId: storageStore.currentPositionId
-            }
-        };
-        uploadLoading.value = true;
-        const loading = ElLoading.service({ lock: true, text: t('正在处理中'), background: 'rgba(0, 0, 0, 0.3)' });
-        var formData = new FormData();
-        formData.append('file', params.file);
-        formData.append('parentId', props.parentId == undefined ? 'my' : props.parentId);
-        formData.append('listType', 'my');
-        axios
-            .post(import.meta.env.VUE_APP_CONTEXT + 'vue/fileNode/uploadFile', formData, config)
-            .then((res) => {
-                loading.close();
-                uploadLoading.value = false;
-                if (res.data.data.success) {
-                    loadList();
-                }
-                ElMessage({
-                    type: res.data.data.success ? 'success' : 'error',
-                    message: res.data.data.msg,
-                    offset: 65
-                });
-            })
-            .catch((err) => {
-                ElMessage({ type: 'error', message: t('发生异常'), offset: 65 });
             });
     }
 

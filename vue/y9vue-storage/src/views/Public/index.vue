@@ -3,99 +3,16 @@
         <template #header>
             <div class="toolbar">
             <div class="toolbar-left">
-                <el-upload
+                <el-button
                     v-if="roleType === 'manage'"
-                    :show-file-list="false"
-                    action=""
-                    class="upload-div"
-                    multiple
-                    v-bind:http-request="uploadFile"
-                >
-                    <el-button
-                        :size="fontSizeObj.buttonSize"
-                        :style="{ fontSize: fontSizeObj.baseFontSize }"
-                        class="global-btn-main"
-                        type="primary"
-                        ><i class="ri-upload-cloud-2-line"></i>{{ $t('上传') }}
-                    </el-button>
-                </el-upload>
+                    :size="fontSizeObj.buttonSize"
+                    :style="{ fontSize: fontSizeObj.baseFontSize }"
+                    class="global-btn-main"
+                    type="primary"
+                    v-on:click="addFile"
+                    ><i class="ri-upload-cloud-2-line"></i>{{ $t('上传') }}</el-button
+                    >
                 <el-button-group>
-                    <!-- <el-button
-                        v-if="!fileNodeType && roleType === 'manage'"
-                        :size="fontSizeObj.buttonSize"
-                        :style="{ fontSize: fontSizeObj.baseFontSize }"
-                        class="global-btn-second"
-                        plain
-                        v-on:click="createFolder"
-                    >
-                        <i class="ri-folder-add-line"></i>{{ $t('新建文件夹') }}
-                    </el-button>
-                    <el-button
-                        v-if="multipleSelection.length"
-                        :size="fontSizeObj.buttonSize"
-                        :style="{ fontSize: fontSizeObj.baseFontSize }"
-                        class="global-btn-second"
-                        plain
-                        v-on:click="download"
-                    >
-                        <i class="ri-download-2-line"></i>{{ $t('下载') }}
-                    </el-button>
-                    <el-button
-                        v-if="multipleSelection.length && roleType === 'manage'"
-                        :disabled="notCurrentSelectedOwner"
-                        :size="fontSizeObj.buttonSize"
-                        :style="{ fontSize: fontSizeObj.baseFontSize }"
-                        class="global-btn-second"
-                        plain
-                        v-on:click="deleteSelect"
-                    >
-                        <i class="ri-delete-bin-line"></i> {{ $t('删除') }}
-                    </el-button>
-                    <el-button
-                        v-if="multipleSelection.length && roleType === 'manage'"
-                        :disabled="notCurrentSelectedOwner"
-                        :size="fontSizeObj.buttonSize"
-                        :style="{ fontSize: fontSizeObj.baseFontSize }"
-                        class="global-btn-second"
-                        plain
-                        v-on:click="move"
-                    >
-                        <i class="ri-login-box-line"></i> {{ $t('移动到') }}
-                    </el-button>
-                    <el-button
-                        v-if="
-                            multipleSelection.length === 1 &&
-                            roleType === 'manage' &&
-                            multipleSelection[0].fileType != '0'
-                        "
-                        :disabled="notCurrentSelectedOwner"
-                        :size="fontSizeObj.buttonSize"
-                        :style="{ fontSize: fontSizeObj.baseFontSize }"
-                        class="global-btn-second"
-                        plain
-                        v-on:click="publicTo"
-                    >
-                        <i class="ri-share-fill"></i>{{ $t('公开至') }}
-                    </el-button>
-                    <el-button
-                        v-if="multipleSelection.length === 1 && roleType === 'manage'"
-                        :disabled="notCurrentSelectedOwner"
-                        :size="fontSizeObj.buttonSize"
-                        :style="{ fontSize: fontSizeObj.baseFontSize }"
-                        class="global-btn-second"
-                        plain
-                        v-on:click="renameOutBtn"
-                    >
-                        <i class="ri-edit-2-line"></i>{{ $t('重命名') }}
-                    </el-button>
-                    <el-button
-                        :size="fontSizeObj.buttonSize"
-                        :style="{ fontSize: fontSizeObj.baseFontSize }"
-                        class="global-btn-second"
-                        plain
-                        @click="refresh"
-                        ><i class="ri-refresh-line"></i>{{ $t('刷新') }}
-                    </el-button> -->
                    <!-- 常规显示的按钮 -->
                         <template v-for="(button, index) in visibleButtons" :key="index">
                             <el-button
@@ -518,6 +435,8 @@
                 :tagData="currentViewTag"
                 @success="handleCustomTagSuccess"
             />
+            <!-- 上传文件组件 -->
+            <AddFile v-if="dialogConfig.type == 'AddFile'" ref="addFileRef" :dialogConfig="dialogConfig" :reloadTable="loadList" :parentId="parentId" :listType="listType" />
         </y9Dialog>
     </y9Card>
 </template>
@@ -536,6 +455,7 @@
     import FileNodeShareApi from '@/api/storage/fileNodeShare';
     import TagView from '@/components/storage/Tag/tagDetail.vue';
     import CustomTag from '@/components/storage/Tag/addTag.vue';
+    import AddFile from '@/components/file/AddFile.vue';
     import y9_storage from '@/utils/storage';
     import settings from '@/settings';
     import { useRoute, useRouter } from 'vue-router';
@@ -611,7 +531,7 @@
         startTime: '',
         endTime: '',
         selectedDate: '',
-        listType: '',
+        listType: 'public',
         sharePersons: [],
         showHeader: false,
         optSign: '',
@@ -1162,7 +1082,7 @@
                 props.fileNodeType,
                 startTime.value,
                 endTime.value,
-                'public',
+                listType.value,
                 orderProp.value,
                 orderAsc.value
             ).then((res) => {
@@ -1178,7 +1098,7 @@
                 props.fileNodeType,
                 startTime.value,
                 endTime.value,
-                'public',
+                listType.value,
                 orderProp.value,
                 orderAsc.value
             ).then((res) => {
@@ -1211,6 +1131,16 @@
         if (row.id == 'public') {
             backSign.value = '';
         }
+    }
+
+    function addFile() {
+        Object.assign(dialogConfig.value, {
+            show: true,
+            width: '30%',
+            title: computed(() => t('文件上传')),
+            type: 'AddFile',
+            showFooter: false
+        });
     }
 
     function openDecrypt(row) {
@@ -1409,46 +1339,6 @@
             });
     }
 
-    function uploadFile(params) {
-        percentage.value = 0;
-        let config = {
-            onUploadProgress: (progressEvent) => {
-                //progressEvent.loaded:已上传文件大小,progressEvent.total:被上传文件的总大小
-                let percent = ((progressEvent.loaded / progressEvent.total) * 100) | 0;
-                percentage.value = percent;
-            },
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                Authorization: 'Bearer ' + y9_storage.getObjectItem(settings.siteTokenKey, 'access_token'),
-                positionId: storageStore.currentPositionId
-            }
-        };
-        uploadLoading.value = true;
-        const loading = ElLoading.service({ lock: true, text: t('正在处理中'), background: 'rgba(0, 0, 0, 0.3)' });
-        var formData = new FormData();
-        formData.append('file', params.file);
-        formData.append('parentId', props.parentId);
-        formData.append('listType', 'public');
-        axios
-            .post(import.meta.env.VUE_APP_CONTEXT + 'vue/fileNode/uploadFile', formData, config)
-            .then((res) => {
-                loading.close();
-                uploadLoading.value = false;
-                if (res.data.data.success) {
-                    loadList();
-                }
-                //upload.value.clearFiles();
-                ElMessage({
-                    type: res.data.data.success ? 'success' : 'error',
-                    message: res.data.data.msg,
-                    offset: 65
-                });
-            })
-            .catch((err) => {
-                ElMessage({ type: 'error', message: t('发生异常'), offset: 65 });
-            });
-    }
-
     function toSearchView() {
         let query = {
             parentId: props.parentId,
@@ -1554,7 +1444,7 @@
                 if (optSign.value == 'add') {
                     formData.value.id = props.id;
                     formData.value.parentId = props.parentId;
-                    formData.value.listType = 'public';
+                    formData.value.listType = listType.value;
                 }
 
                 FileApi.saveFileNode(formData.value).then((res) => {

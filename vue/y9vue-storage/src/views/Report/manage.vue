@@ -7,29 +7,10 @@
                     :size="fontSizeObj.buttonSize"
                     :style="{ fontSize: fontSizeObj.baseFontSize }"
                     class="global-btn-main"
-                    style="margin-right: 12px"
                     type="primary"
-                    @click="uploadBtn"
-                    ><i class="ri-upload-cloud-2-line"></i>{{ $t('上传') }}
-                </el-button>
-                <el-upload
-                    v-show="false"
-                    ref="upload"
-                    :show-file-list="false"
-                    action=""
-                    class="upload-div"
-                    multiple
-                    v-bind:http-request="uploadFile"
-                >
-                    <el-button
-                        ref="uploadShowBtn"
-                        :size="fontSizeObj.buttonSize"
-                        :style="{ fontSize: fontSizeObj.baseFontSize }"
-                        class="global-btn-main"
-                        type="primary"
-                        ><i class="ri-upload-cloud-2-line"></i>{{ $t('上传') }}
-                    </el-button>
-                </el-upload>
+                    v-on:click="addFile"
+                    ><i class="ri-upload-cloud-2-line"></i>{{ $t('上传') }}</el-button
+                    >
                 <el-button-group>
                     <el-button
                         v-if="!fileNodeType && roleType === 'manage'"
@@ -318,6 +299,8 @@
                 :reloadTable="loadList"
                 @openFolder="openFolder"
             />
+            <!-- 上传文件组件 -->
+            <AddFile v-if="dialogConfig.type == 'AddFile'" ref="addFileRef" :dialogConfig="dialogConfig" :reloadTable="loadList" :parentId="parentId" :listType="listType" />
         </y9Dialog>
     </y9Card>
 </template>
@@ -331,6 +314,7 @@
     import DecryptPwd from '@/components/storage/Folder/decrypt.vue';
     import TextViewer from '@/components/file/TextViewer.vue';
     import AudioPlayer from '@/components/file/AudioPlayer.vue';
+    import AddFile from '@/components/file/AddFile.vue';
     import FileNodeShareApi from '@/api/storage/fileNodeShare';
     import y9_storage from '@/utils/storage';
     import settings from '@/settings';
@@ -350,10 +334,6 @@
     const currentrRute = useRoute();
     const props = defineProps({
         parentId: {
-            require: false,
-            type: String
-        },
-        listType: {
             require: false,
             type: String
         },
@@ -394,7 +374,7 @@
         startTime: '',
         endTime: '',
         selectedDate: '',
-        listType: '',
+        listType: 'report',
         sharePersons: [],
         showHeader: false,
         optSign: '',
@@ -646,7 +626,7 @@
             });
         }
 
-        FileApi.list(props.parentId, searchKey.value,'', '', props.listType, orderProp.value, orderAsc.value).then(
+        FileApi.list(props.parentId, searchKey.value,'', '', listType.value, orderProp.value, orderAsc.value).then(
             (res) => {
                 loading.value = false;
                 y9TableConfig.value.tableData = res.data.subFileNodeList;
@@ -671,6 +651,21 @@
         backSign.value = t('返回上一级');
         if (row.id == 'report') {
             backSign.value = '';
+        }
+    }
+
+    function addFile() {
+        if (props.parentId == 'report') {
+            ElMessage({ type: 'info', message: t('请先创建文件夹或者点击进入文件夹进行上传操作！'), offset: 65 });
+            return;
+        } else {
+            Object.assign(dialogConfig.value, {
+                show: true,
+                width: '30%',
+                title: computed(() => t('文件上传')),
+                type: 'AddFile',
+                showFooter: false
+            });
         }
     }
 
@@ -820,59 +815,6 @@
             });
     }
 
-    function uploadBtn() {
-        // if (y9TableConfig.value.tableData.length == 0) {
-        //   ElMessage({ type: "info", message: "请先新建文件夹，然后进入文件夹进行上传操作！", offset: 65 });
-        //   return;
-        // }
-        if (props.parentId == 'report') {
-            ElMessage({ type: 'info', message: t('请先创建文件夹或者点击进入文件夹进行上传操作！'), offset: 65 });
-            return;
-        } else {
-            uploadShowBtn.value.$el.click();
-        }
-    }
-
-    function uploadFile(params) {
-        percentage.value = 0;
-        let config = {
-            onUploadProgress: (progressEvent) => {
-                //progressEvent.loaded:已上传文件大小,progressEvent.total:被上传文件的总大小
-                let percent = ((progressEvent.loaded / progressEvent.total) * 100) | 0;
-                percentage.value = percent;
-            },
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                Authorization: 'Bearer ' + y9_storage.getObjectItem(settings.siteTokenKey, 'access_token'),
-                positionId: storageStore.currentPositionId
-            }
-        };
-        uploadLoading.value = true;
-        const loading = ElLoading.service({ lock: true, text: t('正在处理中'), background: 'rgba(0, 0, 0, 0.3)' });
-        var formData = new FormData();
-        formData.append('file', params.file);
-        formData.append('parentId', props.parentId);
-        formData.append('listType', 'report');
-        axios
-            .post(import.meta.env.VUE_APP_CONTEXT + 'vue/fileNode/uploadFile', formData, config)
-            .then((res) => {
-                loading.close();
-                uploadLoading.value = false;
-                if (res.data.data.success) {
-                    loadList();
-                }
-                //upload.value.clearFiles();
-                ElMessage({
-                    type: res.data.data.success ? 'success' : 'error',
-                    message: res.data.data.msg,
-                    offset: 65
-                });
-            })
-            .catch((err) => {
-                ElMessage({ type: 'error', message: t('发生异常'), offset: 65 });
-            });
-    }
-
     function changeOrder(e, order) {
         if (e.target.tagName === 'INPUT') return;
         if (orderProp.value === order) {
@@ -935,7 +877,7 @@
                 if (optSign.value == 'add') {
                     formData.value.id = props.id;
                     formData.value.parentId = props.parentId;
-                    formData.value.listType = 'report';
+                    formData.value.listType = listType.value;
                 }
 
                 FileApi.saveFileNode(formData.value).then((res) => {
