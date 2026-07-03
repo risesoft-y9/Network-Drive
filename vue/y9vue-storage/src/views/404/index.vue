@@ -3,7 +3,7 @@
         <div class="form">
             <h1 class="title"> 404 Error </h1>
             <p>{{ $t('抱歉，你访问的页面不存在') }}</p>
-            <el-button size="mini" type="primary" @click="$router.push('/')">{{ $t('返回首页') }}</el-button>
+            <el-button size="small" type="primary" @click="$router.push('/')">{{ $t('返回首页') }}</el-button>
         </div>
     </div>
 </template>
