@@ -196,6 +196,16 @@
         nextTick(() => {
             linkRef.value.focus();
             linkRef.value.select();
+            if (file.value.fileUrl) {
+                navigator.clipboard.writeText(file.value.fileUrl)
+                .then(() => {
+                    ElMessage({ type: 'success', message: t('链接已复制'), offset: 65 });
+                })
+                .catch(err => {
+                    console.error('复制失败:', err);
+                    ElMessage({ type: 'error', message: t('复制失败'), offset: 65 });
+                });
+            }
         });
     }
 
@@ -208,7 +218,7 @@
             FileApi.createLink(file.value.id, decodedLinkPassword.value).then(res => {
                 if(res.success){
                     let link = res.data;
-                    file.value.fileUrl = import.meta.env.VUE_APP_HOST_INDEX + 'link?tenantId=' + storageStore.tenantId + '&key=' + link.linkKey;
+                    file.value.fileUrl =  link.linkUrl + '/link?tenantId=' + storageStore.tenantId + '&key=' + link.linkKey;
                     copyLinkBtn.value = true;
                     createLinkBtn.value = false;
                     pwdShow.value = false;
