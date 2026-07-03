@@ -166,7 +166,7 @@ y9:
         orgBaseUrl: http://localhost:7055/server-platform
         jodconverterBaseUrl: http://localhost:7055/jodconverter/onlinePreview?url=
         # 后端访问链接
-        storageBaseUrl: http://localhost:7080/vue-storage
+        storageBaseUrl: http://localhost:7080/server-storage
         #前端文件拼接链接
         vueStorageBaseUrl: http://localhost:8080/storage
         logBaseUrl: http://localhost:7055/server-log
