@@ -13,9 +13,18 @@
     <artifactId>risenet-y9boot-api-feignclient-storage</artifactId>
     <version>${revision}</version>
     <packaging>jar</packaging>
+    <name>risenet-y9boot-api-feignclient-storage</name>
+    <description>RiseSoft/Storage feignclient api</description>
+    <url>https://gitee.com/risesoft-y9/y9-storage</url>
 
     <properties>
     </properties>
+
+    <scm>
+        <url>${gitee.url}</url>
+        <connection>${gitee.connection}</connection>
+        <developerConnection>${gitee.developerConnection}</developerConnection>
+    </scm>
 
     <dependencies>
         <dependency>

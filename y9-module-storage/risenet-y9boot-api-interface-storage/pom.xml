@@ -12,10 +12,18 @@
     <artifactId>risenet-y9boot-api-interface-storage</artifactId>
     <version>${revision}</version>
     <packaging>jar</packaging>
-
+    <name>risenet-y9boot-api-interface-storage</name>
+    <description>RiseSoft/Storage interface api</description>
+    <url>https://gitee.com/risesoft-y9/y9-storage</url>
 
     <properties>
     </properties>
+
+    <scm>
+        <url>${gitee.url}</url>
+        <connection>${gitee.connection}</connection>
+        <developerConnection>${gitee.developerConnection}</developerConnection>
+    </scm>
 
     <dependencies>
         <dependency>
