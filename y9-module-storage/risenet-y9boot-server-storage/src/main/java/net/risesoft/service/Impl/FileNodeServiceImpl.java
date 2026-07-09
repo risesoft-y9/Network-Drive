@@ -432,27 +432,17 @@ public class FileNodeServiceImpl implements FileNodeService {
             } else {
                 Long fileSize = file.getSize();
                 if (listType.equals(FileListType.MY.getValue())) {
-                    StorageCapacity capacity = storageCapacityService.findByCapacityOwnerId(userId);
-                    if (null == capacity) {
-                        StorageCapacity sc = new StorageCapacity();
-                        sc.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
-                        sc.setCapacityOwnerId(userId);
-                        sc.setCapacityOwnerName(userName);
-                        sc.setCapacitySize(Long.valueOf(defaultStorageCapacity));
-                        long remainingLength = Long.valueOf(defaultStorageCapacity) - fileSize;
-                        sc.setRemainingLength(remainingLength);
-                        sc.setCreateTime(new Date());
-                        storageCapacityService.save(sc);
-                    } else {
-                        if (capacity.getRemainingLength() > fileSize) {
-                            capacity.setRemainingLength(capacity.getRemainingLength() - fileSize);
-                            storageCapacityService.save(capacity);
-                        }
-                        if (capacity.getRemainingLength() < fileSize) {
-                            map.put("msg", "存储空间不够，无法上传");
-                            map.put("success", false);
-                        }
+                    StorageCapacity capacity = storageCapacityService.findOrCreateCapacity(userId, userName);
+                    // 重新查询获取当前事务内的受管实体，避免游离态导致 save() 时主键冲突
+                    capacity = storageCapacityService.findByCapacityOwnerId(userId);
+                    // 检查剩余空间是否足够（在扣减之前判断）
+                    if (fileSize > capacity.getRemainingLength()) {
+                        map.put("msg", "存储空间不够，无法上传");
+                        map.put("success", false);
+                        return map;
                     }
+                    capacity.setRemainingLength(capacity.getRemainingLength() - fileSize);
+                    storageCapacityService.save(capacity);
                 }
                 String fullPath = Y9FileStore.buildPath(Y9Context.getSystemName(), Y9LoginUserHolder.getTenantId(),
                     userInfo.getPersonId(), parentId);
@@ -837,22 +827,16 @@ public class FileNodeServiceImpl implements FileNodeService {
         String userId = userInfo.getPersonId(), userName = userInfo.getName();
         try {
             if (parentId.equals(FileListType.MY.getValue())) {
-                StorageCapacity capacity = storageCapacityService.findByCapacityOwnerId(userId);
-                if (null == capacity) {
-                    StorageCapacity sc = new StorageCapacity();
-                    sc.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
-                    sc.setCapacityOwnerId(userId);
-                    sc.setCapacityOwnerName(userName);
-                    sc.setCapacitySize(Long.valueOf(defaultStorageCapacity));
-                    sc.setRemainingLength(Long.valueOf(defaultStorageCapacity));
-                    sc.setCreateTime(new Date());
-                    storageCapacityService.save(sc);
-                } else {
-                    if (capacity.getRemainingLength() > fileSize) {
-                        capacity.setRemainingLength(capacity.getRemainingLength() - fileSize);
-                        storageCapacityService.save(capacity);
-                    }
+                StorageCapacity capacity = storageCapacityService.findOrCreateCapacity(userId, userName);
+                // 重新查询获取当前事务内的受管实体，避免游离态导致 save() 时主键冲突
+                capacity = storageCapacityService.findByCapacityOwnerId(userId);
+                // 检查剩余空间是否足够（在扣减之前判断）
+                if (fileSize > capacity.getRemainingLength()) {
+                    map.put("msg", "存储空间不够，无法上传");
+                    return map;
                 }
+                capacity.setRemainingLength(capacity.getRemainingLength() - fileSize);
+                storageCapacityService.save(capacity);
             }
             Integer type = FileNodeUtil.fileTypeConvert(fileExtension);
             boolean fileNodeExists = this.isFileNodeExists(parentId, fileName);
