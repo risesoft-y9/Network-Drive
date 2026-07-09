@@ -67,4 +67,11 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="170200140583810-1-4" author="yihong">
+        <addUniqueConstraint
+                tableName="Y9_STORAGE_CAPACITY"
+                columnNames="CAPACITYOWNERID"
+                constraintName="UK_CAPACITYOWNERID"/>
+    </changeSet>
+
 </databaseChangeLog>
