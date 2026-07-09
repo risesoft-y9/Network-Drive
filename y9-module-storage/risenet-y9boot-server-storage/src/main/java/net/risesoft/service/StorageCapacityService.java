@@ -23,6 +23,15 @@ public interface StorageCapacityService {
     public StorageCapacity findByCapacityOwnerId(String userId);
 
     /**
+     * 查询或创建存储容量记录（线程安全，防止并发重复创建）
+     *
+     * @param userId 用户ID
+     * @param userName 用户名
+     * @return 存储容量记录
+     */
+    public StorageCapacity findOrCreateCapacity(String userId, String userName);
+
+    /**
      * 根据Id查询存储记录
      * 
      * @param id
