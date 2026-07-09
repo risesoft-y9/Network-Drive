@@ -110,16 +110,25 @@
                     func: (data) => {
                         // 复选框事件
                         //console.log("点击了复选框", data, data.checked?"勾选状态":"取消勾选状态")
+                        const node = typeof data.dataset === 'string' ? JSON.parse(data.dataset) : data.dataset;
+                        // 确保 checkNodes 为数组
+                        if (!Array.isArray(checkNodes.value)) {
+                            checkNodes.value = [];
+                        }
                         if (data.checked) {
-                            checkNodes.value.push(data.dataset);
-                            emits('org-click', checkNodes);
+                            // 判断是否有重复数据，重复则不添加
+                            const exists = checkNodes.value.some((item) => item.id === node.id);
+                            if (!exists) {
+                                checkNodes.value.push(node);
+                            }
+                            emits('org-click', checkNodes.value);
                         } else {
                             for (let index = 0; index < checkNodes.value.length; index++) {
-                                if (checkNodes.value[index].id == data.dataset.id) {
+                                if (checkNodes.value[index].id == node.id) {
                                     checkNodes.value.splice(index, 1);
                                 }
                             }
-                            emits('org-click', checkNodes);
+                            emits('org-click', checkNodes.value);
                         }
                     }
                 },
@@ -146,11 +155,18 @@
                 dbl_click: {
                     // 双击事件
                     func: (data) => {
-                        // console.log('双击事件', data);
+                         console.log('双击事件', data);
                         const nodes = JSON.parse(data.dataset);
-                        //if(nodes.orgType=='Person'){
-                        emits('org-click', nodes);
-                        //}
+                        // 确保 checkNodes 为数组
+                        if (!Array.isArray(checkNodes.value)) {
+                            checkNodes.value = [];
+                        }
+                        // 判断是否有重复数据，重复则不添加
+                        const exists = checkNodes.value.some((item) => item.id === nodes.id);
+                        if (!exists) {
+                            checkNodes.value.push(nodes);
+                        }
+                        emits('org-click', checkNodes.value);
                     }
                 }
             }
