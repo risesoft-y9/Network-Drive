@@ -74,4 +74,37 @@
                 constraintName="UK_CAPACITYOWNERID"/>
     </changeSet>
 
+    <changeSet id="170200140583810-1-5" author="yihong" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="Y9_STORAGE_SHARE_LINK" columnName="BROWSECOUNT"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="Y9_STORAGE_SHARE_LINK">
+            <column name="BROWSECOUNT" remarks="浏览次数" type="INT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="170200140583810-1-6" author="yihong" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="Y9_STORAGE_SHARE_LINK" columnName="VALIDPERIOD"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="Y9_STORAGE_SHARE_LINK">
+            <column name="VALIDPERIOD" remarks="有效期设置" type="VARCHAR(50)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="170200140583810-1-7" author="yihong" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="Y9_STORAGE_SHARE_LINK" columnName="EXPIRETIME"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="Y9_STORAGE_SHARE_LINK">
+            <column name="EXPIRETIME" remarks="到期时间" type="DATE"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
