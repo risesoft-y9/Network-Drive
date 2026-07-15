@@ -1,6 +1,8 @@
 package net.risesoft.controller;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,8 +10,10 @@ import java.util.Map;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -117,20 +121,63 @@ public class LinkDownLoadController {
 
     @RiseLog(operationName = "验证文件分享链接和密码")
     @RequestMapping(value = "/checkLink")
-    public Y9Result<Object> checkLink(String tenantId, String pwd, String linkKey) {
-        Map<String, Object> map = new HashMap<String, Object>();
-        Y9LoginUserHolder.setTenantId(tenantId);
-        FileShareLink fileShareLink = fileShareLinkService.findByLinkKey(linkKey);
-        if (null != fileShareLink) {
-            map.put("success", false);
-            map.put("msg", "密码输入错误，请输入正确的密码");
-            String password = Y9Base64Util.encode(pwd);
-            if (fileShareLink.getLinkPassword().equals(password)) {
-                map.put("fileId", fileShareLink.getFileId());
-                map.put("success", true);
-                map.put("msg", "密码验证成功，正在为您下载");
+    public Y9Result<Object> checkLink(@RequestParam(required = false) String pwd, String linkKey) {
+        Map<String, Object> map = new HashMap<>();
+        try {
+            // 解码 linkKey: tenantId|key
+            String[] parts = decodeLinkKey(linkKey);
+            if (parts.length < 2) {
+                map.put("success", false);
+                map.put("msg", "链接无效");
+                return Y9Result.success(map);
             }
+            String tenantId = parts[0];
+            Y9LoginUserHolder.setTenantId(tenantId);
+            FileShareLink fileShareLink = fileShareLinkService.findByLinkKey(linkKey);
+            if (fileShareLink != null) {
+                if (StringUtils.isNotBlank(pwd)) {
+                    map.put("success", false);
+                    map.put("msg", "密码输入错误，请输入正确的密码");
+                    String password = Y9Base64Util.encode(pwd);
+                    if (fileShareLink.getLinkPassword().equals(password)) {
+                        map.put("fileId", fileShareLink.getFileId());
+                        map.put("success", true);
+                        map.put("msg", "密码验证成功，正在为您下载");
+                    }
+                } else {
+                    map.put("success", true);
+                    map.put("msg", "链接存在");
+                }
+            } else {
+                map.put("success", false);
+                map.put("msg", "链接不存在或已失效");
+            }
+        } catch (Exception e) {
+            LOGGER.error("验证分享链接失败", e);
+            map.put("success", false);
+            map.put("msg", "链接解析失败");
         }
         return Y9Result.success(map);
+    }
+
+    /**
+     * 解码前端 URL-safe Base64 编码的 linkKey 前端: btoa(tenantId + '|' + key).replace(/\+/g, '-').replace(/\//g,
+     * '_').replace(/=/g, '')
+     */
+    private String[] decodeLinkKey(String encodedLinkKey) {
+        // 1. URL-safe → 标准 Base64
+        String base64 = encodedLinkKey.replace('-', '+').replace('_', '/');
+        // 2. 补全 padding
+        int padding = 4 - base64.length() % 4;
+        if (padding != 4) {
+            for (int i = 0; i < padding; i++) {
+                base64 += '=';
+            }
+        }
+        // 3. Base64 解码
+        byte[] decoded = Base64.getDecoder().decode(base64);
+        String decodedStr = new String(decoded, StandardCharsets.UTF_8);
+        // 4. 按 | 分割返回 [tenantId, key]
+        return decodedStr.split("\\|", 2);
     }
 }
