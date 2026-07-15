@@ -17,6 +17,8 @@ import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -56,16 +58,38 @@ public class FileShareLink implements Serializable {
     @Comment("创建人id")
     private String createUserId;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "CREATETIME")
     @Comment("创建时间")
     private Date createTime;
 
+    @Column(name = "BROWSECOUNT", length = 50)
+    @Comment("浏览次数")
+    private Integer browseCount;
+
+    @Column(name = "VALIDPERIOD", length = 50)
+    @Comment("有效期设置")
+    private String validPeriod;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Temporal(TemporalType.DATE)
+    @Column(name = "EXPIRETIME")
+    @Comment("过期时间")
+    private Date expireTime;
+
     /**
      * 链接地址: 前端访问链接
      */
     @Transient
     private String linkUrl;
+
+    /**
+     * 文件名称
+     */
+    @Transient
+    private FileNode fileNode;
 
 }
