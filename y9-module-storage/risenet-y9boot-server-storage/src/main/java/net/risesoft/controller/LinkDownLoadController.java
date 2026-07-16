@@ -145,6 +145,10 @@ public class LinkDownLoadController {
                         map.put("msg", "密码验证成功，正在为您下载");
                     }
                 } else {
+                    // 更新浏览次数
+                    fileShareLink.setBrowseCount(
+                        fileShareLink.getBrowseCount() == null ? 1 : fileShareLink.getBrowseCount() + 1);
+                    fileShareLinkService.save(fileShareLink);
                     map.put("success", true);
                     map.put("msg", "链接存在");
                 }
