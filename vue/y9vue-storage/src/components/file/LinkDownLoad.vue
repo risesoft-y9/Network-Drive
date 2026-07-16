@@ -1,135 +1,111 @@
 <template>
-    <!-- <el-container>
-      <el-header style="padding: 16vh 40vw;">
-        <el-row class="rowCss">
-            <el-col :span="6">
-                <img style="width: 100px;" src="@/assets/images/yun.png"/>
-            </el-col>
-            <el-col :span="18">
-                <span style="font-size:4vh;line-height: 70px;">网络硬盘</span>
-            </el-col>
-        </el-row>
-      </el-header>
-      <el-main style="top: 50%;left: 50%;">
-        <Y9Card style="width:25vw;height: 20vh;" :title="title">
-            <el-row class="rowCss"><b style="color:#685d5d;">请输入文件密码</b></el-row>
-            <el-row class="rowCss" :gutter="20">
-                <el-col :span="18">
+    <div class="link-download-page">
+        <div class="download-card">
+            <!-- 顶部标题区域 -->
+            <div class="card-header">
+                <div class="header-icon">
+                    <i class="ri-download-cloud-2-line"></i>
+                </div>
+                <h2 class="header-title">{{ $t('文件下载') }}</h2>
+                <p class="header-desc">{{ $t('请输入下载码获取文件') }}</p>
+            </div>
+
+            <!-- 输入区域 -->
+            <div class="card-body">
+                <div class="input-group">
                     <el-input
-                        v-model="fileObject.filePassword"
-                        class="w-50 m-2"
+                        v-model="filePassword"
                         :prefix-icon="Lock"
-                        type="password"
-                        maxlength="8"
-                        show-word-limit
-                        show-password
+                        :placeholder="$t('请输入下载码')"
+                        size="large"
                         clearable
+                        maxlength="8"
+                        show-password
+                        show-word-limit
+                        type="password"
+                        class="password-input"
+                        @keyup.enter="download"
                     />
-                </el-col>
-                <el-col :span="6">
-                    <el-button :size="fontSizeObj.buttonSize"
-:style="{ fontSize: fontSizeObj.baseFontSize }" class="global-btn-main" type="primary">下载文件</el-button>
-                </el-col>
-            </el-row>
-        </Y9Card>
-      </el-main>
-      <el-footer></el-footer>
-    </el-container> -->
-    <div id="zpre3Nn3" class="acss-header">
-        <!-- <div class="header-title">
-            <el-row>
-                <el-col :span="11">
-                    <div class="acss_banner"></div>
-                </el-col>
-                <el-col :span="13">
-                    <div
-                        ><span style="font-size: 4vh; line-height: 50px; color: var(--el-color-primary)">{{
-                            $t('网络硬盘')
-                        }}</span></div
+                    <el-button
+                        type="primary"
+                        size="large"
+                        class="download-btn"
+                        @click="download"
                     >
-                </el-col>
-            </el-row>
-        </div> -->
-        <div class="verify-form">
-            <form action="" class="clearfix" name="accessForm" onsubmit="return false">
-                <div class="CMxQsC">
-                    <div class="avatar">
-                        <div class="photo-frame theme-share-head">
-                            <span class="radius-3">
-                                <span class="cert-info">{{ $t('文件下载') }}</span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="verify-property"> </div>
-                    <div class="cb"></div>
+                        <i class="ri-download-line"></i>
+                        {{ $t('下载文件') }}
+                    </el-button>
                 </div>
-                <div class="verify-memo">
-                    <div class="verify-memo-container">
-                        <span class="verify-memo-text"></span>
-                    </div>
-                </div>
-                <div class="verify-input ac-close clearfix">
-                    <dl class="pickpw clearfix">
-                        <dt>{{ $t('请输入下载码：') }}</dt>
-                        <dd class="clearfix input-area">
-                            <el-row :gutter="20" class="rowCss">
-                                <el-col :span="19">
-                                    <el-input
-                                        v-model="filePassword"
-                                        :prefix-icon="Lock"
-                                        class="w-50 m-2"
-                                        clearable
-                                        maxlength="8"
-                                        show-password
-                                        show-word-limit
-                                        type="password"
-                                    />
-                                </el-col>
-                                <el-col :span="5">
-                                    <el-button
-                                        :size="fontSizeObj.buttonSize"
-                                        :style="{ fontSize: fontSizeObj.baseFontSize }"
-                                        class="global-btn-main"
-                                        type="primary"
-                                        @click="download"
-                                        >{{ $t('下载') }}
-                                    </el-button>
-                                </el-col>
-                            </el-row>
-                        </dd>
-                    </dl>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </template>
 <script lang="ts" setup>
-    import { inject, onMounted, reactive, toRefs } from 'vue';
+    import { onMounted, reactive, toRefs } from 'vue';
     import { Lock } from '@element-plus/icons-vue';
-    import { useRoute } from 'vue-router';
+    import { useRoute, useRouter } from 'vue-router';
     import FileApi from '@/api/storage/file';
     import { useI18n } from 'vue-i18n';
 
     const { t } = useI18n();
-    const fontSizeObj: any = inject('sizeObjInfo') || {};
+    const router = useRouter();
     const currentrRute = useRoute();
+
+    /**
+     * 解码 tenantId + linkKey，与 FileLink.vue 的 encodeTenantKey 互为逆操作
+     * 规则: URL-safe Base64 → atob → 按 '|' 分割
+     */
+    function decodeTenantKey(code: string): { tenantId: string; linkKey: string } | null {
+        try {
+            let encoded = code.replace(/-/g, '+').replace(/_/g, '/');
+            while (encoded.length % 4 !== 0) encoded += '=';
+            const raw = atob(encoded);
+            const idx = raw.indexOf('|');
+            if (idx === -1) {
+                console.warn('未找到分隔符 |, raw:', raw.substring(0, 50));
+                return null;
+            }
+            return {
+                tenantId: raw.substring(0, idx),
+                linkKey: raw.substring(idx + 1)
+            };
+        } catch (e) {
+            console.error('解码失败:', e);
+            return null;
+        }
+    }
+
+    // 从路径参数中解码
+    const codeParam = currentrRute.params.code as string;
+    const decoded = codeParam ? decodeTenantKey(codeParam) : null;
+
     let data = reactive({
-        title: '文件下载',
         filePassword: '',
-        tenantId: currentrRute.query.tenantId,
-        id: currentrRute.query.key
+        tenantId: decoded?.tenantId || ''
     });
 
-    let { title, filePassword, id, tenantId } = toRefs(data);
+    let { filePassword, tenantId } = toRefs(data);
 
-    onMounted(() => {
-        console.log('tenantId', currentrRute.query.tenantId);
-        console.log('id', currentrRute.query.key);
+    onMounted(async () => {
+        console.log('路径参数 code:', codeParam);
+        // 验证链接是否存在
+        if (codeParam) {
+            try {
+                const res = await FileApi.checkLink('', codeParam);
+                if (!res.data.success) {
+                    router.replace({ path: '/linkInvalid' });
+                }
+            } catch {
+                router.replace({ path: '/linkInvalid' });
+            }
+        } else {
+            router.replace({ path: '/linkInvalid' });
+        }
     });
 
     async function download() {
         if (filePassword.value) {
-            let res = await FileApi.checkLink(tenantId.value, filePassword.value,id.value);
+            let res = await FileApi.checkLink(filePassword.value,codeParam);
             ElMessage({ type: res.data.success ? 'success' : 'error', message: res.data.msg, offset: 65 });
             if (res.data.success) {
                 let fileId = res.data.fileId;
@@ -141,41 +117,120 @@
     }
 </script>
 <style lang="scss" scoped>
-    @import '@/theme/global.scss';
-    @import '@/assets/css/linkDownLoad.scss';
-
-    .rowCss {
-        padding: 10px 0px;
+    .link-download-page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100vh;
+        min-height: 500px;
+        background: linear-gradient(135deg, #eef2f7 0%, #e2e8f0 30%, #edf1f7 60%, #f0f4fa 100%);
     }
 
-    body,
-    div,
-    dl,
-    dt,
-    dd,
-    ul,
-    ol,
-    li,
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6,
-    pre,
-    code,
-    form,
-    textarea,
-    select,
-    optgroup,
-    option,
-    fieldset,
-    legend,
-    p,
-    blockquote,
-    th,
-    td {
-        margin: 0;
-        padding: 0;
+    .download-card {
+        width: 440px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow:
+            0 12px 48px rgba(0, 0, 0, 0.08),
+            0 4px 16px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+        animation: cardFadeIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+
+        .card-header {
+            padding: 40px 40px 0;
+            text-align: center;
+            background: #ffffff;
+
+            .header-icon {
+                display: inline-flex;
+                justify-content: center;
+                align-items: center;
+                width: 72px;
+                height: 72px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #e8f4fd, #d0e8fb);
+                margin-bottom: 20px;
+
+                i {
+                    font-size: 34px;
+                    color: #586cb1;
+                }
+            }
+
+            .header-title {
+                font-size: 22px;
+                font-weight: 600;
+                color: #303133;
+                margin: 0 0 8px;
+            }
+
+            .header-desc {
+                font-size: 14px;
+                color: #909399;
+                margin: 0 0 4px;
+            }
+        }
+
+        .card-body {
+            padding: 28px 40px 44px;
+
+            .input-group {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+
+                .password-input {
+                    :deep(.el-input__wrapper) {
+                        border-radius: 10px;
+                        padding: 4px 12px;
+                        box-shadow: 0 0 0 1px #e4e7ed inset;
+                        transition: box-shadow 0.25s, border-color 0.25s;
+
+                        &:hover {
+                            box-shadow: 0 0 0 1px #c0c4cc inset;
+                        }
+
+                        &.is-focus {
+                            box-shadow: 0 0 0 1px var(--el-color-primary) inset, 0 0 0 3px rgba(88, 108, 177, 0.12);
+                        }
+                    }
+                }
+
+                .download-btn {
+                    border-radius: 10px;
+                    font-size: 15px;
+                    font-weight: 500;
+                    height: 44px;
+                    letter-spacing: 1px;
+                    transition: all 0.25s;
+
+                    i {
+                        margin-right: 6px;
+                        font-size: 16px;
+                    }
+
+                    &:hover {
+                        transform: translateY(-1px);
+                        box-shadow: 0 6px 20px rgba(88, 108, 177, 0.35);
+                    }
+
+                    &:active {
+                        transform: translateY(0);
+                    }
+                }
+            }
+        }
+    }
+
+    @keyframes cardFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(24px) scale(0.97);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
     }
 </style>
