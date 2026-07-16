@@ -18,13 +18,21 @@ import OrgApi from '@/api/storage/org';
 
 NProgress.configure({ showSpinner: false, easing: 'ease', speed: 1000 });
 
-// 路由白名单过滤
+// 路由白名单过滤（支持动态路由参数 /link/:code）
 function routerWriteList(array, path) {
     let find = false;
     for (let index = 0; index < array.length; index++) {
         const item = array[index];
+        // 先精确匹配
         if (item.path === path) {
             return true;
+        }
+        // 再尝试正则匹配（处理 /link/:code 这样的动态路由）
+        if (item.path.includes(':')) {
+            const regex = new RegExp('^' + item.path.replace(/:[^/]+/g, '[^/]+') + '$');
+            if (regex.test(path)) {
+                return true;
+            }
         }
         if (item.children) {
             find = routerWriteList(item.children, path);
