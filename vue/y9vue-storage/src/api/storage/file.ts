@@ -1,3 +1,12 @@
+/*
+ * @Author: yihong yihong@risesoft.net
+ * @Date: 2025-12-29 10:29:30
+ * @LastEditors: yihong yihong@risesoft.net
+ * @LastEditTime: 2026-07-15 16:49:29
+ * @FilePath: \y9-vue\y9vue-storage\src\api\storage\file.ts
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * 
+ */
 import Request from '@/api/lib/request';
 import qs from 'qs';
 
@@ -102,18 +111,29 @@ export default {
                 encodeURI(linkPassword)
         );
     },
-    createLink(id, linkPassword) {
+    createLink(params = {}) {
         var formData = new FormData();
-        formData.append('fileId', id);
-        formData.append('linkPassword', encodeURI(linkPassword));
+        formData.append('fileId', params.fileId);
+        formData.append('validPeriod', params.validPeriod);
+        formData.append('expireTime', params.expireTime);
+        formData.append('linkPassword', encodeURI(params.linkPassword));
+        formData.append('linkKey', params.linkKey);
         return storageRequest.post('/vue/fileShareLink/createLink',formData);
     },
-    checkLink(tenantId,pwd,linkKey) {
+    checkLink(pwd,linkKey) {
         var formData = new FormData();
-        formData.append('tenantId', tenantId);
         formData.append('pwd', pwd);
         formData.append('linkKey', linkKey);
         return storageRequest.post('/link/checkLink', formData);
+    },
+    myShareLinks() {
+        var url = '/vue/fileShareLink/myShareLinks';
+        return storageRequest.get(url);
+    },
+    cancelShareLink(idArr = []) {
+        var formData = new FormData();
+        formData.append('ids', idArr.join());
+        return storageRequest.post('/vue/fileShareLink/cancelLink', formData);
     },
     get(id) {
         var url = '/vue/fileNode/' + id;
