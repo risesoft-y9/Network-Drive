@@ -250,7 +250,7 @@
                             <div v-for="tag in row.fileTags" :key="tag.id" class="tag-wrapper">
                                 <el-tooltip 
                                     :content="tag.tagType === 'customTag' ? $t('自定义标签') : $t('系统标签')"
-                                    placement="left-start"
+                                    placement="top-start"
                                 >
                                     <el-tag 
                                         closable
