@@ -9,7 +9,7 @@
                     :style="{ fontSize: fontSizeObj.baseFontSize }"
                     class="global-btn-main"
                     type="primary"
-                    @click="cancelShare"
+                    @click="cancelBtnLink"
                     ><i class="ri-indeterminate-circle-line"></i> {{ $t('取消直链分享') }}
                 </el-button>
                 <el-button
@@ -83,7 +83,7 @@
                                         :content="$t('取消直链分享')"
                                         placement="top-start"
                                     >
-                                        <i class="ri-link-unlink" @click="cancelLink(row.id)"></i>
+                                        <i class="ri-link-unlink" @click="cancelRowLink(row)"></i>
                                     </el-tooltip>
                                     
                             </div>
@@ -220,14 +220,24 @@
         }
     }
 
-    function cancelLink() {
+    function cancelRowLink(row) { 
+         let ids = [];
+        ids.push(row.id);
+        cancelLink(ids);
+    }
+
+    function cancelBtnLink(){
+        let IdArr = multipleSelection.value.map((item) => item.id);
+        cancelLink(IdArr);
+    }
+
+    function cancelLink(IdArr) {
         ElMessageBox.confirm(t("取消直链分享后，该条分享记录将被删除，将无法再访问此直链分享链接。您确认要取消分享吗？"), t('提示'), {
             confirmButtonText: t('确定'),
             cancelButtonText: t('取消'),
             type: 'info'
         })
             .then(() => {
-                var IdArr = multipleSelection.value.map((item) => item.id);
                 FileApi.cancelShareLink(IdArr).then((res) => {
                     ElMessage({ type: res.success ? 'success' : 'error', message: t(res.msg), offset: 65 });
                     if (res.success) {
