@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -99,7 +100,8 @@ public class FileNodeController {
             if (null != node) {
                 if (StringUtils.isNotBlank(node.getFilePassword())) {
                     String inputPwd = Y9MessageDigestUtil.md5(folder.getFilePassword());
-                    if (inputPwd.equals(node.getFilePassword())) {
+                    if (MessageDigest.isEqual(inputPwd.getBytes(StandardCharsets.UTF_8),
+                        node.getFilePassword().getBytes(StandardCharsets.UTF_8))) {
                         node.setFilePassword("");
                         node.setUpdateTime(new Date());
                         fileNodeService.saveNode(node);
@@ -141,7 +143,8 @@ public class FileNodeController {
             if (null != node) {
                 if (StringUtils.isNotBlank(node.getFilePassword())) {
                     String inputPwd = Y9MessageDigestUtil.md5(folder.getFilePassword());
-                    if (inputPwd.equals(node.getFilePassword())) {
+                    if (MessageDigest.isEqual(inputPwd.getBytes(StandardCharsets.UTF_8),
+                        node.getFilePassword().getBytes(StandardCharsets.UTF_8))) {
                         return Y9Result.success("文件夹密码验证成功！");
                     } else {
                         return Y9Result.failure("原始密码输入错误，请重新输入！");
@@ -159,6 +162,9 @@ public class FileNodeController {
 
     private void compress(ZipOutputStream out, FileNode fileNode, String base, String listType, String positionId)
         throws Exception {
+        if (fileNode == null) {
+            return;
+        }
         // 如果路径为目录（文件夹）
         if (FileNodeType.FOLDER.getValue().equals(fileNode.getFileType())) {
             // 取出文件夹中的文件（或子文件夹）
@@ -173,13 +179,17 @@ public class FileNodeController {
                 }
             }
         } else {
-            byte[] be = y9FileStoreService.downloadFileToBytes(fileNode.getFileStoreId());
+            String fileStoreId = fileNode.getFileStoreId();
+            if (StringUtils.isBlank(fileStoreId)) {
+                return;
+            }
+            byte[] be = y9FileStoreService.downloadFileToBytes(fileStoreId);
             try {
                 // 添加ZipEntry，并ZipEntry中写入文件流
                 // 这里，加上i是防止要下载的文件有重名的导致下载失败
                 out.putNextEntry(new ZipEntry(base));
                 try (InputStream is = new ByteArrayInputStream(be)) {
-                    byte[] b = new byte[100];
+                    byte[] b = new byte[8192];
                     int length = 0;
                     while ((length = is.read(b)) != -1) {
                         out.write(b, 0, length);
@@ -206,7 +216,8 @@ public class FileNodeController {
             if (null != node) {
                 if (StringUtils.isNotBlank(node.getFilePassword())) {
                     String inputPwd = Y9MessageDigestUtil.md5(folder.getFilePassword());
-                    if (inputPwd.equals(node.getFilePassword())) {
+                    if (MessageDigest.isEqual(inputPwd.getBytes(StandardCharsets.UTF_8),
+                        node.getFilePassword().getBytes(StandardCharsets.UTF_8))) {
                         AuditLogEvent auditLogEvent = AuditLogEvent.builder()
                             .action(StorageAuditLogEnum.FOLDER_DECRYPT_PASSWORD.getAction())
                             .description(Y9StringUtil
@@ -241,6 +252,9 @@ public class FileNodeController {
     @RequestMapping(value = "/downloadFile", method = {RequestMethod.GET, RequestMethod.POST})
     public void downloadFile(@RequestParam(required = false) String positionId,
         @RequestParam(name = "ids") List<String> idList, HttpServletResponse response) {
+        if (idList == null || idList.isEmpty()) {
+            return;
+        }
         if (idList.size() > 1) {
             downloadMultiFile(positionId, idList, response);
         } else {
@@ -262,8 +276,10 @@ public class FileNodeController {
 
             for (String str : idList) {
                 FileNode folder = fileNodeService.findById(str);
-                compress(zipos, folder, folder.getName(), folder.getListType(), positionId);
-                saveDownloadRecord(str, userInfo);
+                if (folder != null) {
+                    compress(zipos, folder, folder.getName(), folder.getListType(), positionId);
+                    saveDownloadRecord(str, userInfo);
+                }
             }
         } catch (Exception e) {
             LOGGER.error("批量下载文件失败！", e);
@@ -282,6 +298,9 @@ public class FileNodeController {
         ServletOutputStream os = null;
         try {
             FileNode fileNode = fileNodeService.findById(idList.get(0));
+            if (fileNode == null) {
+                return;
+            }
             if (FileNodeType.FOLDER.getValue().equals(fileNode.getFileType())) {
                 downloadMultiFile(positionId, idList, response);
             } else {
@@ -587,7 +606,7 @@ public class FileNodeController {
                 String fileName = f.getFileName();
                 String y9FileStoreId = f.getId();
                 String userAgent = request.getHeader("User-Agent");
-                if (userAgent.contains("MSIE") || userAgent.contains("Trident")) {
+                if (userAgent != null && (userAgent.contains("MSIE") || userAgent.contains("Trident"))) {
                     fileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8);
                     fileName = fileName.replaceAll("\\+", "%20");
                 } else {
@@ -749,8 +768,8 @@ public class FileNodeController {
         FileNode node = new FileNode();
         node.setId(parentId);
         node.setName("全部文件");
-        node.setFileType(0);
-        node.setParentId("");
+        node.setFileType(FileNodeType.FOLDER.getValue());
+        node.setParentId("0");
         subFileList.add(node);
         return Y9Result.success(FileNodeDTO.from(subFileList));
     }
