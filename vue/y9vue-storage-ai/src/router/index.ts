@@ -1,0 +1,116 @@
+/*
+ * @Author: yihong yihong@risesoft.net
+ * @Date: 2023-07-28 16:59:52
+ * @LastEditors: yihong yihong@risesoft.net
+ * @LastEditTime: 2026-07-15 09:22:08
+ * @FilePath: \y9vue-app\y9-vue\y9vue-storage\src\router\index.ts
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
+import { routerBeforeEach } from '@/router/checkRouter';
+import NProgress from 'nprogress';
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import homeRouter from './modules/homeRouter';
+import storageRouter from './modules/storageRouter';
+import shareRouter from './modules/shareRouter';
+import myShareRouter from './modules/myShareRouter';
+import recycleRouter from './modules/recycleRouter';
+import publicStorageRouter from './modules/publicStorageRouter';
+import managerRouter from './modules/managerRouter';
+import deptStorageRouter from './modules/deptStorageRouter';
+import capacityRouter from './modules/capacityRouter';
+import reportManageRouter from './modules/reportManageRouter';
+import reportRouter from './modules/reportRouter';
+import collectRouter from './modules/collectRouter';
+import tagRouter from './modules/tagRouter';
+import linkShareRouter from './modules/linkShareRouter';
+import aiRouter from './modules/aiRouter';
+
+//constantRoutes为不需要动态判断权限的路由，如登录、404、500等
+export const constantRoutes: Array<any> = [
+    {
+        path: '/',
+        name: 'index',
+        hidden: true,
+        redirect: '/my'
+    },
+    {
+        path: '/401',
+        hidden: true,
+        meta: {
+            title: 'Not Permission'
+        },
+        component: () => import('@/views/401/index.vue')
+    },
+    {
+        path: '/404',
+        hidden: true,
+        meta: {
+            title: 'Not Found'
+        },
+        component: () => import('@/views/404/index.vue')
+    },
+    {
+        path: '/LicenseExpired',
+        hidden: true,
+        meta: {
+            title: 'LicenseExpired'
+        },
+        component: () => import('@/views/License/index.vue')
+    },
+    {
+        path: '/link/:code',
+        hidden: true,
+        meta: {
+            title: '网络硬盘下载'
+        },
+        component: () => import('@/components/file/LinkDownLoad.vue')
+    },
+    {
+        path: '/linkInvalid',
+        hidden: true,
+        meta: {
+            title: '链接不存在'
+        },
+        component: () => import('@/views/linkInvalid/index.vue')
+    }
+];
+// 懒加载
+const lazy = (path) => {
+    // return import.meta.glob(`./${path}`)
+    return () => import(`@/views/${path}.vue`);
+};
+let routes: RouteRecordRaw[] = [];
+//asyncRoutes需求动态判断权限并动态添加的页面  这里的路由模块顺序也是菜单显示的顺序（位置：src->router->modules）
+export const asyncRoutes = [
+    homeRouter,
+    storageRouter,
+    deptStorageRouter,
+    publicStorageRouter,
+    reportRouter,
+    shareRouter,
+    myShareRouter,
+    linkShareRouter,
+    collectRouter,
+    ...managerRouter,
+    reportManageRouter,
+    capacityRouter,
+    tagRouter,
+    recycleRouter,
+    aiRouter
+    //...routes
+    // 引入其他模块路由
+];
+
+//创建路由模式，采用history模式没有“#”
+const router = createRouter({
+    history: createWebHistory(import.meta.env.VUE_APP_PUBLIC_PATH),
+    routes: constantRoutes
+});
+
+//在用户点击前，进入routerBeforeEach去判断用户是否有权限
+//全部判断逻辑请查看checkRouter.js
+router.beforeEach(routerBeforeEach);
+router.afterEach(() => {
+    NProgress.done();
+});
+export default router;
