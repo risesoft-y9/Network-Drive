@@ -107,4 +107,53 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="170200140583810-1-8" author="yihong" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="Y9_STORAGE_AI_CHAT_SESSION"/>
+            </not>
+        </preConditions>
+        <createTable remarks="AI对话会话表"
+                     tableName="Y9_STORAGE_AI_CHAT_SESSION">
+            <column name="ID" remarks="主键id" type="VARCHAR(38)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="PERSON_ID" remarks="用户ID" type="VARCHAR(38)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="TENANT_ID" remarks="租户ID" type="VARCHAR(38)">
+            </column>
+            <column name="TITLE" remarks="会话标题" type="VARCHAR(500)">
+            </column>
+            <column name="CREATE_TIME" remarks="创建时间" type="datetime">
+            </column>
+            <column name="UPDATE_TIME" remarks="更新时间" type="datetime">
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="170200140583810-1-9" author="yihong" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="Y9_STORAGE_AI_CHAT_MESSAGE"/>
+            </not>
+        </preConditions>
+        <createTable remarks="AI对话消息表"
+                     tableName="Y9_STORAGE_AI_CHAT_MESSAGE">
+            <column name="ID" remarks="主键id" type="VARCHAR(38)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="SESSION_ID" remarks="会话ID" type="VARCHAR(38)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ROLE" remarks="角色：user-用户 assistant-AI" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="CONTENT" remarks="消息内容" type="TEXT">
+            </column>
+            <column name="CREATE_TIME" remarks="创建时间" type="datetime">
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
