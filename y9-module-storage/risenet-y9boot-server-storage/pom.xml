@@ -129,6 +129,31 @@
             <artifactId>risenet-y9boot-support-audit</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!-- Apache POI: Office 文档文本提取 (docx/doc/xlsx/xls) -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>5.2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-scratchpad</artifactId>
+            <version>5.2.5</version>
+        </dependency>
+
+        <!-- Tess4J: 图片 OCR 文字识别（本地备选） -->
+        <dependency>
+            <groupId>net.sourceforge.tess4j</groupId>
+            <artifactId>tess4j</artifactId>
+            <version>5.9.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
