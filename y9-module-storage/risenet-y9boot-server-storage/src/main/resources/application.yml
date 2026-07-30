@@ -141,6 +141,73 @@ spring:
             shutdown-timeout: 100ms
         ssl: false
         timeout: 10000
+# ==================== AI 大模型配置 ====================
+# 支持所有 OpenAI 兼容协议的大模型服务。
+# 只需修改 enabled=true 并填对应 api-key 即可启用。
+#
+# ┌─────────────────────────────────────────────────────────────┐
+# │  推荐免费方案（按推荐优先级排序）                              │
+# ├─────────────────────────────────────────────────────────────┤
+# │                                                             │
+# │ ① 智谱AI GLM-4-Flash — 永久免费，每月100万tokens，OpenAI兼容 │
+# │    注册: https://open.bigmodel.cn  → 右上角「API密钥」         │
+# │    base-url: https://open.bigmodel.cn/api/paas/v4            │
+# │    model: glm-4-flash                                        │
+# │                                                             │
+# │ ② DeepSeek — 新用户送500万tokens，中文能力强                  │
+# │    注册: https://platform.deepseek.com → API Keys            │
+# │    base-url: https://api.deepseek.com/v1                     │
+# │    model: deepseek-chat                                      │
+# │                                                             │
+# │ ③ 硅基流动 SiliconFlow — 新用户送额度，聚合多模型              │
+# │    注册: https://cloud.siliconflow.cn → API密钥               │
+# │    base-url: https://api.siliconflow.cn/v1                   │
+# │    model: deepseek-ai/DeepSeek-V3                            │
+# │                                                             │
+# │ ④ 阿里通义千问 — 每月200万tokens免费                          │
+# │    注册: https://bailian.console.aliyun.com → API-KEY        │
+# │    base-url: https://dashscope.aliyuncs.com/compatible-mode/v1│
+# │    model: qwen-turbo                                         │
+# │                                                             │
+# │ ⑤ 本地Ollama — 完全免费，无需注册                             │
+# │    安装: ollama pull qwen2.5:7b                              │
+# │    base-url: http://localhost:11434/v1                       │
+# │    model: qwen2.5:7b                                         │
+# │    api-key: ollama                                           │
+# └─────────────────────────────────────────────────────────────┘
+#
+# 如果以上都不行，可用大模型聚合中转服务，一个key调用所有模型。
+# 比如 openllmapi.com 或 freellmapi（GitHub开源自建）
+ai:
+    enabled: true
+    base-url: http://localhost:11434/v1
+    api-key: ollama
+    model: qwen2.5:7b
+    max-tokens: 2000
+    temperature: 0.7
+    connect-timeout: 30000
+    read-timeout: 120000
+    system-prompt: '你是一个专业的文件管理助手，帮助用户管理网盘文件。你可以帮助用户查找文件、分析文件内容、提取文件信息、进行数据对比等。回答要简洁、准确，使用中文。'
+    index-on-upload: true
+    indexable-extensions: 'txt,csv,json,xml,md,log,java,py,js,ts,html,css,sql,yml,yaml,properties'
+    max-content-length: 10000
+
+# Tesseract OCR 图片文字识别（本地备选引擎）
+tesseract:
+    install-path: D:/Program Files/Tesseract-OCR
+
+# 腾讯云 OCR 图片文字识别（推荐主用，云端识别率高）
+tencent-ocr:
+    # 是否启用腾讯云 OCR（启用后优先使用，未配置密钥或失败时回退到 Tesseract）
+    enabled: false
+    # 腾讯云 API 密钥（https://console.cloud.tencent.com/cam/capi）
+    secret-id: YOUR_SECRET_ID_HERE
+    secret-key: YOUR_SECRET_KEY_HERE
+    # OCR 接口区域（ap-guangzhou / ap-shanghai / ap-beijing）
+    region: ap-guangzhou
+    # 调用超时（秒）
+    timeout: 30
+
 y9:
     systemName: storage
     internalIp: 192.168.x.x,10.x.x.x,172.20.x.x
