@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -59,24 +58,15 @@ public class UploaderController {
     private final OrgUnitApi orgUnitApi;
     private final PositionApi positionApi;
 
-    private Map<String, Object> mergeMethod(String targetFile, String folder, String fileName, String parentId,
+    public Map<String, Object> mergeMethod(String targetFile, String folder, String fileName, String parentId,
         String listType) {
         Map<String, Object> map = new HashMap<>();
         map.put("msg", "文件合并失败");
         map.put("success", false);
-        if (StringUtils.isBlank(targetFile) || StringUtils.isBlank(folder) || StringUtils.isBlank(fileName)) {
-            map.put("msg", "合并参数不完整");
-            return map;
-        }
         try {
-            Path targetPath = Paths.get(targetFile);
-            if (!Files.exists(targetPath)) {
-                Files.createFile(targetPath);
-            }
+            Files.createFile(Paths.get(targetFile));
         } catch (IOException e) {
-            LOGGER.error("创建目标文件失败, targetFile={}", targetFile, e);
-            map.put("msg", "创建目标文件失败");
-            return map;
+            LOGGER.error(e.getMessage(), e);
         }
         try (Stream<Path> stream = Files.list(Paths.get(folder))) {
             stream.filter(path -> !path.getFileName().toString().equals(fileName)).sorted((o1, o2) -> {
@@ -84,7 +74,7 @@ public class UploaderController {
                 String p2 = o2.getFileName().toString();
                 int i1 = p1.lastIndexOf("-");
                 int i2 = p2.lastIndexOf("-");
-                return Integer.valueOf(p1.substring(i1)).compareTo(Integer.valueOf(p2.substring(i2)));
+                return Integer.valueOf(p2.substring(i2)).compareTo(Integer.valueOf(p1.substring(i1)));
             }).forEach(path -> {
                 try {
                     // 以追加的形式写入文件
@@ -92,7 +82,7 @@ public class UploaderController {
                     // 合并后删除该块
                     Files.delete(path);
                 } catch (IOException e) {
-                    LOGGER.error("合并文件块失败, path={}", path, e);
+                    LOGGER.error(e.getMessage(), e);
                 }
             });
             LOGGER.debug("合并文件 {} 成功,目标目录: {}", fileName, targetFile);
@@ -119,21 +109,19 @@ public class UploaderController {
 
     @RiseLog(operationName = "上传文件块")
     @PostMapping(value = "/chunk")
-    public Y9Result<String> uploadChunk(Chunk chunk, HttpServletResponse response) {
+    public String uploadChunk1(Chunk chunk, HttpServletResponse response) {
         MultipartFile file = chunk.getFile();
-        if (file == null) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return Y9Result.failure("上传文件不能为空");
-        }
         LOGGER.debug("file originName: {}, chunkNumber: {}", file.getOriginalFilename(), chunk.getChunkNumber());
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         try {
             Long fileSize = chunk.getTotalSize();
             LOGGER.debug("##########################文件大小: {}", fileSize);
             StorageCapacity capacity = storageCapacityService.findByCapacityOwnerId(userInfo.getPersonId());
-            if (capacity != null && capacity.getRemainingLength() != null && capacity.getRemainingLength() < fileSize) {
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                return Y9Result.failure("存储空间不够，无法上传，请联系存储空间管理员扩容");
+            if (null != capacity) {
+                if (capacity.getRemainingLength() < fileSize) {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    return "存储空间不够，无法上传，请联系存储空间管理员扩容";
+                }
             }
             byte[] bytes = file.getBytes();
             String chunckPath = Y9Context.getWebRootRealPath() + "upload";
@@ -144,36 +132,27 @@ public class UploaderController {
             chunk.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
             chunkService.saveChunk(chunk);
 
-            return Y9Result.success("文件上传成功");
+            return "文件上传成功";
         } catch (IOException e) {
             LOGGER.error("后端异常...", e);
-            return Y9Result.failure("后端异常...");
+            return "后端异常...";
         }
     }
 
     @RiseLog(operationName = "验证文件块")
     @GetMapping(value = "/chunk")
-    public Y9Result<Object> checkChunk(Chunk chunk, HttpServletResponse response) {
-        if (StringUtils.isBlank(chunk.getIdentifier()) || chunk.getChunkNumber() == null) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return Y9Result.failure("参数不完整");
-        }
+    public Object checkChunk(Chunk chunk, HttpServletResponse response) {
         LOGGER.debug("文件 {} 验证, uuid:{}", chunk.getFilename(), chunk.getIdentifier());
         if (chunkService.checkChunk(chunk.getIdentifier(), chunk.getChunkNumber())) {
             response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-            return Y9Result.success("文件块已存在");
         }
-        return Y9Result.success("文件块不存在");
+        return chunk;
     }
 
     @RiseLog(operationName = "合并文件")
     @PostMapping("/mergeFile")
     public Y9Result<Map<String, Object>> mergeFile(FileInfo fileInfo, @RequestParam String parentId,
         @RequestParam String listType, HttpServletResponse response) {
-        if (fileInfo == null || StringUtils.isBlank(fileInfo.getFilename())
-            || StringUtils.isBlank(fileInfo.getIdentifier())) {
-            return Y9Result.failure("文件信息不完整");
-        }
         String fileName = fileInfo.getFilename();
         String chunckPath = Y9Context.getWebRootRealPath() + "upload";
         String file = chunckPath + "/" + fileInfo.getIdentifier() + "/" + fileName;
@@ -182,10 +161,10 @@ public class UploaderController {
         // 合并文件
         Map<String, Object> map = mergeMethod(file, folder, fileName, parentId, listType);
         LOGGER.info("########### mergeMethod result: {}", map);
-        Boolean success = (Boolean)map.get("success");
-        String message = map.get("msg") != null ? map.get("msg").toString() : "未知错误";
-        String fileId = map.get("fileId") != null ? map.get("fileId").toString() : "";
-        if (Boolean.TRUE.equals(success)) {
+        Boolean success = Boolean.valueOf(map.get("success").toString());
+        String message = map.get("msg").toString();
+        String fileId = null != map.get("fileId") ? map.get("fileId").toString() : "";
+        if (success) {
             // 保存文件信息
             fileInfo.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
             fileInfo.setLocation(file);
