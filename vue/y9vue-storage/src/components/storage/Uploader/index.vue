@@ -60,7 +60,25 @@
         },
         testChunks: true,
         chunkSize: 10 * 1024 * 1024,
-        successStatuses: [200,201,202]
+        successStatuses: [200,201,202],
+        // 校验分片响应体：HTTP 200 不代表业务成功，需检查响应 body
+        processResponse(response, cb) {
+            let resData;
+            try {
+                resData = typeof response === 'string' ? JSON.parse(response) : response;
+            } catch (e) {
+                // 无法解析，按默认成功处理
+                cb(null, response);
+                return;
+            }
+            // 兼容不同后端包装格式：直接 data / data.data / axios 包裹
+            const bizData = resData?.data?.data || resData?.data || resData;
+            if (bizData && (bizData.success === false || (bizData.code !== undefined && bizData.code !== 200 && bizData.code !== 0))) {
+                cb(new Error(bizData.msg || bizData.message || '分片上传失败'));
+                return;
+            }
+            cb(null, resData);
+        }
     };
     const attrs = {
         accept: 'image/*'
@@ -112,29 +130,41 @@
                 config
             )
             .then(function (response) {
-                console.log(response);
-                const resData = response.data.data;
-                if (resData && resData.msg) {
+                console.log('fileComplete mergeFile response:', response);
+                const resData = response.data?.data;
+                // 检查业务层面的成功标志
+                if (resData?.success === true) {
                     ElMessage({
                         type: 'success',
-                        message: resData.msg,
+                        message: resData.msg || '文件上传成功',
                         offset: 65
                     });
-                } else {
-                    ElMessage({
-                        type: 'success',
-                        message: '文件上传成功',
-                        offset: 65
-                    });
-                }
-                props.reloadTable();
-                setTimeout(() => {
+                    props.reloadTable();
+                    setTimeout(() => {
                         props.dialogConfig.show = false;
                     }, 1500);
+                } else {
+                    // 合并接口返回业务错误，需手动将文件状态改为失败
+                    const errMsg = resData?.msg || '文件合并失败，请重试';
+                    ElMessage({ type: 'error', message: errMsg, offset: 65 });
+                    console.warn('文件合并失败:', response);
+                    const uploader = uploaderRef.value?.uploader;
+                    if (uploader) {
+                        uploader._trigger('fileError', rootFile, rootFile, errMsg);
+                    }
+                }
             })
             .catch(function (error) {
-                console.log(error);
-                ElMessage({ type: 'error', message: '文件合并失败', offset: 65 });
+                console.log('fileComplete mergeFile error:', error);
+                const errMsg = error?.response?.data?.data?.msg
+                    || error?.response?.data?.msg
+                    || '文件合并失败，请检查网络';
+                ElMessage({ type: 'error', message: errMsg, offset: 65 });
+                // 网络异常同样需要将文件状态改为失败
+                const uploader = uploaderRef.value?.uploader;
+                if (uploader) {
+                    uploader._trigger('fileError', rootFile, rootFile, errMsg);
+                }
             });
     };
 
