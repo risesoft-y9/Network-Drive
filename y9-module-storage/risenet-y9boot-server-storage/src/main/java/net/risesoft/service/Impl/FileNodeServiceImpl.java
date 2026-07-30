@@ -43,6 +43,7 @@ import net.risesoft.repository.FileTagRelationRepository;
 import net.risesoft.repository.spec.FileNodeSpecification;
 import net.risesoft.service.FileNodeService;
 import net.risesoft.service.StorageCapacityService;
+import net.risesoft.service.AiService;
 import net.risesoft.support.FileListType;
 import net.risesoft.support.FileNodeType;
 import net.risesoft.support.OrderProp;
@@ -93,6 +94,7 @@ public class FileNodeServiceImpl implements FileNodeService {
     private final Y9FileStoreService y9FileStoreService;
     private final StorageCapacityService storageCapacityService;
     private final FileTagRelationRepository fileTagRelationRepository;
+    private final AiService aiService;
     @Value("${y9.app.storage.defaultStorageCapacity}")
     private String defaultStorageCapacity;
     @Value("${y9.app.storage.singleUploadLimit}")
@@ -490,6 +492,13 @@ public class FileNodeServiceImpl implements FileNodeService {
                 Y9Context.publishEvent(auditLogEvent);
                 map.put("msg", "文件上传成功");
                 map.put("success", true);
+
+                // 上传成功后异步建立 AI 索引（非阻塞）
+                try {
+                    aiService.indexUploadedFile(fileNode);
+                } catch (Exception e) {
+                    LOGGER.warn("AI 索引提交失败", e);
+                }
             }
 
         } catch (Exception e) {
