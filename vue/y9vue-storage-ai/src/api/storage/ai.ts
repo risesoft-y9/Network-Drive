@@ -3,8 +3,56 @@
  */
 import Request from '@/api/lib/request';
 import qs from 'qs';
+import { buildMenuContext, buildMenuHTML, detectOperationKeys, getMenuPrompt } from '@/composables/useFileOperations';
 
 var aiRequest = new Request();
+
+/**
+ * 检测消息是否涉及文件操作，并返回匹配的操作 key 列表
+ * 返回空数组表示不涉及文件操作
+ */
+function getOperationKeys(message: string): string[] {
+    return detectOperationKeys(message);
+}
+
+/** 将操作菜单 HTML 追加到 AI 回复文本中（自动去重，避免重复追加） */
+function appendMenuToReply(res: any, menuHTML: string): void {
+    if (!res || !menuHTML) return;
+
+    // 工具函数：若目标字符串中已包含菜单标记，则不追加
+    const appendIfMissing = (target: string): boolean => {
+        if (typeof target !== 'string') return false;
+        if (target.includes('class="operation-menus"')) return false;
+        return true;
+    };
+
+    // 匹配 extractReply 的查找顺序，优先追加到第一个匹配的字段
+    if (res.data?.reply && appendIfMissing(res.data.reply)) {
+        res.data.reply += menuHTML;
+    } else if (res.data?.content && appendIfMissing(res.data.content)) {
+        res.data.content += menuHTML;
+    } else if (res.data?.answer && appendIfMissing(res.data.answer)) {
+        res.data.answer += menuHTML;
+    } else if (typeof res.data === 'string' && appendIfMissing(res.data)) {
+        res.data += menuHTML;
+    } else if (res.reply && appendIfMissing(res.reply)) {
+        res.reply += menuHTML;
+    } else if (res.content && appendIfMissing(res.content)) {
+        res.content += menuHTML;
+    } else if (res.answer && appendIfMissing(res.answer)) {
+        res.answer += menuHTML;
+    } else if (typeof res === 'string' && appendIfMissing(res)) {
+        // res 本身是字符串（不常见但也处理）
+        (res as any)._menuHTML = menuHTML;
+    } else if (res.success && res.msg && appendIfMissing(res.msg)) {
+        res.msg += menuHTML;
+    } else if (res.data && typeof res.data === 'object') {
+        if (res.data.reply && appendIfMissing(res.data.reply)) res.data.reply += menuHTML;
+        else if (res.data.content && appendIfMissing(res.data.content)) res.data.content += menuHTML;
+        else if (res.data.answer && appendIfMissing(res.data.answer)) res.data.answer += menuHTML;
+        else res.data._menuHTML = menuHTML;
+    }
+}
 
 export default {
     /**
@@ -25,20 +73,37 @@ export default {
      * @param message 用户消息
      * @param context 上下文信息（如当前所在文件夹、文件列表等）
      */
-    aiChat(sessionId: string | null, message: string, context?: any, mentionedFileIds?: string) {
+    async aiChat(sessionId: string | null, message: string, context?: any, mentionedFileIds?: string) {
         const params: any = { message };
-        if (context) {
-            // context 需要 JSON 序列化，避免 qs 深度展开为 context[source]=xxx
-            params.context = JSON.stringify(context);
-        }
+
+        // 注入文件操作菜单上下文，让 AI 知道有哪些可用菜单
+        const mergedContext = {
+            fileOperationMenus: JSON.parse(buildMenuContext()),
+            ...(context || {})
+        };
+        params.context = JSON.stringify(mergedContext);
+
         if (sessionId) {
             params.sessionId = sessionId;
         }
         if (mentionedFileIds) {
-            // 文件ID直接作为字符串参数，避免 JSON 嵌套编码问题
             params.mentionedFileIds = mentionedFileIds;
         }
-        return aiRequest.post('/vue/ai/chat', qs.stringify(params));
+
+        const res = await aiRequest.post('/vue/ai/chat', qs.stringify(params));
+
+        // 按用户输入的操作意图过滤菜单，只显示有对应操作权限的菜单
+        const opKeys = getOperationKeys(message);
+        if (opKeys.length > 0) {
+            const promptText = getMenuPrompt(opKeys);
+            const menuHTML = buildMenuHTML(opKeys, promptText);
+            appendMenuToReply(res, menuHTML);
+        }
+
+        // 将操作意图标记附加到响应上，供 AIChat 组件检测是否自动弹出操作弹窗
+        (res as any)._operationKeys = opKeys;
+
+        return res;
     },
 
     /**

@@ -66,6 +66,11 @@ export async function checkWriteList(to, from) {
 
 let userRole = ['user'];
 
+/** 供外部组件/工具获取当前用户角色数组 */
+export function getUserRoles() {
+    return [...userRole];
+}
+
 async function check() {
     let isTokenValid, isRoleValid;
 

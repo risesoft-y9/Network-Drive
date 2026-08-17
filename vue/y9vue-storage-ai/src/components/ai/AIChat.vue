@@ -17,7 +17,7 @@
         </div>
 
         <!-- 消息列表 -->
-        <div class="chat-messages" ref="messagesContainer">
+        <div class="chat-messages" ref="messagesContainer" @click="handleMessageClick">
             <div v-if="messages.length === 0" class="chat-welcome">
                 <div class="welcome-icon">
                     <el-icon :size="48"><MagicStick /></el-icon>
@@ -131,18 +131,18 @@
             </div>
         </div>
 
-        <!-- @我的文件上传 弹窗 -->
+        <!-- 上传文件弹窗（上传目标可动态切换） -->
         <el-dialog
             v-model="showUploadDialog"
-            :title="'上传文件至我的文件'"
+            :title="uploadDialogTitle"
             width="580px"
             :close-on-click-modal="false"
             destroy-on-close
         >
             <AddFile
                 :dialog-config="uploadDialogConfig"
-                parent-id="my"
-                list-type="my"
+                :parent-id="uploadParentId"
+                :list-type="uploadListType"
                 :reload-table="onUploadSuccess"
             />
         </el-dialog>
@@ -150,7 +150,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, nextTick, inject, watch } from 'vue';
+    import { ref, nextTick, inject, watch, computed } from 'vue';
     import { ElMessage } from 'element-plus';
     import {
         ChatDotRound,
@@ -179,10 +179,10 @@
 
     // 快捷问题
     const quickQuestions = [
-        '帮我找到最近上传的文件',
-        '有哪些文件超过100MB？',
-        '查找包含方案的文件',
-        '帮我分析最近的存储使用情况'
+        '@帮我找到最近上传的文件',
+        '@有哪些文件超过100MB？',
+        '@查找包含方案的文件',
+        '@帮我分析最近的存储使用情况'
     ];
 
     const messages = ref<Message[]>([]);
@@ -204,9 +204,14 @@
     const mentionedFileMap = ref<Map<string, { id: string; name: string }>>(new Map());
     let mentionDebounceTimer: any = null;
 
-    // ==================== @我的文件上传 弹窗状态 ====================
+    // ==================== 上传弹窗状态（支持动态切换上传目标） ====================
     const showUploadDialog = ref(false);
     const uploadDialogConfig = ref({ show: false });
+    const uploadParentId = ref('my');
+    const uploadListType = ref('my');
+    const uploadTargetTitle = ref('我的文件'); // 用于弹窗标题
+
+    const uploadDialogTitle = computed(() => `上传文件至${uploadTargetTitle.value}`);
 
     // 监听 showUploadDialog 同步到 dialogConfig，兼容 AddFile 组件通过 dialogConfig.show 控制关闭
     watch(showUploadDialog, (val) => {
@@ -217,11 +222,11 @@
      * 文件上传成功后的回调，以 AI 助手身份提示上传结果
      */
     function onUploadSuccess(file?: any) {
-        ElMessage.success('文件已上传至我的文件');
-        // 以 AI 助手角色推送上传提示，而非用户消息
+        const target = uploadTargetTitle.value;
+        ElMessage.success(`文件已上传至${target}`);
         const tip = file?.name
-            ? `文件「${file.name}」已上传至我的文件列表，你可以继续向我提问关于这个文件的问题。`
-            : '文件已上传至网盘，你可以继续向我提问。';
+            ? `文件「${file.name}」已上传至${target}，你可以继续向我提问关于这个文件的问题。`
+            : `文件已上传至${target}，你可以继续向我提问。`;
         messages.value.push({
             role: 'ai',
             content: tip,
@@ -232,6 +237,37 @@
         setTimeout(() => {
             showUploadDialog.value = false;
         }, 1600);
+    }
+
+    /**
+     * 处理消息列表中的操作菜单点击（事件委托）
+     * 点击菜单项 → 回显 @菜单名 到输入框 → 自动弹出上传窗口
+     */
+    function handleMessageClick(event: MouseEvent) {
+        const target = (event.target as HTMLElement).closest('.operation-menu-item') as HTMLElement;
+        if (!target) return;
+
+        // 阻止事件继续冒泡到 AI/index.vue 的 handlePageClick
+        event.stopPropagation();
+
+        const title = target.dataset.title || '';
+        const listType = target.dataset.listtype || '';
+        const parentId = target.dataset.parentid || '';
+
+        if (!title) return;
+
+        // 回显 @菜单名 到输入框
+        inputText.value = `@${title} `;
+
+        // 动态设置上传目标（如果有 listType 信息说明支持上传）
+        if (listType && parentId) {
+            uploadListType.value = listType;
+            uploadParentId.value = parentId;
+            uploadTargetTitle.value = title;
+        }
+
+        // 弹出上传窗口
+        showUploadDialog.value = true;
     }
 
     // ==================== @ 文件提及核心逻辑 ====================
@@ -595,6 +631,8 @@
                     time: Date.now(),
                     files: files
                 });
+
+                // 上传窗口由用户点击菜单项后触发（handleMessageClick），这里不再自动弹出
             } else {
                 // 请求失败的处理
                 const errorMsg = res?.msg || res?.message || '请求失败，请稍后重试';

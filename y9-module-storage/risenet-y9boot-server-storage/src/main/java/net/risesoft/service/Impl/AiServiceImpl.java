@@ -225,11 +225,35 @@ public class AiServiceImpl implements AiService {
         if (StringUtils.isBlank(message)) {
             return false;
         }
-        for (String key : FILE_SEARCH_KEYS) {
-            if (message.contains(key)) {
+        // 1. 明确搜索前缀是强信号：帮我找/查找/搜索/找一下/查询/有没有
+        for (String prefix : SEARCH_PREFIXES) {
+            if (message.contains(prefix)) {
                 return true;
             }
         }
+
+        // 2. 时间词 + 上传/文件 的组合（如"最近上传了什么""今天上传了什么文件"）
+        String[] timeWords = {"最近", "最新", "今天", "昨天", "本周", "本月", "这周", "这月", "上周", "上月", "刚刚"};
+        boolean hasTimeWord = false;
+        for (String t : timeWords) {
+            if (message.contains(t)) {
+                hasTimeWord = true;
+                break;
+            }
+        }
+        if (hasTimeWord && (message.contains("上传") || message.contains("文件"))) {
+            return true;
+        }
+
+        // 3. 明确的文件类型查询（"有哪些pdf""有没有word文件"之类——"有哪些"单独出现不算）
+        String[] strongFileTypePatterns =
+            {"pdf", "word", "excel", "压缩包", "图片文件", "视频文件", "有哪些文件", "有没有文件", "有没有pdf", "有没有word", "有哪些pdf", "有哪些word"};
+        for (String p : strongFileTypePatterns) {
+            if (message.contains(p)) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -852,6 +876,64 @@ public class AiServiceImpl implements AiService {
             return "已将 **" + nameBuilder.toString() + "** 移入回收站。如需恢复，可以对我说“恢复最近删除的文件”。";
         } catch (Exception e) {
             LOGGER.error("AI 通过@提及删除文件失败", e);
+            return "删除失败：" + e.getMessage();
+        }
+    }
+
+    /**
+     * 处理 @删除文件夹/文件 名称 命令：按名称搜索并删除匹配的文件/文件夹
+     * 例如 @删除文件夹 888 → 搜索名称含"888"的文件夹，执行逻辑删除
+     */
+    private String handleDeleteByName(String message) {
+        String personId = Y9LoginUserHolder.getPersonId();
+        // 尝试提取引号名称 "删除文件夹\"888\""
+        String keyword = extractQuotedKeyword(message);
+        if (StringUtils.isBlank(keyword)) {
+            // 去掉意图关键词后剩余作为搜索关键词
+            keyword = message;
+            for (String key : DELETE_KEYS) {
+                keyword = keyword.replace(key, "");
+            }
+            // 去除 "文件" "夹" 等修饰词
+            keyword = keyword.replace("文件夹", "").replace("文件", "").trim();
+            keyword = keyword.replaceAll("[，。！？、；:：\\s]+", "").trim();
+        }
+        if (StringUtils.isBlank(keyword) || keyword.length() > 50) {
+            return "请输入要删除的文件或文件夹名称，例如：**\"@删除文件夹 888\"** 或 **\"@删除文件 报告\"**";
+        }
+
+        // 按名称搜索
+        LOGGER.info("AI 按名称删除, personId={}, keyword={}", personId, keyword);
+        FileNodeSpecification spec =
+            new FileNodeSpecification(personId, (String)null, keyword, false, null, null, null, null);
+        PageRequest pageRequest = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createTime"));
+        Page<FileNode> page = fileNodeRepository.findAll(spec, pageRequest);
+        List<FileNode> items = page.getContent();
+
+        if (items.isEmpty()) {
+            return "未找到包含 **\"" + keyword + "\"** 的文件或文件夹。\n\n您可以尝试：\n"
+                + "- **\"@帮我找 " + keyword + "\"** → 先搜索确认文件\n"
+                + "- **\"@新建文件夹 " + keyword + "\"** → 创建新文件夹";
+        }
+
+        // 执行删除
+        List<String> ids = new ArrayList<>();
+        StringBuilder nameBuilder = new StringBuilder();
+        for (FileNode fn : items) {
+            ids.add(fn.getId());
+            if (nameBuilder.length() > 0) {
+                nameBuilder.append("、");
+            }
+            nameBuilder.append(fn.getName());
+        }
+        try {
+            fileNodeService.logicDelete(ids);
+            String fileOrFolder = items.get(0).getFileType() != null && items.get(0).getFileType() == 0 ? "文件夹" : "文件";
+            LOGGER.info("AI 按名称删除成功, personId={}, keyword={}, count={}", personId, keyword, ids.size());
+            return "已将匹配 **\"" + keyword + "\"** 的 " + ids.size() + " 个" + fileOrFolder + "（**" + nameBuilder.toString()
+                + "**）移入回收站。如需恢复，可以对我说\"恢复最近删除的文件\"。";
+        } catch (Exception e) {
+            LOGGER.error("AI 按名称删除失败", e);
             return "删除失败：" + e.getMessage();
         }
     }
@@ -1766,102 +1848,44 @@ public class AiServiceImpl implements AiService {
             messages.add(m);
         }
 
-        // 调用 AI API（检测意图，路由到对应处理器）
-        // 优先级：操作型意图 > 查询型意图 > 序号引用操作 > 通用AI对话
+        // 调用 AI API（消息路由：仅 @ 了文件时才能操作网盘文件，否则全部交给 AI 通用对话）
         String aiReply;
 
-        // ===== 0. 如果用户通过 @ 提及了文件，跳过意图路由，直接交给 AI 处理 =====
+        // ===== 0. 检测用户是否通过 @ 提及了网盘文件 =====
         boolean hasMentionedFiles = context != null && context.containsKey("mentionedFiles");
         LOGGER.debug("[AI Chat] hasMentionedFiles={}, context={}, message={}", hasMentionedFiles,
             context != null ? context.keySet() : "null", StringUtils.abbreviate(message, 80));
 
         if (!hasMentionedFiles) {
-            // ===== 1. 无需序号的独立操作 =====
-            if (isStorageAnalysisQuery(message)) {
-                // 存储使用分析（"帮我分析最近的存储使用情况"）
-                aiReply = handleStorageAnalysis(message);
-            } else if (isCreateFolderIntent(message)) {
-                // 创建文件夹（"新建文件夹叫项目资料"）
-                aiReply = handleCreateFolder(message);
-            } else if (isRestoreIntent(message)) {
-                // 恢复文件（"恢复已删除的文件"）
-                aiReply = handleRestoreFiles(message);
-            } else if (isFileSearchQuery(message)) {
-                // ===== 搜索查询优先于序号引用（"查找所有包含'方案'的文档"中的"所有"是搜索修饰符，不是操作意图） =====
-                aiReply = handleFileSearchInChat(message);
-                // 如果消息同时包含分析/提取意图，自动提取搜索结果中文件的内容
-                if (isAnalysisIntent(message) && lastSearchResults != null && !lastSearchResults.isEmpty()) {
-                    String extractedContent = extractContentFromSearchResults(lastSearchResults, message);
-                    if (StringUtils.isNotBlank(extractedContent)) {
-                        aiReply += "\n\n" + extractedContent;
-                    }
-                }
-            } else {
-                // ===== 2. 需要序号引用的操作（先尝试解析第N个） =====
-                String[] fileRef = resolveFileReference(message);
-                if (fileRef != null) {
-                    // 处理 downloadAll 场景（fileRef[0]="ALL"）
-                    if ("ALL".equals(fileRef[0])) {
-                        if (message.contains("下载")) {
-                            aiReply = handleDownloadFiles(message, fileRef);
-                        } else if (isMoveIntent(message)) {
-                            aiReply = "全部移动功能暂不支持，请逐个指定文件。例如：**\"把第1个移到目标文件夹\"**";
-                        } else {
-                            aiReply = "暂不支持对\"全部\"文件执行此操作，请指定具体文件。例如：**\"下载第1个\"**";
-                        }
-                    } else if (message.contains("下载")) {
-                        aiReply = handleDownloadFiles(message, fileRef);
-                    } else if (isRenameIntent(message)) {
-                        aiReply = handleRenameFile(message, fileRef);
-                    } else if (isDeleteIntent(message)) {
-                        aiReply = handleDeleteFiles(message);
-                    } else if (isMoveIntent(message)) {
-                        aiReply = handleMoveFile(message, fileRef);
-                    } else if (isShareIntent(message)) {
-                        aiReply = handleShareFile(message, fileRef);
-                    } else if (message.contains("取消分享") || message.contains("取消共享")) {
-                        aiReply = "已取消分享状态。";
-                    } else if (message.contains("分析") || message.contains("提取") || message.contains("摘要")
-                        || message.contains("关键词")) {
-                        aiReply = handleFileAnalysisByIndex(message, fileRef);
-                    } else if (isEncryptionIntent(message)) {
-                        aiReply = handleEncryptionByIndex(message, fileRef);
-                    } else {
-                        // 无明确操作类型，将序号视为查看文件详情
-                        int idx = resolveFileIndex(message);
-                        if (idx < 1 || idx > lastSearchResults.size()) {
-                            aiReply = callAiApi(messages, context);
-                        } else {
-                            Map<String, Object> item = (Map<String, Object>)lastSearchResults.get(idx - 1);
-                            String name = (String)item.getOrDefault("name", "未知");
-                            String id = (String)item.get("id");
-                            aiReply = "文件 **" + name + "** 的操作选项：\n\n" + "- <a href=\"" + storageBaseUrl
-                                + "/vue/fileNode/downloadFile?ids=" + id
-                                + "\" target=\"_blank\"><strong>下载文件</strong></a>\n" + "- **\"下载第" + idx
-                                + "个\"** → 获取下载链接\n" + "- **\"分享第" + idx + "个\"** → 获取分享链接\n" + "- **\"重命名第" + idx
-                                + "个为XXX\"** → 修改文件名\n" + "- **\"移动第" + idx + "个到XXX\"** → 移动到其他文件夹\n" + "- **\"删除第"
-                                + idx + "个\"** → 移入回收站\n" + "- **\"加密第" + idx + "个\"** → 设置密码保护";
+            // 判断消息是否以 @ 开头（@后不是已解析的文件名，而是命令）
+            // 例如 @新建文件夹 888 → 创建文件夹； @帮我找方案 → 搜索文件
+            String trimmedMsg = message != null ? message.trim() : "";
+            if (trimmedMsg.startsWith("@")) {
+                // @ 开头 = 文件系统命令，执行意图路由
+                String cmdMsg = trimmedMsg.substring(1).trim(); // 去掉 @ 前缀
+                if (isCreateFolderIntent(cmdMsg)) {
+                    aiReply = handleCreateFolder(cmdMsg);
+                } else if (isDeleteIntent(cmdMsg)) {
+                    aiReply = handleDeleteByName(cmdMsg);
+                } else if (isRestoreIntent(cmdMsg)) {
+                    aiReply = handleRestoreFiles(cmdMsg);
+                } else if (isStorageAnalysisQuery(cmdMsg)) {
+                    aiReply = handleStorageAnalysis(cmdMsg);
+                } else if (isFileSearchQuery(cmdMsg)) {
+                    aiReply = handleFileSearchInChat(cmdMsg);
+                    if (isAnalysisIntent(cmdMsg) && lastSearchResults != null && !lastSearchResults.isEmpty()) {
+                        String extractedContent = extractContentFromSearchResults(lastSearchResults, cmdMsg);
+                        if (StringUtils.isNotBlank(extractedContent)) {
+                            aiReply += "\n\n" + extractedContent;
                         }
                     }
                 } else {
-                    // ===== 3. 无序号引用的其他操作 =====
-                    if (isDeleteIntent(message)) {
-                        aiReply =
-                            "请先搜索文件，然后指定要删除的文件。例如：\n" + "1. **\"帮我找XXX文件\"** → 搜索\n" + "2. **\"删除第1个\"** → 删除对应文件";
-                    } else if (isMoveIntent(message)) {
-                        aiReply = handleMoveFilePrompt(message);
-                    } else if (isShareIntent(message)) {
-                        aiReply = handleSharePrompt(message);
-                    } else if (isRenameIntent(message)) {
-                        aiReply = "请先搜索文件，然后对我说：**\"把第1个改名为新名称\"**。";
-                    } else if (isEncryptionIntent(message)) {
-                        aiReply = handleEncryptionIntent(message);
-                    } else if (isAnalysisIntent(message)) {
-                        aiReply = handleAnalysisIntent(message);
-                    } else {
-                        aiReply = callAiApi(messages, context);
-                    }
+                    // @ 开头的其他命令，交给 AI 通用对话（如 @帮我写个代码）
+                    aiReply = callAiApi(messages, context);
                 }
+            } else {
+                // 不带 @ 的普通消息：全部交给 AI 通用对话
+                aiReply = callAiApi(messages, context);
             }
         } else {
             // @ 文件提及：优先检测操作意图（删除/下载/重命名/移动/加密/分享），再交给 AI 分析
