@@ -53,7 +53,7 @@
         "vxe-table": "^4.5.13",
         "xe-utils": "^3.5.7",
         "y9plugin-components-auto": "^3.0.51",
-        "y9plugin-sso-l": "^4.3.0",
+        "y9plugin-sso": "^4.2.9",
         "y9plugin-watermark": "^1.2.0"
     },
     "devDependencies": {
