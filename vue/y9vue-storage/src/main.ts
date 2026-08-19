@@ -12,7 +12,7 @@ import 'animate.css';
 import 'normalize.css'; // 样式初始化
 import 'remixicon/fonts/remixicon.css';
 import { createApp, ref, watch } from 'vue';
-import sso from 'y9plugin-sso-l';
+import sso from 'y9plugin-sso';
 import App from './App.vue';
 import './theme/global.scss';
 import 'viewerjs/dist/viewer.css';
@@ -39,7 +39,7 @@ const env = {
         VUE_APP_SSO_CLIENT_ID: import.meta.env.VUE_APP_SSO_CLIENT_ID, //sso接口的固定字段
         VUE_APP_SSO_SECRET: import.meta.env.VUE_APP_SSO_SECRET, //sso接口的固定字段
         VUE_APP_SSO_GRANT_TYPE: import.meta.env.VUE_APP_SSO_GRANT_TYPE, //sso接口的固定字段
-        VUE_APP_SSO_SITETOKEN_KEY: import.meta.env.VUE_APP_SSO_SITETOKEN_KEY, //sso-token_key
+        VUE_APP_SSO_SITETOKEN_KEY: import.meta.env.VUE_APP_SSO_SITETOKEN_KEY //sso-token_key
         // VUE_APP_HOST_LICENSE: import.meta.env.VUE_APP_HOST_LICENSE,
         // VUE_APP_CONTEXT: import.meta.env.VUE_APP_CONTEXT
     },

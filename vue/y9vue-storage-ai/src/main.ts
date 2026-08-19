@@ -12,7 +12,7 @@ import 'animate.css';
 import 'normalize.css'; // 样式初始化
 import 'remixicon/fonts/remixicon.css';
 import { createApp, ref, watch } from 'vue';
-import sso from 'y9plugin-sso-l';
+import sso from 'y9plugin-sso';
 import App from './App.vue';
 import './theme/global.scss';
 import 'viewerjs/dist/viewer.css';
