@@ -1,5 +1,5 @@
-<script lang="ts">
-    import { computed, ComputedRef, nextTick, onBeforeMount, onMounted, Ref, ref, unref, watch } from 'vue';
+<script lang="ts" setup>
+    import { computed, nextTick, onBeforeMount, onMounted, onUnmounted, ref, unref, watch } from 'vue';
     import { useSettingStore } from '@/store/modules/settingStore';
     import { useRouterStore } from '@/store/modules/routerStore';
     import { useStorageStore } from '@/store/modules/storageStore';
@@ -18,184 +18,170 @@
     import Y9Horizontal from '@/layouts/Y9-horizontal/index.vue';
     import Y9Mobile from '@/layouts/Y9-mobile/index.vue';
     import OrgApi from '@/api/storage/org';
-    import type { ElMessage } from 'element-plus';
+    import { ElMessage } from 'element-plus';
     import { useI18n } from 'vue-i18n';
 
+    defineOptions({ name: 'indexLayout' });
+
+    // 全局状态初始化
+    const settingStore = useSettingStore();
+    const routerStore = useRouterStore();
     const storageStore = useStorageStore();
+    const route = useRoute();
+    const { locale } = useI18n();
 
-    interface IndexLayoutSetupData {
-        menuCollapsed: computed<Boolean>;
-        tabNavEnable: boolean;
-        belongTopMenu: ComputedRef<string>;
-        menuData: RoutesDataItem[];
-        defaultActive: Ref<string>;
-        breadCrumbs: ComputedRef<BreadcrumbType[]>;
-        routeItem: ComputedRef<RoutesDataItem>;
-        layoutSubName?: Ref<string>;
-    }
+    // 布局配置
+    const layoutSubName = ref('');
+    const layoutName = computed<string>(() => {
+        // 水平布局强制禁用菜单折叠
+        if (settingStore.getLayout === 'Y9Horizontal') {
+            settingStore.menuCollapsed = false;
+        }
+        const [name, subName = ''] = settingStore.getLayout.split(' ');
+        layoutSubName.value = subName;
+        return name;
+    });
 
-    export default {
-        name: 'indexLayout',
-        components: {
+    // 动态组件安全映射，避免直接字符串渲染组件
+    const layoutComponent = computed(() => {
+        const componentMap: Record<string, typeof Y9Default> = {
             Y9Default,
             Y9Horizontal,
             Y9Mobile
-        },
-        setup() {
-            // PC网站配置
-            const { locale } = useI18n();
-            const settingStore = useSettingStore();
-            const layoutSubName = ref('');
-            const layoutName = computed<string>(() => {
-                // horizontal布局时，menuCollapsed 必须为false，禁止折叠
-                if (settingStore.getLayout === 'Y9Horizontal') {
-                    settingStore.$patch({
-                        menuCollapsed: false
-                    });
-                }
-                const nameArray = settingStore.getLayout.split(' ');
-                nameArray[1] ? (layoutSubName.value = nameArray[1]) : (layoutSubName.value = '');
-                return nameArray[0];
-            });
+        };
+        return componentMap[layoutName.value] || Y9Default;
+    });
 
-            // 主题切换
-            const theme = computed(() => settingStore.getThemeName);
+    // 主题切换逻辑
+    const theme = computed(() => settingStore.getThemeName);
+    const updateThemeCss = (newTheme: string) => {
+        // 安全更新根节点主题类
+        document.documentElement.className = newTheme;
 
-            watch(theme, () => {
-                document.getElementsByTagName('html')[0].className = theme.value;
-                if (document.getElementById('head')) {
-                    let themeDom = document.getElementById('head');
-                    let pathArray = themeDom.href.split('/');
-                    pathArray[pathArray.length - 1] = theme.value + '.css';
-                    let newPath = pathArray.join('/');
-                    themeDom.href = newPath;
-                }
-            });
+        // 安全更新主题样式链接，避免路径拼接错误
+        const themeLink = document.getElementById('head') as HTMLLinkElement | null;
+        if (!themeLink?.href) return;
 
-            // 移动端
-            if (settingStore.getDevice === 'mobile') {
-                settingStore.$patch({
-                    layout: 'Y9Mobile',
-                    settingWidth: '100%'
-                });
+        try {
+            const url = new URL(themeLink.href, window.location.origin);
+            const pathSegments = url.pathname.split('/');
+            pathSegments[pathSegments.length - 1] = `${newTheme}.css`;
+            url.pathname = pathSegments.join('/');
+
+            // 仅在路径变化时更新，避免不必要的资源重载
+            if (themeLink.href !== url.toString()) {
+                themeLink.href = url.toString();
             }
-            const { toggleDevice } = settingStore;
-            let changeDeviceTimeOut;
-            const onScreenFunc = () => {
-                changeDeviceTimeOut ? clearTimeout(changeDeviceTimeOut) : '';
-                changeDeviceTimeOut = setTimeout(() => {
-                    toggleDevice();
-                }, 250);
-            };
-            settingStore.$subscribe(onScreenFunc);
-
-            // 收缩左侧
-            const menuCollapsed = computed<Boolean>(() => settingStore.getMenuCollapsed);
-
-            // 所有菜单路由（computed 响应式，确保 PermissionRoutes 更新后菜单同步刷新）
-            const routerStore = useRouterStore();
-            const menuData = computed<RoutesDataItem[]>(() => {
-                const routes = routerStore.getPermissionRoutes;
-                console.log('[layout] menuData computed, count:', routes.length, routes.map(r => ({path: r.path, name: r.name, title: r.meta?.title, roles: r.meta?.roles})));
-                return routes;
-            });
-
-            let route = useRoute();
-            // 当前路由 item
-            const routeItem = computed<RoutesDataItem>(() => getRouteItem(route.path, menuData.value));
-
-            // 当前路由的父路由path[]
-            const routeParentPaths = computed<string[]>(() => formatRoutePathTheParents(routeItem.value.path));
-
-            // 当前路由的顶部菜单path
-            const belongTopMenu = computed<string>(() => getRouteBelongTopMenu(routeItem.value));
-
-            // 左侧选择的菜单
-            const defaultActive = ref<string>(getSelectLeftMenuPath(routeItem.value));
-            const { addTab } = routerStore;
-            watch([routeItem], async () => {
-                addTab(unref(routeItem));
-                await nextTick();
-                defaultActive.value = getSelectLeftMenuPath(routeItem.value);
-            });
-
-            // 面包屑导航
-            const breadCrumbs = computed<BreadcrumbType[]>(() =>
-                getBreadcrumbRoutes(routeItem.value, routeParentPaths.value, menuData.value)
-            );
-
-            onBeforeMount(() => {
-                getAllPositionList();
-            });
-
-            // 挂载组件后初始化网站设置
-            onMounted(() => {
-                // 初始化主题
-                document.getElementsByTagName('html')[0].className = theme.value;
-            });
-
-            const getAllPositionList = () => {
-                OrgApi.getPositionList()
-                    .then((res) => {
-                        if (res.success) {
-                            let positionId = sessionStorage.getItem('positionId')!;
-                            let currentName = '';
-
-                            res.data.positionList.forEach((item, index) => {
-                                if (item.id == positionId) {
-                                    currentName = item.name;
-                                }
-                            });
-                            storageStore.$patch({
-                                positionList: res.data.positionList,
-                                currentPositionName: currentName,
-                                tenantId: res.data.tenantId
-                            });
-                            console.log(storageStore.positionList);
-                            sessionStorage.setItem('positionId', positionId);
-                            sessionStorage.setItem('positionName', currentName);
-                            sessionStorage.setItem('tenantId', res.data.tenantId);
-                        }
-                    })
-                    .catch(() => {
-                        ElMessage({ type: 'info', message: '数据加载失败' });
-                    });
-            };
-
-            // 国际语言切换 仍有bug
-            const webLanguage = computed(() => settingStore.getWebLanguage);
-            watch(webLanguage, () => {
-                // 修复打包后的国际语言切换和主题切换 的问题
-                locale.value = webLanguage.value;
-            });
-
-            return {
-                layoutName,
-                layoutSubName,
-                menuData,
-                menuCollapsed,
-                belongTopMenu,
-                defaultActive,
-                breadCrumbs,
-                routeItem,
-                getAllPositionList
-            };
+        } catch (err) {
+            console.error('主题样式更新失败:', err);
         }
     };
+
+    watch(theme, (newTheme) => updateThemeCss(newTheme));
+
+    // 移动端适配逻辑
+    if (settingStore.getDevice === 'mobile') {
+        settingStore.layout = 'Y9Mobile';
+        settingStore.settingWidth = '100%';
+    }
+
+    const { toggleDevice } = settingStore;
+    let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+    const handleScreenResize = () => {
+        if (resizeTimer) clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => toggleDevice(), 250);
+    };
+    const unsubscribeSetting = settingStore.$subscribe(handleScreenResize);
+
+    // 菜单与路由联动逻辑
+    const menuCollapsed = computed(() => settingStore.getMenuCollapsed);
+    const menuData = computed<RoutesDataItem[]>(() => routerStore.getPermissionRoutes);
+    const routeItem = computed<RoutesDataItem>(() => getRouteItem(route.path, menuData.value));
+    const routeParentPaths = computed<string[]>(() => formatRoutePathTheParents(routeItem.value.path));
+    const belongTopMenu = computed<string>(() => getRouteBelongTopMenu(routeItem.value));
+    const defaultActive = ref<string>(getSelectLeftMenuPath(routeItem.value));
+    const { addTab } = routerStore;
+
+    watch(
+        routeItem,
+        async () => {
+            addTab(unref(routeItem));
+            await nextTick();
+            defaultActive.value = getSelectLeftMenuPath(routeItem.value);
+        },
+        { immediate: true }
+    );
+
+    // 面包屑导航
+    const breadCrumbs = computed<BreadcrumbType[]>(() =>
+        getBreadcrumbRoutes(routeItem.value, routeParentPaths.value, menuData.value)
+    );
+
+    // 国际化切换
+    const webLanguage = computed(() => settingStore.getWebLanguage);
+    watch(
+        webLanguage,
+        (newLang) => {
+            locale.value = newLang;
+        },
+        { immediate: true }
+    );
+
+    // 岗位列表预加载（storage 业务定制：写入 storageStore 与 sessionStorage）
+    const getAllPositionList = () => {
+        OrgApi.getPositionList()
+            .then((res) => {
+                if (res.success) {
+                    let positionId = sessionStorage.getItem('positionId')!;
+                    let currentName = '';
+
+                    res.data.positionList.forEach((item) => {
+                        if (item.id == positionId) {
+                            currentName = item.name;
+                        }
+                    });
+                    storageStore.$patch({
+                        positionList: res.data.positionList,
+                        currentPositionName: currentName,
+                        tenantId: res.data.tenantId
+                    });
+                    sessionStorage.setItem('positionId', positionId);
+                    sessionStorage.setItem('positionName', currentName);
+                    sessionStorage.setItem('tenantId', res.data.tenantId);
+                }
+            })
+            .catch(() => {
+                ElMessage({ type: 'info', message: '数据加载失败' });
+            });
+    };
+
+    onBeforeMount(() => {
+        getAllPositionList();
+    });
+
+    // 生命周期管理
+    onMounted(() => updateThemeCss(theme.value));
+
+    onUnmounted(() => {
+        // 清理所有副作用，避免内存泄漏
+        unsubscribeSetting();
+        if (resizeTimer) clearTimeout(resizeTimer);
+    });
 </script>
+
 <template>
     <component
-        :is="layoutName"
+        :is="layoutComponent"
         :key="layoutName"
         ref="indexLayoutRef"
-        :belongTopMenu="belongTopMenu"
-        :breadCrumbs="breadCrumbs"
-        :defaultActive="defaultActive"
-        :layoutName="layoutName"
-        :layoutSubName="layoutSubName"
-        :menuCollapsed="menuCollapsed"
-        :menuData="menuData"
-        :routeItem="routeItem"
+        :belong-top-menu="belongTopMenu"
+        :bread-crumbs="breadCrumbs"
+        :default-active="defaultActive"
+        :layout-name="layoutName"
+        :layout-sub-name="layoutSubName"
+        :menu-collapsed="menuCollapsed"
+        :menu-data="menuData"
+        :route-item="routeItem"
     ></component>
 </template>
 <style lang="scss" scoped>
