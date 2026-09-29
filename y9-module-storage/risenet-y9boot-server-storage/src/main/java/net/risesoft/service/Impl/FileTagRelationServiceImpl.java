@@ -117,4 +117,10 @@ public class FileTagRelationServiceImpl implements FileTagRelationService {
     public void delete(FileTagRelation fileTagRelation) {
         fileTagRelationRepository.delete(fileTagRelation);
     }
+
+    @Override
+    @Transactional
+    public void deleteAll(List<FileTagRelation> fileTagRelationList) {
+        fileTagRelationRepository.deleteAll(fileTagRelationList);
+    }
 }

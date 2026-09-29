@@ -1,7 +1,9 @@
 package net.risesoft.controller;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -33,12 +35,15 @@ public class FileNodeCollectController {
      */
     @RiseLog(operationName = "取消收藏文件或者文件夹")
     @PostMapping(value = "/cancelCollect")
-    public Y9Result<String> cancelCollect(String fileId) {
+    public Y9Result<String> cancelCollect(@RequestParam String fileId) {
+        if (StringUtils.isBlank(fileId)) {
+            return Y9Result.failure("参数错误：fileId不能为空");
+        }
         try {
             fileNodeCollectService.cancelCollect(fileId);
             return Y9Result.success("取消收藏成功！");
         } catch (Exception e) {
-            LOGGER.error("取消收藏失败！", e);
+            LOGGER.error("取消收藏失败, fileId={}", fileId, e);
             return Y9Result.failure("取消收藏失败！");
         }
     }
@@ -51,12 +56,15 @@ public class FileNodeCollectController {
      */
     @RiseLog(operationName = "收藏文件或者文件夹")
     @PostMapping(value = "/setCollect")
-    public Y9Result<String> setCollect(String fileId) {
+    public Y9Result<String> setCollect(@RequestParam String fileId) {
+        if (StringUtils.isBlank(fileId)) {
+            return Y9Result.failure("参数错误：fileId不能为空");
+        }
         try {
-            fileNodeCollectService.save(fileId, "");
+            fileNodeCollectService.save(fileId, null);
             return Y9Result.success("收藏成功！");
         } catch (Exception e) {
-            LOGGER.error("收藏失败！", e);
+            LOGGER.error("收藏失败, fileId={}", fileId, e);
             return Y9Result.failure("收藏失败！");
         }
     }

@@ -1,6 +1,7 @@
 package net.risesoft.service.Impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -144,6 +145,11 @@ public class FileTagServiceImpl implements FileTagService {
     @Override
     public FileTag findById(String id) {
         return fileTagRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public List<FileTag> findAllById(Collection<String> ids) {
+        return fileTagRepository.findAllById(ids);
     }
 
     @Override

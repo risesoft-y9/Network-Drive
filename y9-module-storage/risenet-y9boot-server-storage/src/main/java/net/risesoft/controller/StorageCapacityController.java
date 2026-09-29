@@ -6,9 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -44,9 +47,15 @@ public class StorageCapacityController {
      * @return
      */
     @RiseLog(operationName = "获取存储信息")
-    @RequestMapping(value = "/getCapacityInfo")
-    public Y9Result<StorageCapacity> getCapacityInfo(String id) {
+    @PostMapping(value = "/getCapacityInfo")
+    public Y9Result<StorageCapacity> getCapacityInfo(@RequestParam String id) {
+        if (StringUtils.isBlank(id)) {
+            return Y9Result.failure("id不能为空");
+        }
         StorageCapacity sc = storageCapacityService.findById(id);
+        if (sc == null) {
+            return Y9Result.failure("未查询到存储信息");
+        }
         return Y9Result.success(sc, "获取存储信息成功");
     }
 
@@ -60,11 +69,15 @@ public class StorageCapacityController {
      */
     @RiseLog(operationName = "获取存储空间列表")
     @GetMapping(value = "/getCapacityList")
-    public Y9Page<Map<String, Object>> getCapacityList(String userName, int page, int rows) {
+    public Y9Page<Map<String, Object>> getCapacityList(@RequestParam(required = false) String userName,
+        @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int rows) {
         List<Map<String, Object>> items = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         if (page < 1) {
             page = 1;
+        }
+        if (rows < 1) {
+            rows = 20;
         }
         Page<StorageCapacity> scList = storageCapacityService.findByUserName(userName, page, rows);
         for (StorageCapacity sc : scList.getContent()) {
@@ -77,7 +90,7 @@ public class StorageCapacityController {
             map.put("operatorId", sc.getOperatorId());
             map.put("operatorName", sc.getOperatorName());
             map.put("updateTime", sc.getUpdateTime() != null ? sdf.format(sc.getUpdateTime()) : "");
-            map.put("createTime", sdf.format(sc.getCreateTime()));
+            map.put("createTime", sc.getCreateTime() != null ? sdf.format(sc.getCreateTime()) : "");
             items.add(map);
         }
         return Y9Page.success(page, scList.getTotalPages(), scList.getTotalElements(), items);
@@ -89,17 +102,15 @@ public class StorageCapacityController {
      * @return
      */
     @RiseLog(operationName = "获取存储长度")
-    @RequestMapping(value = "/getCapacitySize")
+    @PostMapping(value = "/getCapacitySize")
     public Y9Result<Map<String, Object>> getCapacitySize() {
         Map<String, Object> map = new HashMap<>();
-        UserInfo user = Y9LoginUserHolder.getUserInfo();
-        String capacitySizeStr = "";
-        String remainingLengthStr = "";
-        map.put("capacitySize", capacitySizeStr);
-        map.put("remainingLength", remainingLengthStr);
+        map.put("capacitySize", "");
+        map.put("remainingLength", "");
         try {
+            UserInfo user = Y9LoginUserHolder.getUserInfo();
             StorageCapacity sc = storageCapacityService.findByCapacityOwnerId(user.getPersonId());
-            if (null != sc) {
+            if (sc != null) {
                 map.put("capacitySize", FileUtils.convertFileSize(sc.getCapacitySize()));
                 map.put("remainingLength", FileUtils.convertFileSize(sc.getRemainingLength()));
             }
@@ -116,8 +127,11 @@ public class StorageCapacityController {
      * @return
      */
     @RiseLog(operationName = "更新存储空间值")
-    @RequestMapping(value = "/updateCapacity")
+    @PostMapping(value = "/updateCapacity")
     public Y9Result<Object> updateCapacity(StorageCapacity storageCapacity) {
+        if (storageCapacity == null || StringUtils.isBlank(storageCapacity.getId())) {
+            return Y9Result.failure("参数不完整");
+        }
         return storageCapacityService.updateCapacity(storageCapacity);
     }
 

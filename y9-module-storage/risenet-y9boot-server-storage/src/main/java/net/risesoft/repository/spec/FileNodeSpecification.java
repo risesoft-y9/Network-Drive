@@ -29,6 +29,9 @@ public class FileNodeSpecification implements Specification<FileNode> {
     private Date startDate;
     private Date endDate;
     private List<String> idList;
+    /** 文件大小范围过滤（字节），null 表示不限制 */
+    private Long minSize;
+    private Long maxSize;
 
     public FileNodeSpecification() {}
 
@@ -163,6 +166,29 @@ public class FileNodeSpecification implements Specification<FileNode> {
         this.deleted = deleted;
     }
 
+    public FileNodeSpecification(String userId, String parentId, String name, boolean deleted, Date startDate,
+        Date endDate) {
+        this.userId = userId;
+        this.parentId = parentId;
+        this.name = name;
+        this.deleted = deleted;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
+    /** 支持文件大小过滤的构造函数 */
+    public FileNodeSpecification(String userId, String parentId, String name, boolean deleted, Date startDate,
+        Date endDate, Long minSize, Long maxSize) {
+        this.userId = userId;
+        this.parentId = parentId;
+        this.name = name;
+        this.deleted = deleted;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.minSize = minSize;
+        this.maxSize = maxSize;
+    }
+
     public Boolean getDeleted() {
         return deleted;
     }
@@ -262,6 +288,13 @@ public class FileNodeSpecification implements Specification<FileNode> {
 
         if (endDate != null && startDate != null) {
             expressions.add(cb.between(root.get("createTime"), startDate, endDate));
+        }
+
+        if (minSize != null) {
+            expressions.add(cb.greaterThanOrEqualTo(root.get("fileSize").as(Long.class), minSize));
+        }
+        if (maxSize != null) {
+            expressions.add(cb.lessThanOrEqualTo(root.get("fileSize").as(Long.class), maxSize));
         }
 
         if (deleted != null) {

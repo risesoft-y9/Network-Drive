@@ -49,4 +49,8 @@ public interface FileNodeRepository extends JpaRepository<FileNode, String>, Jpa
 
     List<FileNode> findByUserIdStartingWithAndParentIdIsNullAndNameStartingWithAndDeletedFalseOrderByNameAsc(
         String userId, String name);
+
+    Page<FileNode> findByUserIdAndNameContainingAndDeletedFalse(String userId, String name, Pageable pageable);
+
+    Page<FileNode> findByUserIdStartingWithAndDeletedFalseOrderByCreateTimeDesc(String userId, Pageable pageable);
 }

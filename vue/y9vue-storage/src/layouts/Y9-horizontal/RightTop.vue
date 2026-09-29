@@ -1,7 +1,10 @@
 <script lang="ts" setup>
-    import RightTopPosition from '../components/RightTopPosition.vue';
     import { useSettingStore } from '@/store/modules/settingStore';
     import { $y9_SSO } from '@/main';
+
+    import RightTopPosition from '../components/RightTopPosition.vue';
+    import UseDark from '../components/UseDark/index.vue';
+
     // 注入 字体变量
     const fontSizeObj: any = inject('sizeObjInfo');
     const settingStore = useSettingStore();
@@ -9,14 +12,6 @@
     // 全屏功能
     const { isFullscreen, toggle } = useFullscreen();
     const toggleFullScreen = toggle;
-
-    // 白天黑夜功能
-    const isDark = useDark({
-        selector: 'html',
-        valueDark: 'theme-dark',
-        valueLight: ''
-    });
-    const toggleDark = useToggle(isDark);
 
     // 锁屏
     const lockScreenFunc = () => {
@@ -84,26 +79,19 @@
                 <i class="ri-refresh-line"></i>
                 <span>{{ $t('刷新') }}</span>
             </div>
-            <!-- <div class="item isDark">
-                <i class="ri-moon-line" @click="toggleDark" v-if="!isDark"></i>
-                <i class="ri-sun-line" @click="toggleDark" v-else></i>
-            </div> -->
-            <!-- <div class="item user">
-                <RightTopPosition style="z-index: 9999" />
-            </div> -->
+            <!-- <UseDark /> -->
             <RightTopPosition style="z-index: 9999" />
             <div class="item user">
-                <!-- <img src="@/assets/images/app-icon.png"> -->
                 <el-avatar :src="userInfo.avator ? userInfo.avator : ''"> {{ userInfo.loginName }}</el-avatar>
             </div>
-            <div class="item" @click="backHomeMethod">
+            <!--  <div class="item" @click="backHomeMethod">
                 <i class="ri-arrow-go-back-line"></i>
                 <span>{{ $t('首页') }}</span>
-            </div>
-            <!-- <div class="item" @click="logout">
+            </div>-->
+            <div class="item" @click="logout">
                 <i class="ri-logout-box-r-line"></i>
                 <span>{{ $t('退出') }}</span>
-            </div> -->
+            </div>
         </div>
     </div>
 </template>

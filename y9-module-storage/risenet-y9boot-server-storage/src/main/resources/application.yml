@@ -34,17 +34,17 @@ spring:
             - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
     cloud:
         nacos:
-            server-addr: https://test.youshengyun.com:443
-            username: nacos
+            server-addr: ${NACOS_SERVER_ADDR:http://localhost:8848}
+            username: ${NACOS_USERNAME:nacos}
             password: ${NACOS_PASSWORD:111111}
             config:
                 enabled: false
                 group: DEFAULT_GROUP
-                namespace: test
+                namespace: ${NACOS_NAMESPACE:test}
             discovery:
                 enabled: false
                 group: DEFAULT_GROUP
-                namespace: test
+                namespace: ${NACOS_NAMESPACE:test}
     config:
         import:
             - optional:nacos:storage.yml
@@ -78,9 +78,9 @@ spring:
                 #url: jdbc:oracle:thin:@127.0.0.1:1521:orcl
                 #username: Y9_PUBLIC
                 driver-class-name: com.mysql.cj.jdbc.Driver
-                url: jdbc:mysql://192.168.3.31:3306/y9_public?serverTimezone=GMT%2B8&nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&rewriteBatchedStatements=true&useCompression=true&useSSL=false
+                url: jdbc:mysql://localhost:3306/y9_public?serverTimezone=GMT%2B8&nullCatalogMeansCurrent=true&useUnicode=true&characterEncoding=utf-8&rewriteBatchedStatements=true&useCompression=true&useSSL=false
                 username: root
-                password: 'Y9i-83204585'
+                password: '111111'
                 initialSize: 1
                 maxActive: 20
                 maxPoolPreparedStatementPerConnectionSize: 100
@@ -95,24 +95,20 @@ spring:
                 useGlobalDataSourceStat: true
                 validationQuery: SELECT 1 FROM DUAL
     jpa:
+        database-platform: org.hibernate.dialect.MySQL8Dialect
+        open-in-view: false
+        show-sql: true
         hibernate:
+            ddl-auto: none
             naming:
                 implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyHbmImpl
                 physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-        open-in-view: false
         properties:
             hibernate:
-                cache:
-                    use_query_cache: false
-                    use_second_level_cache: false
-                dialect: org.hibernate.dialect.MySQL8Dialect
-                hbm2ddl:
-                    auto: none
                 jdbc:
                     batch_size: 100
-                show_sql: true
     kafka:
-        bootstrap-servers: 192.168.3.32:9094
+        bootstrap-servers: localhost:9092
         consumer:
             auto-commit-interval: 1000
             enable-auto-commit: true
@@ -129,8 +125,8 @@ spring:
             max-request-size: 2048MB
     redis:
         database: 8
-        host: 192.168.3.37
-        password: 'Y9i-83204585'
+        host: localhost
+        password: '111111'
         port: 6379
         lettuce:
             pool:
@@ -141,6 +137,73 @@ spring:
             shutdown-timeout: 100ms
         ssl: false
         timeout: 10000
+# ==================== AI 大模型配置 ====================
+# 支持所有 OpenAI 兼容协议的大模型服务。
+# 只需修改 enabled=true 并填对应 api-key 即可启用。
+#
+# ┌─────────────────────────────────────────────────────────────┐
+# │  推荐免费方案（按推荐优先级排序）                              │
+# ├─────────────────────────────────────────────────────────────┤
+# │                                                             │
+# │ ① 智谱AI GLM-4-Flash — 永久免费，每月100万tokens，OpenAI兼容 │
+# │    注册: https://open.bigmodel.cn  → 右上角「API密钥」         │
+# │    base-url: https://open.bigmodel.cn/api/paas/v4            │
+# │    model: glm-4-flash                                        │
+# │                                                             │
+# │ ② DeepSeek — 新用户送500万tokens，中文能力强                  │
+# │    注册: https://platform.deepseek.com → API Keys            │
+# │    base-url: https://api.deepseek.com/v1                     │
+# │    model: deepseek-chat                                      │
+# │                                                             │
+# │ ③ 硅基流动 SiliconFlow — 新用户送额度，聚合多模型              │
+# │    注册: https://cloud.siliconflow.cn → API密钥               │
+# │    base-url: https://api.siliconflow.cn/v1                   │
+# │    model: deepseek-ai/DeepSeek-V3                            │
+# │                                                             │
+# │ ④ 阿里通义千问 — 每月200万tokens免费                          │
+# │    注册: https://bailian.console.aliyun.com → API-KEY        │
+# │    base-url: https://dashscope.aliyuncs.com/compatible-mode/v1│
+# │    model: qwen-turbo                                         │
+# │                                                             │
+# │ ⑤ 本地Ollama — 完全免费，无需注册                             │
+# │    安装: ollama pull qwen2.5:7b                              │
+# │    base-url: http://localhost:11434/v1                       │
+# │    model: qwen2.5:7b                                         │
+# │    api-key: ollama                                           │
+# └─────────────────────────────────────────────────────────────┘
+#
+# 如果以上都不行，可用大模型聚合中转服务，一个key调用所有模型。
+# 比如 openllmapi.com 或 freellmapi（GitHub开源自建）
+ai:
+    enabled: true
+    base-url: http://localhost:11434/v1
+    api-key: ollama
+    model: qwen2.5:7b
+    max-tokens: 2000
+    temperature: 0.7
+    connect-timeout: 30000
+    read-timeout: 120000
+    system-prompt: '你是一个专业的文件管理助手，帮助用户管理网盘文件。你可以帮助用户查找文件、分析文件内容、提取文件信息、进行数据对比等。回答要简洁、准确，使用中文。'
+    index-on-upload: true
+    indexable-extensions: 'txt,csv,json,xml,md,log,java,py,js,ts,html,css,sql,yml,yaml,properties'
+    max-content-length: 10000
+
+# Tesseract OCR 图片文字识别（本地备选引擎）
+tesseract:
+    install-path: D:/Program Files/Tesseract-OCR
+
+# 腾讯云 OCR 图片文字识别（推荐主用，云端识别率高）
+tencent-ocr:
+    # 是否启用腾讯云 OCR（启用后优先使用，未配置密钥或失败时回退到 Tesseract）
+    enabled: false
+    # 腾讯云 API 密钥（https://console.cloud.tencent.com/cam/capi）
+    secret-id: YOUR_SECRET_ID_HERE
+    secret-key: YOUR_SECRET_KEY_HERE
+    # OCR 接口区域（ap-guangzhou / ap-shanghai / ap-beijing）
+    region: ap-guangzhou
+    # 调用超时（秒）
+    timeout: 30
+
 y9:
     systemName: storage
     internalIp: 192.168.x.x,10.x.x.x,172.20.x.x
@@ -158,15 +221,18 @@ y9:
             productDocument: 95b19opvx9d40458c002dd61c41eb2c
     service:
         org:
-            directUrl: http://test-internal.youshengyun.com
+            directUrl: http://localhost:7055
         log:
-            directUrl: http://test-internal.youshengyun.com
+            directUrl: http://localhost:7055
     common:
         kafkaEnabled: false
-        orgBaseUrl: http://test-internal.youshengyun.com/server-platform
-        jodconverterBaseUrl: https://www.youshengyun.com/jodconverter/onlinePreview?url=
-        storageBaseUrl: https://test.youshengyun.com/server-storage
-        logBaseUrl: https://test.youshengyun.com/server-log
+        orgBaseUrl: http://localhost:7055/server-platform
+        jodconverterBaseUrl: http://localhost:7055/jodconverter/onlinePreview?url=
+        # 后端访问链接
+        storageBaseUrl: http://localhost:7080/server-storage
+        #前端文件拼接链接
+        vueStorageBaseUrl: http://localhost:8080/storage
+        logBaseUrl: http://localhost:7055/server-log
         userOnlineBaseUrl: http://localhost:7056/server-useronline
     feature:
         file:
@@ -178,10 +244,10 @@ y9:
                 fileManagerUrl: http://test-api.youshengyun.com/filemanager
             ftp:
                 enabled: true
-                host: repo-internal.youshengyun.com
+                host: localhost
                 port: 21
                 username: y9admin
-                password: '83204585'
+                password: '111111'
                 blockWhenExhausted: true
                 bufferSize: 10240
                 connectTimeOut: 50000
@@ -201,7 +267,7 @@ y9:
             local:
                 enabled: false
                 # 本地文件存储的根路径，按需设置为自己的
-                basePath: "d:/y9FileStore"
+                basePath: "d:/y9config/y9filestore"
         jpa:
             packagesToScanEntityPublic: net.risesoft.y9public.entity
             packagesToScanEntityTenant: net.risesoft.entity
@@ -253,5 +319,5 @@ y9:
                 opaque:
                     client-id: clientid_oidc
                     client-secret: secret_oidc
-                    introspection-uri: http://test-internal.youshengyun.com/sso/oidc/introspect
-                    profile-uri: http://test-internal.youshengyun.com/sso/oidc/profile
+                    introspection-uri: http://localhost:7055/sso/oidc/introspect
+                    profile-uri: http://localhost:7055/sso/oidc/profile

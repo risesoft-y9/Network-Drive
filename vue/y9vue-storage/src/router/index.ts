@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2023-07-28 16:59:52
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2024-09-19 16:53:37
+ * @LastEditTime: 2026-07-15 09:22:08
  * @FilePath: \y9vue-app\y9-vue\y9vue-storage\src\router\index.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -22,6 +22,7 @@ import reportManageRouter from './modules/reportManageRouter';
 import reportRouter from './modules/reportRouter';
 import collectRouter from './modules/collectRouter';
 import tagRouter from './modules/tagRouter';
+import linkShareRouter from './modules/linkShareRouter';
 
 //constantRoutes为不需要动态判断权限的路由，如登录、404、500等
 export const constantRoutes: Array<any> = [
@@ -56,14 +57,20 @@ export const constantRoutes: Array<any> = [
         component: () => import('@/views/License/index.vue')
     },
     {
-        path: '/link',
+        path: '/link/:code',
         hidden: true,
         meta: {
             title: '网络硬盘下载'
         },
-        //redirect: '/link',
-        component: () => import('@/components/file/LinkDownLoad.vue'),
-        props: (route) => ({ id: route.query.id, tenantId: route.query.tenantId })
+        component: () => import('@/components/file/LinkDownLoad.vue')
+    },
+    {
+        path: '/linkInvalid',
+        hidden: true,
+        meta: {
+            title: '链接不存在'
+        },
+        component: () => import('@/views/linkInvalid/index.vue')
     }
 ];
 // 懒加载
@@ -81,6 +88,7 @@ export const asyncRoutes = [
     reportRouter,
     shareRouter,
     myShareRouter,
+    linkShareRouter,
     collectRouter,
     ...managerRouter,
     reportManageRouter,

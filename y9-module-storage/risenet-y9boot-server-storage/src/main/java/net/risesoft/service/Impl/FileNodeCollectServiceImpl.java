@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import net.risesoft.entity.FileNode;
 import net.risesoft.entity.FileNodeCollect;
@@ -19,11 +20,11 @@ import net.risesoft.pojo.AuditLogEvent;
 import net.risesoft.repository.FileNodeCollectRepository;
 import net.risesoft.repository.FileNodeRepository;
 import net.risesoft.service.FileNodeCollectService;
-import net.risesoft.support.FileNodeType;
 import net.risesoft.y9.Y9Context;
 import net.risesoft.y9.Y9LoginUserHolder;
 import net.risesoft.y9.util.Y9StringUtil;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileNodeCollectServiceImpl implements FileNodeCollectService {
@@ -51,15 +52,25 @@ public class FileNodeCollectServiceImpl implements FileNodeCollectService {
     @Transactional
     public void save(String fileId, String collectRoute) {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
+        if (userInfo == null || StringUtils.isBlank(userInfo.getPersonId())) {
+            LOGGER.warn("保存收藏失败：当前用户未登录");
+            return;
+        }
         FileNode node = fileNodeRepository.findById(fileId).orElse(null);
         if (null != node && StringUtils.isNotBlank(node.getId())) {
-            // findChilren(node);
+            // 检查是否已经收藏，防止重复记录
+            FileNodeCollect existing =
+                fileNodeCollectRepository.findByFileIdAndCollectUserId(fileId, userInfo.getPersonId());
+            if (existing != null && StringUtils.isNotBlank(existing.getId())) {
+                LOGGER.info("文件[{}]已被用户[{}]收藏，跳过重复收藏", fileId, userInfo.getPersonId());
+                return;
+            }
 
             FileNodeCollect collect = new FileNodeCollect();
             collect.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
             collect.setFileId(fileId);
             collect.setFileName(node.getName());
-            collect.setParentId(node.getListType());
+            collect.setParentId(node.getParentId());
             collect.setCollectRoute(collectRoute);
             collect.setListName(node.getListType());
             collect.setCollectUserId(userInfo.getPersonId());
@@ -83,7 +94,6 @@ public class FileNodeCollectServiceImpl implements FileNodeCollectService {
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         FileNode node = fileNodeRepository.findById(fileId).orElse(null);
         if (null != node && StringUtils.isNotBlank(node.getId())) {
-            // cancelChildren(node);
             FileNodeCollect collect =
                 fileNodeCollectRepository.findByFileIdAndCollectUserId(node.getId(), userInfo.getPersonId());
             if (null != collect && StringUtils.isNotBlank(collect.getId())) {
@@ -101,71 +111,31 @@ public class FileNodeCollectServiceImpl implements FileNodeCollectService {
         }
     }
 
-    public void cancelChildren(FileNode fileNode) {
-        UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
-        List<FileNode> fileNodeList = fileNodeRepository.findByParentId(fileNode.getId());
-        if (null != fileNodeList && !fileNodeList.isEmpty()) {
-            for (FileNode node : fileNodeList) {
-                if (node.getFileType().equals(FileNodeType.FOLDER.getValue())) {
-                    cancelChildren(node);
-                }
-                FileNodeCollect collect = fileNodeCollectRepository
-                    .findByFileIdAndCollectUserIdAndListName(node.getId(), userInfo.getPersonId(), node.getListType());
-                if (null != collect && StringUtils.isNotBlank(collect.getId())) {
-                    fileNodeCollectRepository.delete(collect);
-                }
-            }
-        }
-    }
-
     @Override
     public boolean findByCollectUserIdAndFileIdAndListName(String collectUserId, String fileId, String listName) {
-        boolean isCollect = false;
         try {
-            FileNodeCollect coolect =
+            FileNodeCollect collect =
                 fileNodeCollectRepository.findByFileIdAndCollectUserIdAndListName(fileId, collectUserId, listName);
-            if (null != coolect && StringUtils.isNotBlank(coolect.getId())) {
-                isCollect = true;
+            if (null != collect && StringUtils.isNotBlank(collect.getId())) {
+                return true;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("查询收藏记录失败, fileId={}, userId={}, listName={}", fileId, collectUserId, listName, e);
         }
-        return isCollect;
+        return false;
     }
 
     @Override
     public boolean findByCollectUserIdAndFileId(String collectUserId, String fileId) {
-        boolean isCollect = false;
         try {
-            FileNodeCollect coolect = fileNodeCollectRepository.findByFileIdAndCollectUserId(fileId, collectUserId);
-            if (null != coolect && StringUtils.isNotBlank(coolect.getId())) {
-                isCollect = true;
+            FileNodeCollect collect = fileNodeCollectRepository.findByFileIdAndCollectUserId(fileId, collectUserId);
+            if (null != collect && StringUtils.isNotBlank(collect.getId())) {
+                return true;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("查询收藏记录失败, fileId={}, userId={}", fileId, collectUserId, e);
         }
-        return isCollect;
+        return false;
     }
 
-    private void findChilren(FileNode fileNode) {
-        UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
-        List<FileNode> fileNodeList = fileNodeRepository.findByParentId(fileNode.getId());
-        if (null != fileNodeList && !fileNodeList.isEmpty()) {
-            for (FileNode node : fileNodeList) {
-                if (node.getFileType().equals(FileNodeType.FOLDER.getValue())) {
-                    findChilren(node);
-                }
-                FileNodeCollect collect = new FileNodeCollect();
-                collect.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
-                collect.setFileId(node.getId());
-                collect.setFileName(node.getName());
-                collect.setParentId(node.getParentId());
-                // collect.setCollectRoute(collectRoute);
-                collect.setListName(node.getListType());
-                collect.setCollectUserId(userInfo.getPersonId());
-                collect.setCollectTime(new Date());
-                fileNodeCollectRepository.save(collect);
-            }
-        }
-    }
 }

@@ -1,5 +1,6 @@
 package net.risesoft.service;
 
+import java.util.Collection;
 import java.util.List;
 
 import net.risesoft.entity.FileTag;
@@ -21,6 +22,8 @@ public interface FileTagService {
     List<FileTag> getTagsByFileId(String fileId);
 
     FileTag findById(String id);
+
+    List<FileTag> findAllById(Collection<String> ids);
 
     Y9Result<Object> updateCustomTag(FileTag fileTag, String fileId);
 

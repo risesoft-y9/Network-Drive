@@ -44,7 +44,7 @@ public class StorageCapacity implements Serializable {
     private Long remainingLength;
 
     @Comment("容量所属人id")
-    @Column(name = "CAPACITYOWNERID", length = 50)
+    @Column(name = "CAPACITYOWNERID", length = 50, unique = true)
     private String capacityOwnerId;
 
     @Comment("容量所属人")

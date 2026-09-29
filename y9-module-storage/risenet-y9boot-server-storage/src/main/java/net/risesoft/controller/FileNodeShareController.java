@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +28,7 @@ import net.risesoft.entity.FileNodeShare;
 import net.risesoft.enums.platform.org.OrgTypeEnum;
 import net.risesoft.log.annotation.RiseLog;
 import net.risesoft.model.platform.org.OrgUnit;
+import net.risesoft.model.user.UserInfo;
 import net.risesoft.pojo.Y9Page;
 import net.risesoft.pojo.Y9Result;
 import net.risesoft.service.FileNodeService;
@@ -59,8 +61,12 @@ public class FileNodeShareController {
     @RiseLog(operationName = "取消分享")
     @DeleteMapping
     public Y9Result<Object> cancelShare(@RequestParam(name = "fileNodeIds") List<String> fileNodeIdList) {
+        if (fileNodeIdList == null || fileNodeIdList.isEmpty()) {
+            return Y9Result.failure("参数错误：文件节点ID列表不能为空");
+        }
+        UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         fileNodeService.cancelShare(fileNodeIdList);
-        fileNodeShareService.cancelShare(Y9LoginUserHolder.getUserInfo().getPersonId(), fileNodeIdList);
+        fileNodeShareService.cancelShare(userInfo.getPersonId(), fileNodeIdList);
         return Y9Result.success();
     }
 
@@ -74,41 +80,69 @@ public class FileNodeShareController {
     @DeleteMapping(value = "/deletePublic")
     public Y9Result<Object> deletePublic(@RequestParam(name = "publicIds") List<String> publicIdsList) {
         fileNodeShareService.deleteByFileNodeIdList(publicIdsList);
-        return Y9Result.success(null, "删除公开记录成功");
+        return Y9Result.success();
     }
 
     /**
      * 获取文件公开记录列表
      *
      * @param fileId 文件ID
-     * @param page   页码
-     * @param rows   每页条数
+     * @param page 页码
+     * @param rows 每页条数
      * @return {@link Y9Page}
      */
     @RiseLog(operationName = "获取文件公开记录列表")
     @GetMapping(value = "/getFilePublicRecord")
-    public Y9Page<Map<String, Object>> getFilePublicRecord(String fileId, int page, int rows) {
+    public Y9Page<Map<String, Object>> getFilePublicRecord(@RequestParam String fileId,
+        @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int rows) {
         String tenantId = Y9LoginUserHolder.getTenantId();
-        List<Map<String, Object>> items = new ArrayList<>();
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        if (page < 1) {
-            page = 1;
-        }
         Page<FileNodeShare> dlList =
             fileNodeShareService.getFilePublicRecord(fileId, FileOptType.PUBLIC.getValue(), page, rows);
+        if (dlList.isEmpty()) {
+            return Y9Page.success(page, 0, 0, new ArrayList<>());
+        }
+        // 批量收集所有需要查询的orgUnitId，减少远程调用
+        List<String> orgUnitIds = dlList.stream()
+            .map(FileNodeShare::getToOrgUnitId)
+            .filter(StringUtils::isNotBlank)
+            .distinct()
+            .collect(Collectors.toList());
+        // 逐个缓存orgUnit类型（避免N+1的逐条远程调用）
+        Map<String, OrgUnit> orgUnitCache = new HashMap<>();
+        for (String orgUnitId : orgUnitIds) {
+            try {
+                OrgUnit org = orgUnitApi.getOrgUnit(tenantId, orgUnitId).getData();
+                if (org != null) {
+                    orgUnitCache.put(orgUnitId, org);
+                }
+            } catch (Exception e) {
+                LOGGER.warn("查询组织单元[{}]失败", orgUnitId, e);
+            }
+        }
+        List<Map<String, Object>> items = new ArrayList<>();
         for (FileNodeShare share : dlList) {
             Map<String, Object> map = new HashMap<>();
             map.put("id", share.getId());
             map.put("fileNodeId", share.getFileNodeId());
-            OrgUnit org = orgUnitApi.getOrgUnit(tenantId, share.getToOrgUnitId()).getData();
             map.put("toOrgUnitId", share.getToOrgUnitId());
             map.put("toOrgUnitName", share.getToOrgUnitName());
-            map.put("orgType", org != null && OrgTypeEnum.PERSON == org.getOrgType() ? "人员" : "部门");
-            map.put("createTime",
-                dtf.format(share.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()));
+            OrgUnit org = orgUnitCache.get(share.getToOrgUnitId());
+            map.put("orgType", getOrgTypeLabel(org));
+            if (share.getCreateTime() != null) {
+                map.put("createTime",
+                    dtf.format(share.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()));
+            }
             items.add(map);
         }
         return Y9Page.success(page, dlList.getTotalPages(), dlList.getTotalElements(), items);
+    }
+
+    private String getOrgTypeLabel(OrgUnit org) {
+        if (org == null) {
+            return "部门";
+        }
+        return OrgTypeEnum.PERSON == org.getOrgType() ? "人员" : "部门";
     }
 
     /**
@@ -119,9 +153,13 @@ public class FileNodeShareController {
     @RiseLog(operationName = "获取我的分享列表")
     @GetMapping("/myList")
     public Y9Result<List<FileNodeShareDTO>> myShareList() {
+        UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
         List<FileNodeShareDTO> fileNodeShareDTOList = new ArrayList<>();
         List<FileNodeShare> myFileNodeShareList =
-            fileNodeShareService.list(Y9LoginUserHolder.getUserInfo().getPersonId(), FileOptType.SHARE.getValue());
+            fileNodeShareService.list(userInfo.getPersonId(), FileOptType.SHARE.getValue());
+        if (myFileNodeShareList.isEmpty()) {
+            return Y9Result.success(fileNodeShareDTOList);
+        }
         Map<String, List<FileNodeShare>> fileNodeIdAndListMap =
             myFileNodeShareList.stream().collect(Collectors.groupingBy(FileNodeShare::getFileNodeId));
         for (Map.Entry<String, List<FileNodeShare>> entry : fileNodeIdAndListMap.entrySet()) {
@@ -130,8 +168,8 @@ public class FileNodeShareController {
                 FileNodeShareDTO fileNodeShareDTO = new FileNodeShareDTO();
                 fileNodeShareDTO.setFileNode(FileNodeDTO.from(fileNode));
 
-                String toOrgUnitNames = entry.getValue().stream()
-                    .map(FileNodeShare::getToOrgUnitName).collect(Collectors.joining("，"));
+                String toOrgUnitNames =
+                    entry.getValue().stream().map(FileNodeShare::getToOrgUnitName).collect(Collectors.joining("，"));
                 fileNodeShareDTO.setToOrgUnitNames(toOrgUnitNames);
 
                 fileNodeShareDTOList.add(fileNodeShareDTO);
@@ -144,13 +182,19 @@ public class FileNodeShareController {
      * 公开文件
      *
      * @param fileNodeIdList 文件节点ID列表
-     * @param orgUnitIdList  组织单元ID列表
+     * @param orgUnitIdList 组织单元ID列表
      * @return {@link Y9Result}
      */
     @RiseLog(operationName = "公开文件")
     @PostMapping("/publicTo")
     public Y9Result<Object> publicTo(@RequestParam(name = "fileNodeIds") List<String> fileNodeIdList,
         @RequestParam(name = "orgUnitIds") List<String> orgUnitIdList) {
+        if (fileNodeIdList == null || fileNodeIdList.isEmpty()) {
+            return Y9Result.failure("参数错误：文件节点ID不能为空");
+        }
+        if (orgUnitIdList == null || orgUnitIdList.isEmpty()) {
+            return Y9Result.failure("参数错误：组织单元ID不能为空");
+        }
         fileNodeShareService.publicTo(fileNodeIdList, orgUnitIdList);
         return Y9Result.success();
     }
@@ -159,13 +203,19 @@ public class FileNodeShareController {
      * 分享文件
      *
      * @param fileNodeIdList 文件节点ID列表
-     * @param orgUnitIdList  组织单元ID列表
+     * @param orgUnitIdList 组织单元ID列表
      * @return {@link Y9Result}
      */
     @RiseLog(operationName = "分享文件")
     @PostMapping("/share")
     public Y9Result<Object> share(@RequestParam(name = "fileNodeIds") List<String> fileNodeIdList,
         @RequestParam(name = "orgUnitIds") List<String> orgUnitIdList) {
+        if (fileNodeIdList == null || fileNodeIdList.isEmpty()) {
+            return Y9Result.failure("参数错误：文件节点ID不能为空");
+        }
+        if (orgUnitIdList == null || orgUnitIdList.isEmpty()) {
+            return Y9Result.failure("参数错误：组织单元ID不能为空");
+        }
         fileNodeShareService.share(fileNodeIdList, orgUnitIdList);
         fileNodeService.share(fileNodeIdList);
         return Y9Result.success();

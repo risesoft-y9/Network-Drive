@@ -28,7 +28,7 @@ rebel.xml
 # vue
 node_modules/
 vue/y9vue-storage/storage/
-vue/y9vue-dataAssets/data-assets/
+vue/y9vue-storage-ai/storage/
 
 #maven
 .flattened-pom.xml

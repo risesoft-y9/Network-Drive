@@ -8,9 +8,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -51,32 +49,29 @@ public class OrgController {
      *
      * @return
      */
-    @RequestMapping(value = "/checkManager", method = RequestMethod.GET, produces = "application/json")
+    @GetMapping(value = "/checkManager", produces = "application/json")
     public Y9Result<Map<String, Object>> checkManager() {
-        Map<String, Object> res_map = new HashMap<String, Object>();
-        String tenantId = Y9LoginUserHolder.getTenantId();
+        Map<String, Object> resMap = new HashMap<>();
         UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
+        String tenantId = Y9LoginUserHolder.getTenantId();
+        String systemName = Y9Context.getSystemName();
+        String personId = userInfo.getPersonId();
         String publicManagerRoleName = Y9Context.getProperty("y9.app.storage.publicManagerRoleName");
         String capacityManagerRoleName = Y9Context.getProperty("y9.app.storage.capacityManagerRoleName");
         String reportManagerRoleName = Y9Context.getProperty("y9.app.storage.reportManagerRoleName");
         String tagManagerRoleName = Y9Context.getProperty("y9.app.storage.tagManagerRoleName");
-        boolean publicManager = personRoleApi
-            .hasRole(tenantId, Y9Context.getSystemName(), "", publicManagerRoleName, userInfo.getPersonId())
-            .getData();
-        boolean capacityManager = personRoleApi
-            .hasRole(tenantId, Y9Context.getSystemName(), "", capacityManagerRoleName, userInfo.getPersonId())
-            .getData();
-        boolean reportManager = personRoleApi
-            .hasRole(tenantId, Y9Context.getSystemName(), "", reportManagerRoleName, userInfo.getPersonId())
-            .getData();
-        boolean tagManager =
-            personRoleApi.hasRole(tenantId, Y9Context.getSystemName(), "", tagManagerRoleName, userInfo.getPersonId())
-                .getData();
-        res_map.put("publicManager", publicManager);
-        res_map.put("capacityManager", capacityManager);
-        res_map.put("reportManager", reportManager);
-        res_map.put("tagManager", tagManager);
-        return Y9Result.success(res_map);
+        boolean publicManager =
+            personRoleApi.hasRole(tenantId, systemName, "", publicManagerRoleName, personId).getData();
+        boolean capacityManager =
+            personRoleApi.hasRole(tenantId, systemName, "", capacityManagerRoleName, personId).getData();
+        boolean reportManager =
+            personRoleApi.hasRole(tenantId, systemName, "", reportManagerRoleName, personId).getData();
+        boolean tagManager = personRoleApi.hasRole(tenantId, systemName, "", tagManagerRoleName, personId).getData();
+        resMap.put("publicManager", publicManager);
+        resMap.put("capacityManager", capacityManager);
+        resMap.put("reportManager", reportManager);
+        resMap.put("tagManager", tagManager);
+        return Y9Result.success(resMap);
     }
 
     /**
@@ -88,7 +83,7 @@ public class OrgController {
     public Y9Result<List<Organization>> getOrganization() {
         String tenantId = Y9LoginUserHolder.getTenantId();
         List<Organization> organizationList = organizationApi.list(tenantId).getData();
-        return Y9Result.success(organizationList);
+        return Y9Result.success(organizationList != null ? organizationList : new ArrayList<>());
     }
 
     /**
@@ -104,9 +99,12 @@ public class OrgController {
         String tenantId = Y9LoginUserHolder.getTenantId();
         if (StringUtils.isBlank(id)) {
             List<Organization> organizationList = organizationApi.list(tenantId).getData();
-            if (organizationList != null && organizationList.size() > 0) {
+            if (organizationList != null && !organizationList.isEmpty()) {
                 id = organizationList.get(0).getId();
             }
+        }
+        if (StringUtils.isBlank(id)) {
+            return Y9Result.success(new ArrayList<>());
         }
         List<OrgUnit> orgUnitList;
         if (StringUtils.isNotBlank(name)) {
@@ -114,7 +112,7 @@ public class OrgController {
         } else {
             orgUnitList = orgUnitApi.getSubTree(tenantId, id, OrgTreeTypeEnum.TREE_TYPE_PERSON).getData();
         }
-        return Y9Result.success(orgUnitList);
+        return Y9Result.success(orgUnitList != null ? orgUnitList : new ArrayList<>());
     }
 
     /**
@@ -122,23 +120,23 @@ public class OrgController {
      *
      * @return
      */
-    @SuppressWarnings("deprecation")
-    @RequestMapping(value = "/getPositionList", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
+    @GetMapping(value = "/getPositionList", produces = "application/json")
     public Y9Result<Map<String, Object>> getPositionList() {
         String tenantId = Y9LoginUserHolder.getTenantId();
-        Map<String, Object> res_map = new HashMap<String, Object>();
-        List<Map<String, Object>> res_list = new ArrayList<Map<String, Object>>();
+        Map<String, Object> resMap = new HashMap<>();
+        List<Map<String, Object>> resList = new ArrayList<>();
         List<Position> list = positionApi.listByPersonId(tenantId, Y9LoginUserHolder.getPersonId()).getData();
-        for (Position p : list) {
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("id", p.getId());
-            map.put("name", p.getName());
-            res_list.add(map);
+        if (list != null) {
+            for (Position p : list) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", p.getId());
+                map.put("name", p.getName());
+                resList.add(map);
+            }
         }
-        res_map.put("positionList", res_list);
-        res_map.put("tenantId", tenantId);
-        return Y9Result.success(res_map, "获取成功");
+        resMap.put("positionList", resList);
+        resMap.put("tenantId", tenantId);
+        return Y9Result.success(resMap, "获取成功");
     }
 
 }

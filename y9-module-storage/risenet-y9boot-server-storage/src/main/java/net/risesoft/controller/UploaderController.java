@@ -18,6 +18,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -56,10 +57,6 @@ public class UploaderController {
     private final FileNodeService fileNodeService;
     private final OrgUnitApi orgUnitApi;
     private final PositionApi positionApi;
-    // @Value("${y9.app.storage.defaultStorageCapacity}")
-    // private String defaultStorageCapacity;
-    // @Value("${y9.app.storage.singleUploadLimit}")
-    // private String singleUploadLimit;
 
     public Map<String, Object> mergeMethod(String targetFile, String folder, String fileName, String parentId,
         String listType) {
@@ -88,7 +85,7 @@ public class UploaderController {
                     LOGGER.error(e.getMessage(), e);
                 }
             });
-            LOGGER.debug("合并文件 {} 成功,目标目录: {}", targetFile);
+            LOGGER.debug("合并文件 {} 成功,目标目录: {}", fileName, targetFile);
             File file = new File(targetFile);
             UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
             String fileExtension = FilenameUtils.getExtension(fileName);
@@ -101,9 +98,11 @@ public class UploaderController {
                 LOGGER.debug("文件 {} 上传成功, uuid:{}", y9FileStore.getFileName(), y9FileStore.getId());
                 map = fileNodeService.saveFileNodeAndCapacity(parentId, fileName, fileExtension, fileSize,
                     y9FileStore.getId(), listType);
+            } else {
+                map.put("msg", "文件上传存储失败");
             }
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("合并文件失败, targetFile={}, folder={}, fileName={}", targetFile, folder, fileName, e);
         }
         return map;
     }
@@ -152,16 +151,15 @@ public class UploaderController {
 
     @RiseLog(operationName = "合并文件")
     @PostMapping("/mergeFile")
-    public Y9Result<Map<String, Object>> mergeFile(FileInfo fileInfo, String parentId, String listType,
-        HttpServletResponse response) {
-        Map<String, Object> map = new HashMap<>();
+    public Y9Result<Map<String, Object>> mergeFile(FileInfo fileInfo, @RequestParam String parentId,
+        @RequestParam String listType, HttpServletResponse response) {
         String fileName = fileInfo.getFilename();
         String chunckPath = Y9Context.getWebRootRealPath() + "upload";
         String file = chunckPath + "/" + fileInfo.getIdentifier() + "/" + fileName;
         String folder = chunckPath + "/" + fileInfo.getIdentifier();
 
         // 合并文件
-        map = mergeMethod(file, folder, fileName, parentId, listType);
+        Map<String, Object> map = mergeMethod(file, folder, fileName, parentId, listType);
         LOGGER.info("########### mergeMethod result: {}", map);
         Boolean success = Boolean.valueOf(map.get("success").toString());
         String message = map.get("msg").toString();
@@ -178,71 +176,4 @@ public class UploaderController {
         return Y9Result.failure(500, "合并失败:" + message);
     }
 
-    // private Map<String, Object> saveFileNodeAndCapacity(String parentId, String fileName, String fileExtension,
-    // long fileSize, String y9FileStoreId, String listType) {
-    // Map<String, Object> map = new HashMap<>();
-    // map.put("msg", "文件上传失败");
-    // map.put("success", false);
-    // map.put("fileId", null);
-    // UserInfo userInfo = Y9LoginUserHolder.getUserInfo();
-    // String userId = userInfo.getPersonId(), userName = userInfo.getName();
-    // try {
-    // if (parentId.equals(FileListType.MY.getValue())) {
-    // StorageCapacity capacity = storageCapacityService.findByCapacityOwnerId(userId);
-    // if (null == capacity) {
-    // StorageCapacity sc = new StorageCapacity();
-    // sc.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
-    // sc.setCapacityOwnerId(userId);
-    // sc.setCapacityOwnerName(userName);
-    // sc.setCapacitySize(Long.valueOf(defaultStorageCapacity));
-    // sc.setRemainingLength(Long.valueOf(defaultStorageCapacity));
-    // sc.setCreateTime(new Date());
-    // storageCapacityService.save(sc);
-    // } else {
-    // if (capacity.getRemainingLength() > fileSize) {
-    // capacity.setRemainingLength(capacity.getRemainingLength() - fileSize);
-    // storageCapacityService.save(capacity);
-    // }
-    // }
-    // }
-    // Integer type = FileNodeUtil.fileTypeConvert(fileExtension);
-    // boolean fileNodeExists = fileNodeService.isFileNodeExists(parentId, fileName);
-    //
-    // FileNode fileNode = new FileNode();
-    // fileNode.setFileSuffix(fileExtension);
-    // fileNode.setFileSize(fileSize);
-    // fileNode.setCreateTime(new Date());
-    // fileNode.setUpdateTime(new Date());
-    // fileNode.setFileStoreId(y9FileStoreId);
-    // fileNode.setListType(listType);
-    // fileNode.setUserId(userInfo.getPersonId());
-    // fileNode.setUserName(userInfo.getName());
-    // fileNode.setFileType(type);
-    // fileNode.setId(Y9IdGenerator.genId(IdType.SNOWFLAKE));
-    // if (StringUtils.isNotBlank(parentId)) {
-    // fileNode.setParentId(parentId);
-    // }
-    // if (fileNodeExists) {
-    // SimpleDateFormat sdf = new SimpleDateFormat("_yyyyMMdd_HHmmss");
-    // fileName = FilenameUtils.getBaseName(fileName) + sdf.format(new Date()) + "." + fileExtension;
-    // }
-    // fileNode.setName(fileName);
-    // fileNode = fileNodeService.saveNode(fileNode);
-    // AuditLogEvent auditLogEvent = AuditLogEvent.builder()
-    // .action(StorageAuditLogEnum.FILE_UPLOAD.getAction())
-    // .description(Y9StringUtil.format(StorageAuditLogEnum.FILE_UPLOAD.getDescription(), fileNode.getName()))
-    // .objectId(fileNode.getId())
-    // .oldObject(fileNode)
-    // .currentObject(null)
-    // .build();
-    // Y9Context.publishEvent(auditLogEvent);
-    // map.put("fileId", fileNode.getId());
-    // map.put("msg", "文件上传成功");
-    // map.put("success", true);
-    // } catch (Exception e) {
-    // LOGGER.error(e.getMessage(), e);
-    //
-    // }
-    // return map;
-    // }
 }
