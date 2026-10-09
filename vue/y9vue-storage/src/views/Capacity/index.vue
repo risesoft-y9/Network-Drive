@@ -1,5 +1,6 @@
 <template>
-    <y9Card :showHeader="true" :showHeaderSplit="false" :headerPadding="false">
+    <div class="capacity-page">
+        <y9Card :showHeader="true" :showHeaderSplit="false" :headerPadding="false">
         <template #header>
             <div class="toolbar">
             <div class="toolbar-left">
@@ -10,6 +11,14 @@
                     @click="loadList"
                 >
                     <i class="ri-refresh-line"></i>{{ $t('刷新') }}
+                </el-button>
+                <el-button
+                    :size="fontSizeObj.buttonSize"
+                    :style="{ fontSize: fontSizeObj.baseFontSize }"
+                    class="global-btn-second"
+                    @click="openUploadLimitDialog"
+                >
+                    <i class="ri-upload-cloud-2-line"></i>{{ $t('上传大小限制') }}
                 </el-button>
             </div>
 
@@ -90,7 +99,51 @@
                 </div>
             </template>
         </y9Table>
-    </y9Card>
+        </y9Card>
+
+        <!-- 上传大小限制设置弹窗 -->
+        <el-dialog
+        v-model="uploadLimitVisible"
+        :title="$t('上传大小限制设置')"
+        width="480px"
+        :close-on-click-modal="false"
+        append-to-body
+    >
+        <el-form ref="uploadLimitFormRef" :model="uploadLimitFormData" :rules="uploadLimitRules" label-width="130px">
+            <el-form-item :label="$t('单文件上传上限')" prop="uploadSizeMb">
+                <el-input-number
+                    v-model="uploadLimitFormData.uploadSizeMb"
+                    :min="1"
+                    :max="10240"
+                    :step="10"
+                    :precision="0"
+                    controls-position="right"
+                    style="width: 200px"
+                />
+                <span class="unit-tip">MB</span>
+            </el-form-item>
+        </el-form>
+        <div class="upload-limit-tip">
+            {{ $t('提示：以 MB 为单位设置单个文件上传的大小上限，保存后立即生效。') }}
+        </div>
+        <template #footer>
+            <el-button
+                :size="fontSizeObj.buttonSize"
+                :style="{ fontSize: fontSizeObj.baseFontSize }"
+                class="global-btn-second"
+                @click="uploadLimitVisible = false"
+                >{{ $t('取消') }}</el-button
+            >
+            <el-button
+                :size="fontSizeObj.buttonSize"
+                :style="{ fontSize: fontSizeObj.baseFontSize }"
+                class="global-btn-main"
+                @click="saveUploadLimit"
+                >{{ $t('保存') }}</el-button
+            >
+        </template>
+        </el-dialog>
+    </div>
 </template>
 
 <script lang="ts" setup>
@@ -142,6 +195,38 @@
     });
 
     let { capacityForm, formData, editIndex, userName, tableConfig } = toRefs(data);
+
+    // ============ 上传大小限制设置 ============
+    const MB_SIZE = 1024 * 1024;
+    const uploadLimitVisible = ref(false);
+    const uploadLimitFormRef = ref(null);
+    const uploadLimitFormData = reactive({ uploadSizeMb: 100 });
+    const uploadLimitRules = {
+        uploadSizeMb: [{ required: true, message: t('请输入上传大小限制'), trigger: 'blur' }]
+    };
+
+    // 打开弹窗并加载当前限制值（后台存字节，前端转 MB 显示）
+    function openUploadLimitDialog() {
+        CapacityApi.getUploadLimit().then((res) => {
+            const bytes = res?.data?.uploadSize;
+            uploadLimitFormData.uploadSizeMb = bytes ? Math.max(1, Math.round(bytes / MB_SIZE)) : 100;
+            uploadLimitVisible.value = true;
+        });
+    }
+
+    // 保存：MB 转字节提交后台
+    function saveUploadLimit() {
+        uploadLimitFormRef.value?.validate((valid) => {
+            if (!valid) return;
+            const bytes = Math.round(uploadLimitFormData.uploadSizeMb * MB_SIZE);
+            CapacityApi.updateUploadLimit(bytes).then((res) => {
+                ElMessage({ type: res.success ? 'success' : 'error', message: res.msg, offset: 65 });
+                if (res.success) {
+                    uploadLimitVisible.value = false;
+                }
+            });
+        });
+    }
 
     onMounted(() => {
         loadList();
@@ -268,6 +353,18 @@
     .search-input {
         width: 250px;
         margin-right: 10px;
+    }
+
+    .unit-tip {
+        margin-left: 8px;
+        color: #909399;
+    }
+
+    .upload-limit-tip {
+        margin: 0 0 10px 120px;
+        font-size: 12px;
+        color: #909399;
+        line-height: 1.6;
     }
 
     :deep(.el-form-item) {
