@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="170200140583811-1-1" author="yihong" runOnChange="true">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="Y9_STORAGE_UPLOAD_LIMIT"/>
+            </not>
+        </preConditions>
+        <createTable remarks="上传大小限制配置表"
+                     tableName="Y9_STORAGE_UPLOAD_LIMIT">
+            <column name="ID" remarks="主键id" type="VARCHAR(38)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="UPLOADSIZE" remarks="上传大小限制(单位:字节)" type="BIGINT">
+            </column>
+            <column name="OPERATORID" remarks="操作人id" type="VARCHAR(50)">
+            </column>
+            <column name="OPERATORNAME" remarks="操作人" type="VARCHAR(50)">
+            </column>
+            <column name="CREATETIME" remarks="创建时间" type="datetime">
+            </column>
+            <column name="UPDATETIME" remarks="更新时间" type="datetime">
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
