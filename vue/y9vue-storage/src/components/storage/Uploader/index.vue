@@ -2,7 +2,7 @@
  * @Author: yihong yihong@risesoft.net
  * @Date: 2024-09-10 11:18:27
  * @LastEditors: yihong yihong@risesoft.net
- * @LastEditTime: 2026-07-01 15:58:59
+ * @LastEditTime: 2026-10-09 10:34:57
  * @FilePath: \y9vue-app\y9-vue\y9vue-storage\src\components\storage\Uploader\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -28,11 +28,34 @@
             </uploader-drop>
             <uploader-list></uploader-list>
         </uploader>
+
+        <!--
+            正在合并的文件列表（simple-uploader 不支持外部设置文件行状态，
+            在这里用自定义列表显示每个文件的"合并中"状态）
+        -->
+        <ul v-if="mergingFiles.length" class="merging-file-list">
+            <li v-for="item in mergingFiles" :key="item.uniqueIdentifier" class="merging-file-item">
+                <i class="ri-loader-4-line merging-file-icon"></i>
+                <span class="merging-file-name">{{ item.name }}</span>
+                <span class="merging-file-text">正在合并文件中，请不要关闭窗口</span>
+            </li>
+        </ul>
+
+        <!-- 合并中遮罩：覆盖整个视口，阻止用户关闭窗口 -->
+        <teleport to="body">
+            <div v-if="merging" class="merge-mask">
+                <div class="merge-mask-content">
+                    <div class="merge-spinner"></div>
+                    <p class="merge-text-primary">正在合并文件中，请不要关闭窗口</p>
+                    <p class="merge-text-sub">合并完成会自动关闭窗口</p>
+                </div>
+            </div>
+        </teleport>
     </div>
 </template>
 
 <script setup>
-    import { nextTick, ref, onMounted, defineProps, defineComponent } from 'vue';
+    import { computed, nextTick, ref, onMounted, defineProps, defineComponent } from 'vue';
     import y9_storage from '@/utils/storage';
     import settings from '@/settings';
     import axios from 'axios';
@@ -52,6 +75,21 @@
     });
 
     const uploaderRef = ref(null);
+    // 多文件并发合并时，记录正在合并的文件数；所有都完成才允许关闭弹窗
+    const mergingCount = ref(0);
+    const merging = computed(() => mergingCount.value > 0);
+    // 正在合并的文件列表（simple-uploader 不支持外部设置文件行状态，用自定义列表显示"合并中"）
+    const mergingFiles = ref([]);
+    function startMerging(rootFile) {
+        const uid = rootFile.uniqueIdentifier;
+        if (!mergingFiles.value.some(f => f.uniqueIdentifier === uid)) {
+            mergingFiles.value.push({ uniqueIdentifier: uid, name: rootFile.file.name });
+        }
+    }
+    function endMerging(rootFile) {
+        const uid = rootFile.uniqueIdentifier;
+        mergingFiles.value = mergingFiles.value.filter(f => f.uniqueIdentifier !== uid);
+    }
     const options = {
         target: import.meta.env.VUE_APP_CONTEXT + 'vue/uploader/chunk', // '//jsonplaceholder.typicode.com/posts/',
         query: {
@@ -60,25 +98,7 @@
         },
         testChunks: true,
         chunkSize: 10 * 1024 * 1024,
-        successStatuses: [200,201,202],
-        // 校验分片响应体：HTTP 200 不代表业务成功，需检查响应 body
-        processResponse(response, cb) {
-            let resData;
-            try {
-                resData = typeof response === 'string' ? JSON.parse(response) : response;
-            } catch (e) {
-                // 无法解析，按默认成功处理
-                cb(null, response);
-                return;
-            }
-            // 兼容不同后端包装格式：直接 data / data.data / axios 包裹
-            const bizData = resData?.data?.data || resData?.data || resData;
-            if (bizData && (bizData.success === false || (bizData.code !== undefined && bizData.code !== 200 && bizData.code !== 0))) {
-                cb(new Error(bizData.msg || bizData.message || '分片上传失败'));
-                return;
-            }
-            cb(null, resData);
-        }
+        successStatuses: [200,201,202]
     };
     const attrs = {
         accept: 'image/*'
@@ -102,6 +122,12 @@
     const fileComplete = (rootFile) => {
         console.log('file complete', arguments);
         console.log('rootFile', rootFile);
+
+        // 累加合并计数（用于控制遮罩；多文件并发合并时所有都完成才关闭弹窗）
+        mergingCount.value++;
+        // 加入合并中列表（用于在自定义列表中显示"合并中"状态）
+        startMerging(rootFile);
+
         let config = {
             onUploadProgress: (progressEvent) => {
                 //progressEvent.loaded:已上传文件大小,progressEvent.total:被上传文件的总大小
@@ -130,41 +156,38 @@
                 config
             )
             .then(function (response) {
-                console.log('fileComplete mergeFile response:', response);
-                const resData = response.data?.data;
-                // 检查业务层面的成功标志
-                if (resData?.success === true) {
+                console.log(response);
+                const resData = response.data.data;
+                // 合并成功，从合并中列表移除
+                endMerging(rootFile);
+                if (resData && resData.msg) {
                     ElMessage({
                         type: 'success',
-                        message: resData.msg || '文件上传成功',
+                        message: resData.msg,
                         offset: 65
                     });
-                    props.reloadTable();
-                    setTimeout(() => {
-                        props.dialogConfig.show = false;
-                    }, 1500);
                 } else {
-                    // 合并接口返回业务错误，需手动将文件状态改为失败
-                    const errMsg = resData?.msg || '文件合并失败，请重试';
-                    ElMessage({ type: 'error', message: errMsg, offset: 65 });
-                    console.warn('文件合并失败:', response);
-                    const uploader = uploaderRef.value?.uploader;
-                    if (uploader) {
-                        uploader._trigger('fileError', rootFile, rootFile, errMsg);
-                    }
+                    ElMessage({
+                        type: 'success',
+                        message: '文件上传成功',
+                        offset: 65
+                    });
                 }
+                props.reloadTable();
+                setTimeout(() => {
+                    // 当前文件合并流程结束，递减计数；最后一个完成时才关闭弹窗
+                    mergingCount.value--;
+                    if (mergingCount.value <= 0) {
+                        props.dialogConfig.show = false;
+                    }
+                }, 1500);
             })
             .catch(function (error) {
-                console.log('fileComplete mergeFile error:', error);
-                const errMsg = error?.response?.data?.data?.msg
-                    || error?.response?.data?.msg
-                    || '文件合并失败，请检查网络';
-                ElMessage({ type: 'error', message: errMsg, offset: 65 });
-                // 网络异常同样需要将文件状态改为失败
-                const uploader = uploaderRef.value?.uploader;
-                if (uploader) {
-                    uploader._trigger('fileError', rootFile, rootFile, errMsg);
-                }
+                console.log(error);
+                // 合并失败，从合并中列表移除
+                endMerging(rootFile);
+                ElMessage({ type: 'error', message: '文件合并失败', offset: 65 });
+                mergingCount.value--;
             });
     };
 
@@ -341,5 +364,86 @@
     .uploader-file-status {
         width: 20%;
         text-indent: 20px;
+    }
+
+    /* 合并中遮罩 */
+    .merge-mask {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .merge-mask-content {
+        text-align: center;
+        color: #fff;
+        padding: 20px;
+    }
+    .merge-spinner {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 18px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: merge-spin 1s linear infinite;
+    }
+    @keyframes merge-spin {
+        to { transform: rotate(360deg); }
+    }
+    .merge-text-primary {
+        margin: 0 0 8px;
+        font-size: 16px;
+        font-weight: 500;
+        color: #fff;
+    }
+    .merge-text-sub {
+        margin: 0;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.75);
+    }
+
+    /* 合并中文件列表（simple-uploader 进度条下方） */
+    .merging-file-list {
+        list-style: none;
+        margin: 12px 0 0;
+        padding: 0;
+    }
+    .merging-file-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        margin-top: 6px;
+        background: #fdf6ec;
+        border: 1px solid #faecd8;
+        border-radius: 4px;
+        font-size: 13px;
+        color: #606266;
+    }
+    .merging-file-item:first-child {
+        margin-top: 0;
+    }
+    .merging-file-icon {
+        flex: 0 0 auto;
+        color: var(--el-color-primary);
+        font-size: 18px;
+        margin-right: 8px;
+        animation: merge-spin 1s linear infinite;
+    }
+    .merging-file-name {
+        flex: 0 1 auto;
+        max-width: 40%;
+        margin-right: 8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #303133;
+        font-weight: 500;
+    }
+    .merging-file-text {
+        flex: 1 1 auto;
+        color: #e6a23c;
     }
 </style>
