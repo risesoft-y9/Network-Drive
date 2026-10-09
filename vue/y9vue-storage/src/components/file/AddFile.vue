@@ -21,7 +21,7 @@
             </div>
             <template #tip>
                 <div class="el-upload__tip">
-                    请上传不超过120MB的文件
+                    请上传不超过{{ maxSizeMb }}MB的文件
                 </div>
             </template>
         </el-upload>
@@ -67,14 +67,15 @@
 </template>
 
 <script lang="ts" setup>
-    import { defineProps, inject, reactive, ref, toRefs } from 'vue';
+    import { computed, defineProps, inject, onMounted, reactive, ref, toRefs } from 'vue';
     import type { UploadInstance } from 'element-plus';
     import { ElMessage } from 'element-plus';
     import axios from 'axios';
     import y9_storage from '@/utils/storage';
     import settings from '@/settings';
     import { useI18n } from 'vue-i18n';
-    import { UploadFilled } from '@element-plus/icons-vue'
+    import { UploadFilled } from '@element-plus/icons-vue';
+    import CapacityApi from '@/api/storage/capacity';
 
     const { t } = useI18n();
     // 注入 字体对象
@@ -108,7 +109,18 @@
 
     let { multiple, uploadLoading, filesList, percentage } = toRefs(data);
 
-    const MAX_SIZE = 120 * 1024 * 1024; // 120MB
+    // 上传大小限制（字节），默认 120MB；挂载后从后台 getUploadLimit 拉取最新设置值
+    const maxSizeBytes = ref(120 * 1024 * 1024);
+    const maxSizeMb = computed(() => Math.round(maxSizeBytes.value / (1024 * 1024)));
+
+    onMounted(() => {
+        CapacityApi.getUploadLimit().then((res) => {
+            const bytes = res?.data?.uploadSize;
+            if (bytes && bytes > 0) {
+                maxSizeBytes.value = bytes;
+            }
+        });
+    });
 
     function submitUpload() {
         if (filesList.value.length == 0) {
@@ -116,10 +128,10 @@
             return;
         }
         const totalSize = filesList.value.reduce((sum, f) => sum + f.size, 0);
-        if (totalSize > MAX_SIZE) {
+        if (totalSize > maxSizeBytes.value) {
             ElMessage({
                 type: 'warning',
-                message: '文件总大小不能超过120MB，需要上传大文件，请点击"大文件上传"按钮。',
+                message: `文件总大小不能超过${maxSizeMb.value}MB，需要上传大文件，请点击"大文件上传"按钮。`,
                 offset: 65,
                 appendTo: '.upload-demo'
             });
@@ -130,12 +142,12 @@
 
     const onChange = (file, fileList) => {
         const totalSize = fileList.reduce((sum, f) => sum + f.size, 0);
-        if (totalSize > MAX_SIZE) {
+        if (totalSize > maxSizeBytes.value) {
             // 移除超限文件
             filesList.value = fileList.filter((f) => f.uid !== file.uid);
             ElMessage({
                 type: 'warning',
-                message: '文件总大小不能超过120MB，需要上传大文件，请点击"大文件上传"按钮。',
+                message: `文件总大小不能超过${maxSizeMb.value}MB，需要上传大文件，请点击"大文件上传"按钮。`,
                 offset: 65,
                 appendTo: '.upload-demo'
             });
