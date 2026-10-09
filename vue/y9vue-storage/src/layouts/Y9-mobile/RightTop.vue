@@ -1,7 +1,7 @@
 <script lang="ts" setup>
     import { useSettingStore } from '@/store/modules/settingStore';
 
-    import RightTopUser from '../components/RightTopUser.vue';
+    import RightTopPosition from '../components/RightTopPosition.vue';
     import UseDark from '../components/UseDark/index.vue';
 
     const props = defineProps({
@@ -73,9 +73,7 @@
                 <i class="ri-notification-line"></i>
             </div> -->
             <!-- <UseDark /> -->
-            <div :class="{ item: true, user: true, 'user-mobile': settingStore.getWindowWidth > 425 }">
-                <RightTopUser />
-            </div>
+            <RightTopPosition />
         </div>
     </div>
 </template>
