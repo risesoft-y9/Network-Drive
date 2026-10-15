@@ -179,6 +179,13 @@ public class LinkDownLoadController {
             Y9LoginUserHolder.setTenantId(tenantId);
             FileShareLink fileShareLink = fileShareLinkService.findByLinkKey(linkKey);
             if (fileShareLink != null) {
+                // 验证链接是否过期
+                if (fileShareLink.getExpireTime() != null
+                    && fileShareLink.getExpireTime().before(new Date())) {
+                    map.put("success", false);
+                    map.put("msg", "链接已过期");
+                    return Y9Result.success(map);
+                }
                 if (StringUtils.isNotBlank(pwd)) {
                     String password = Y9Base64Util.encode(pwd);
                     if (StringUtils.isNotBlank(fileShareLink.getLinkPassword())
