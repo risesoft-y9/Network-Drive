@@ -19,7 +19,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 上传大小限制配置（全局一条记录，uploadSize 单位：字节）
+ * 上传大小限制配置（每种文件列表类型一条记录，uploadSize 单位：字节）
  *
  * @author yihong
  *
@@ -43,6 +43,10 @@ public class StorageUploadLimit implements Serializable {
     @Comment("上传大小限制(单位:字节)")
     @Column(name = "UPLOADSIZE")
     private Long uploadSize;
+
+    @Comment("文件列表类型(my=我的文件/dept=部门文件/public=公共文件/report=文件上报)，为空表示升级前的全局默认配置")
+    @Column(name = "FILETYPE", length = 32)
+    private String fileType;
 
     @Comment("操作人id")
     @Column(name = "OPERATORID", length = 50)
