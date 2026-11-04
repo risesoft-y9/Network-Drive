@@ -137,7 +137,7 @@
                 <indexExists tableName="Y9_STORAGE_NETWORK_FILECOLLECT" columnNames="FILEID"/>
             </not>
         </preConditions>
-        <createIndex indexName="FILE_FILEID_INDEX" tableName="Y9_STORAGE_NETWORK_FILECOLLECT">
+        <createIndex indexName="FILECOLLECT_FILEID_INDEX" tableName="Y9_STORAGE_NETWORK_FILECOLLECT">
             <column name="FILEID"/>
         </createIndex>
     </changeSet>

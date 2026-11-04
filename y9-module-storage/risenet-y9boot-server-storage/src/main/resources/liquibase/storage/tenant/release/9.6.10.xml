@@ -68,6 +68,24 @@
     </changeSet>
 
     <changeSet id="170200140583810-1-4" author="yihong">
+        <preConditions onFail="MARK_RAN">
+            <or>
+                <and>
+                    <dbms type="mysql"/>
+                    <not>
+                        <indexExists tableName="Y9_STORAGE_CAPACITY" indexName="UK_CAPACITYOWNERID"/>
+                    </not>
+                </and>
+                <and>
+                    <not>
+                        <dbms type="mysql"/>
+                    </not>
+                    <not>
+                        <uniqueConstraintExists tableName="Y9_STORAGE_CAPACITY" constraintName="UK_CAPACITYOWNERID"/>
+                    </not>
+                </and>
+            </or>
+        </preConditions>
         <addUniqueConstraint
                 tableName="Y9_STORAGE_CAPACITY"
                 columnNames="CAPACITYOWNERID"
