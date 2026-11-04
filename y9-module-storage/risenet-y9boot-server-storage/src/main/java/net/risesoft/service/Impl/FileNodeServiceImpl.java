@@ -41,10 +41,10 @@ import net.risesoft.pojo.Y9Result;
 import net.risesoft.repository.FileNodeRepository;
 import net.risesoft.repository.FileNodeShareRepository;
 import net.risesoft.repository.FileTagRelationRepository;
-import net.risesoft.repository.StorageUploadLimitRepository;
 import net.risesoft.repository.spec.FileNodeSpecification;
 import net.risesoft.service.FileNodeService;
 import net.risesoft.service.StorageCapacityService;
+import net.risesoft.service.StorageUploadLimitService;
 import net.risesoft.service.AiService;
 import net.risesoft.support.FileListType;
 import net.risesoft.support.FileNodeType;
@@ -96,7 +96,7 @@ public class FileNodeServiceImpl implements FileNodeService {
     private final Y9FileStoreService y9FileStoreService;
     private final StorageCapacityService storageCapacityService;
     private final FileTagRelationRepository fileTagRelationRepository;
-    private final StorageUploadLimitRepository storageUploadLimitRepository;
+    private final StorageUploadLimitService storageUploadLimitService;
     private final AiService aiService;
     @Value("${y9.app.storage.defaultStorageCapacity}")
     private String defaultStorageCapacity;
@@ -420,13 +420,16 @@ public class FileNodeServiceImpl implements FileNodeService {
     }
 
     /**
-     * 获取实际生效的单次上传大小限制（单位：字节）<br>
-     * 优先读取 Y9_STORAGE_UPLOAD_LIMIT 表中配置的全局上传大小限制，<br>
+     * 获取指定文件列表类型实际生效的单次上传大小限制（单位：字节）<br>
+     * 优先读取 Y9_STORAGE_UPLOAD_LIMIT 表中该文件列表类型的配置，<br>
+     * 该类型未单独配置时回落到升级前的全局默认配置，<br>
      * 若表中无数据或未配置有效值，则回退到 y9.app.storage.singleUploadLimit 配置项。
+     *
+     * @param listType 文件列表类型(my/dept/public/report)
      */
-    private long resolveUploadLimit() {
+    private long resolveUploadLimit(String listType) {
         try {
-            StorageUploadLimit config = storageUploadLimitRepository.findFirstByOrderByIdAsc();
+            StorageUploadLimit config = storageUploadLimitService.getUploadLimit(listType);
             if (config != null && config.getUploadSize() != null && config.getUploadSize() > 0) {
                 return config.getUploadSize();
             }
@@ -447,7 +450,7 @@ public class FileNodeServiceImpl implements FileNodeService {
         String fileExtension = FilenameUtils.getExtension(fileName).toLowerCase();
 
         try {
-            long size = resolveUploadLimit();
+            long size = resolveUploadLimit(listType);
             if (file.getSize() > size) {
                 map.put("msg", "上传文件的大小超过单次上传限制" + FileUtils.convertFileSize(size) + "?");
                 map.put("success", false);
