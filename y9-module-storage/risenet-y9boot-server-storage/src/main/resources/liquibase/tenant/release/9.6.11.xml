@@ -28,4 +28,24 @@
         </createTable>
     </changeSet>
 
+    <!-- 上传大小限制由"全局一条"改为"每个文件列表类型一条" -->
+    <changeSet id="170200140583811-1-2" author="yihong">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="Y9_STORAGE_UPLOAD_LIMIT" columnName="FILETYPE"/>
+            </not>
+        </preConditions>
+        <!-- 注意：历史数据保持 FILETYPE 为空，作为尚未单独配置文件列表类型的兜底默认值 -->
+        <addColumn tableName="Y9_STORAGE_UPLOAD_LIMIT">
+            <column name="FILETYPE"
+                    remarks="文件列表类型(my=我的文件/dept=部门文件/public=公共文件/report=文件上报)，为空表示升级前的全局默认配置"
+                    type="VARCHAR(32)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <createIndex indexName="IDX_STORAGE_UPLOAD_LIMIT_TYPE" tableName="Y9_STORAGE_UPLOAD_LIMIT">
+            <column name="FILETYPE"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
