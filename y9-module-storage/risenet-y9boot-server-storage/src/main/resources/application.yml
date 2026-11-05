@@ -123,20 +123,6 @@ spring:
         multipart:
             max-file-size: 2048MB
             max-request-size: 2048MB
-    redis:
-        database: 8
-        host: localhost
-        password: '111111'
-        port: 6379
-        lettuce:
-            pool:
-                max-active: 8
-                max-idle: 8
-                max-wait: -1
-                min-idle: 0
-            shutdown-timeout: 100ms
-        ssl: false
-        timeout: 10000
 # ==================== AI 大模型配置 ====================
 # 支持所有 OpenAI 兼容协议的大模型服务。
 # 只需修改 enabled=true 并填对应 api-key 即可启用。
@@ -282,10 +268,6 @@ y9:
             enabled: true
             # kafka, api
             reportMethod: api
-        session:
-            redis:
-                enabled: true
-                maxInactiveIntervalInSeconds: 3600
         security:
             enabled: true
             csrf:
