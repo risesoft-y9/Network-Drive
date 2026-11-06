@@ -881,8 +881,7 @@ public class AiServiceImpl implements AiService {
     }
 
     /**
-     * 处理 @删除文件夹/文件 名称 命令：按名称搜索并删除匹配的文件/文件夹
-     * 例如 @删除文件夹 888 → 搜索名称含"888"的文件夹，执行逻辑删除
+     * 处理 @删除文件夹/文件 名称 命令：按名称搜索并删除匹配的文件/文件夹 例如 @删除文件夹 888 → 搜索名称含"888"的文件夹，执行逻辑删除
      */
     private String handleDeleteByName(String message) {
         String personId = Y9LoginUserHolder.getPersonId();
@@ -911,8 +910,7 @@ public class AiServiceImpl implements AiService {
         List<FileNode> items = page.getContent();
 
         if (items.isEmpty()) {
-            return "未找到包含 **\"" + keyword + "\"** 的文件或文件夹。\n\n您可以尝试：\n"
-                + "- **\"@帮我找 " + keyword + "\"** → 先搜索确认文件\n"
+            return "未找到包含 **\"" + keyword + "\"** 的文件或文件夹。\n\n您可以尝试：\n" + "- **\"@帮我找 " + keyword + "\"** → 先搜索确认文件\n"
                 + "- **\"@新建文件夹 " + keyword + "\"** → 创建新文件夹";
         }
 

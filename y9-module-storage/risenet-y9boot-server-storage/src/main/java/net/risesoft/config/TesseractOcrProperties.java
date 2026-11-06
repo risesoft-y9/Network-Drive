@@ -8,8 +8,7 @@ import lombok.Data;
 /**
  * Tesseract OCR 引擎配置属性
  * <p>
- * 用于图片文字识别（OCR）功能。Tesseract 原生库需要单独安装，
- * 配置安装路径后，tess4j 通过 JNA 加载原生 DLL 进行图片文字提取。
+ * 用于图片文字识别（OCR）功能。Tesseract 原生库需要单独安装， 配置安装路径后，tess4j 通过 JNA 加载原生 DLL 进行图片文字提取。
  */
 @Data
 @Component

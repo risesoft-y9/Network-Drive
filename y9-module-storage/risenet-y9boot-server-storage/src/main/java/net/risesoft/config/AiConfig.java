@@ -19,12 +19,10 @@ public class AiConfig {
     @Bean
     public RestTemplate aiRestTemplate(AiProperties aiProperties) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout((int) Duration.ofMillis(aiProperties.getConnectTimeout()).toMillis());
-        factory.setReadTimeout((int) Duration.ofMillis(aiProperties.getReadTimeout()).toMillis());
+        factory.setConnectTimeout((int)Duration.ofMillis(aiProperties.getConnectTimeout()).toMillis());
+        factory.setReadTimeout((int)Duration.ofMillis(aiProperties.getReadTimeout()).toMillis());
 
-        RestTemplate restTemplate = new RestTemplateBuilder()
-            .requestFactory(() -> factory)
-            .build();
+        RestTemplate restTemplate = new RestTemplateBuilder().requestFactory(() -> factory).build();
 
         // 确保 UTF-8 编码
         restTemplate.getMessageConverters().set(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));

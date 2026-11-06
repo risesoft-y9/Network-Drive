@@ -37,7 +37,8 @@ public class StorageCapacityServiceImpl implements StorageCapacityService {
     @Value("${y9.app.storage.defaultStorageCapacity}")
     private String defaultStorageCapacity;
 
-    public StorageCapacityServiceImpl(StorageCapacityRepository storageCapacityRepository,
+    public StorageCapacityServiceImpl(
+        StorageCapacityRepository storageCapacityRepository,
         PlatformTransactionManager transactionManager) {
         this.storageCapacityRepository = storageCapacityRepository;
         this.transactionManager = transactionManager;

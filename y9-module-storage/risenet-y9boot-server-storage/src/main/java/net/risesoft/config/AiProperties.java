@@ -49,9 +49,7 @@ public class AiProperties {
     private int readTimeout = 120000;
 
     /** 系统提示词 */
-    private String systemPrompt = "你是一个专业的文件管理助手，帮助用户管理网盘文件。"
-        + "你可以帮助用户查找文件、分析文件内容、提取文件信息、进行数据对比等。"
-        + "回答要简洁、准确，使用中文。";
+    private String systemPrompt = "你是一个专业的文件管理助手，帮助用户管理网盘文件。" + "你可以帮助用户查找文件、分析文件内容、提取文件信息、进行数据对比等。" + "回答要简洁、准确，使用中文。";
 
     /** 文件上传后是否异步提取文本内容并建立索引 */
     private boolean indexOnUpload = true;

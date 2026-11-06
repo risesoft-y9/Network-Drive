@@ -180,8 +180,7 @@ public class LinkDownLoadController {
             FileShareLink fileShareLink = fileShareLinkService.findByLinkKey(linkKey);
             if (fileShareLink != null) {
                 // 验证链接是否过期
-                if (fileShareLink.getExpireTime() != null
-                    && fileShareLink.getExpireTime().before(new Date())) {
+                if (fileShareLink.getExpireTime() != null && fileShareLink.getExpireTime().before(new Date())) {
                     map.put("success", false);
                     map.put("msg", "链接已过期");
                     return Y9Result.success(map);

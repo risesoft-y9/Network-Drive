@@ -166,7 +166,12 @@ public class FileNodeSpecification implements Specification<FileNode> {
         this.deleted = deleted;
     }
 
-    public FileNodeSpecification(String userId, String parentId, String name, boolean deleted, Date startDate,
+    public FileNodeSpecification(
+        String userId,
+        String parentId,
+        String name,
+        boolean deleted,
+        Date startDate,
         Date endDate) {
         this.userId = userId;
         this.parentId = parentId;
@@ -177,8 +182,15 @@ public class FileNodeSpecification implements Specification<FileNode> {
     }
 
     /** 支持文件大小过滤的构造函数 */
-    public FileNodeSpecification(String userId, String parentId, String name, boolean deleted, Date startDate,
-        Date endDate, Long minSize, Long maxSize) {
+    public FileNodeSpecification(
+        String userId,
+        String parentId,
+        String name,
+        boolean deleted,
+        Date startDate,
+        Date endDate,
+        Long minSize,
+        Long maxSize) {
         this.userId = userId;
         this.parentId = parentId;
         this.name = name;
